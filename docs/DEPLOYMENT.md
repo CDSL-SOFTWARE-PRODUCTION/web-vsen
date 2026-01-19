@@ -293,7 +293,7 @@ MAIL_FROM_NAME="${APP_NAME}"
 # Chạy migrations
 sudo -u www-data php artisan migrate --force
 
-# Nếu có seeders (tùy chọn)
+# Nếu có seeders (Lưu ý: bắt buộc dùng --force trong production)
 sudo -u www-data php artisan db:seed --force
 ```
 
@@ -683,6 +683,21 @@ sudo supervisorctl status
 tail -f /var/www/web-vsen/storage/logs/worker.log
 ```
 
+### 12.5 Lỗi "Class 'Redis' not found"
+
+Lỗi này xảy ra khi PHP Redis extension chưa được cài đặt hoặc enable.
+
+```bash
+# Cài đặt PHP Redis extension (Ubuntu/Debian)
+sudo apt install php8.2-redis
+
+# Restart PHP-FPM
+sudo systemctl restart php8.2-fpm
+
+# Kiểm tra
+php -m | grep redis
+```
+
 ---
 
 ## 13. Backup Strategy
@@ -770,4 +785,6 @@ Sau khi hoàn thành tất cả các bước trên, ứng dụng Laravel của b
 - Cập nhật hệ thống và dependencies định kỳ
 - Sử dụng SSL/HTTPS cho production
 - Cấu hình firewall và security properly
+- **Lưu ý đặc biệt cho Filament Admin Panel**: Để truy cập được admin panel trên production, `App\Models\User` phải implement `FilamentUser` interface và method `canAccessPanel` phải trả về `true` (thường check dựa trên `role`).
+- **Lưu ý seeding**: Luôn sử dụng flag `--force` khi chạy `php artisan db:seed` trên môi trường production.
 
