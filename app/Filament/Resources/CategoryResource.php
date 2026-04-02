@@ -51,6 +51,7 @@ class CategoryResource extends Resource
                         Forms\Components\FileUpload::make('image')
                             ->label(__('Image'))
                             ->image()
+                            ->disk('public')
                             ->directory('categories'),
 
                         Forms\Components\TextInput::make('sort_order')
@@ -69,7 +70,9 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')->label(__('Image')),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label(__('Image'))
+                    ->disk('public'),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label(__('Name'))

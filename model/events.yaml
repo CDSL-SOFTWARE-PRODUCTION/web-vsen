@@ -1,0 +1,321 @@
+# =============================================================
+# DVT EVENT / COMMAND REGISTRY — Behavioral Axioms
+# =============================================================
+# Danh sách các Event/Command điều hướng state machine của hệ thống.
+# Đây là lớp "Behavior" (hành vi) nối giữa Entity, State và Constraint.
+#
+# Cấu trúc:
+#   id:         Tên Event / Command
+#   domain:     Domain sở hữu
+#   trigger:    Actor là người dùng hay Hệ thống / External
+#   target:     Entity nào sẽ chịu tác động (nhận command)
+#   flow:       Luồng chuyển trạng thái (From -> To)
+#   payload:    Dữ liệu đầu vào cần thiết cho event này
+# =============================================================
+
+events:
+
+  # -----------------------------------------------------------
+  # COMMANDS: DEMAND & ORDER
+  # -----------------------------------------------------------
+
+  - id: SubmitTender
+    domain: Demand
+    trigger: Sale
+    target: Order
+    flow: "Draft → BidSubmitted"
+    payload:
+      - hsmt_file_id
+      - hsdt_file_id
+      - bl_du_thau_id
+    note: Kính hoạt kiểm tra C-ORD-001 và C-ORD-002 (cross-check certs).
+
+  - id: AwardTender
+    domain: Demand
+    trigger: External / Sale (nhập KQ thầu)
+    target: Order
+    flow: "BidSubmitted → WonWaiting"
+    payload:
+      - result_document_id
+      - won_item_ids # Danh sách ID các hạng mục trúng thầu
+    note: >
+      Ghi nhận kết quả thầu. Hệ thống sẽ tự động giải phóng Reservation cho các items 
+      không nằm trong won_item_ids (Kích hoạt logic C-ORD-007).
+
+  - id: ConfirmContract
+    domain: Demand
+    trigger: Sale
+    target: Order
+    flow: "WonWaiting → ContractSigned (Hoặc Draft → ContractSigned với đơn TM)"
+    payload:
+      - signed_contract_id
+    note: Kích hoạt kiểm tra C-ORD-003, credit limit, và C-ORD-005.
+
+  - id: StartExecution
+    domain: Demand
+    trigger: Sale / Admin
+    target: Order
+    flow: "ContractSigned → InExecution"
+    payload:
+      - bl_thuc_hien_id
+
+  - id: ConfirmFulfillment
+    domain: Demand
+    trigger: System (lắng nghe từ Delivery / Acc)
+    target: Order
+    flow: "InExecution → Fulfilled"
+    payload:
+      - doc_bb_nghiem_thu_id
+
+  - id: CloseContract
+    domain: Demand
+    trigger: Sale / Finance
+    target: Order
+    flow: "Fulfilled → ContractClosed"
+    payload:
+      - doc_bb_thanh_ly_id
+      - doc_cv_hoan_tra_bl_id
+    note: Kích hoạt kiểm tra C-ORD-004. Terminal state.
+
+  - id: AbandonTender
+    domain: Demand
+    trigger: Sale
+    target: Order
+    flow: "Draft → Abandoned"
+    payload:
+      - reason_note
+    note: Nộp thầu thất bại hoặc hủy cơ hội. Terminal state.
+
+  # -----------------------------------------------------------
+  # COMMANDS: INVENTORY (SUPPLY & WAREHOUSE)
+  # -----------------------------------------------------------
+
+  - id: ReceiveGoods
+    domain: Inventory
+    trigger: Warehouse
+    target: InventoryLot
+    flow: "Receiving → Available"
+    payload:
+      - supply_order_id
+      - physical_qty
+      - spec_details
+    note: Kích hoạt C-INV-001 (kiểm tra spec). Sẽ bị block nếu Mismatch.
+
+  - id: ForceReceiveGoods
+    domain: Inventory
+    trigger: Founder
+    target: InventoryLot
+    flow: "Receiving → Quarantined"
+    payload:
+      - approval_note
+    note: Overrule lỗi Mismatch (C-INV-001).
+
+  - id: ReserveInventory
+    domain: Inventory
+    trigger: System / Sale (khi tạo hoặc Confirm Đơn)
+    target: InventoryLot
+    flow: "Available → Reserved"
+    payload:
+      - order_item_id
+      - qty_required
+    note: Kích hoạt C-INV-003 (chặn lấy hàng từ kho Satellite nếu không phải BV) và C-INV-004 (cảnh báo ROP).
+
+  - id: AutoReleaseReservation
+    domain: Inventory
+    trigger: System (CronJob timer)
+    target: InventoryReservation
+    flow: "Reserved → Available"
+    payload: []
+    note: Thực thi C-INV-002 nếu quá thời hạn lock mà chưa StartDelivery.
+
+  - id: DisposeInventory
+    domain: Inventory
+    trigger: Warehouse / Admin
+    target: InventoryLot
+    flow: "Available → Disposed"
+    payload:
+      - disposal_reason
+      - disposal_note
+    note: Hủy lô hàng hết hạn, hỏng hoặc bị NCC reject. Terminal state.
+
+  - id: RefineBatchSpec
+    domain: Inventory
+    trigger: Warehouse / Production (Xưởng)
+    target: InventoryLot
+    flow: "Receiving / Quarantined → Available"
+    payload:
+      - refined_spec
+      - tender_item_id
+      - temp_phu_doc_id
+    note: >
+      Tinh chỉnh thông số (labelling, dịch thuật, cấu hình) để khớp yêu cầu thầu.
+      Kích hoạt C-INV-005 để kiểm soát pháp lý + thầu.
+
+  # -----------------------------------------------------------
+  # COMMANDS: DELIVERY (LOGISTICS)
+  # -----------------------------------------------------------
+
+  - id: StartDelivery
+    domain: Delivery
+    trigger: Kho (Warehouse) / Logistics
+    target: Delivery
+    flow: "Draft → Dispatched"
+    payload:
+      - lenh_xuat_kho_id
+    note: Chặn bằng C-DEL-001 (phải có Lệnh XK) và C-DEL-003 (gom chuyến). Trigger update trên InventoryLot (Reserved → Shipped).
+
+  - id: DriverConfirmPickup
+    domain: Delivery
+    trigger: Driver (App tải xế)
+    target: Delivery
+    flow: "Dispatched → InTransit"
+    payload:
+      - vehicle_id
+      - driver_id
+
+  - id: CompleteDelivery
+    domain: Delivery
+    trigger: Driver (App tải xế)
+    target: Delivery
+    flow: "InTransit → Delivered"
+    payload:
+      - doc_bb_ban_giao_id
+      - gps_coordinates_actual
+    note: Kích hoạt C-DEL-002 (phải có biên bản có chữ ký và GPS đúng).
+
+  - id: ReportPartialDelivery
+    domain: Delivery
+    trigger: Driver (App tải xế)
+    target: Delivery
+    flow: "InTransit → PartiallyDelivered"
+    payload:
+      - delivered_qty
+      - doc_bb_ban_giao_id
+      - reason_note
+
+  - id: CompleteReplacementDelivery
+    domain: Delivery
+    trigger: "Driver (App tài xế)"
+    target: Delivery
+    flow: "PartiallyDelivered → Delivered"
+    payload:
+      - replacement_order_id
+      - doc_bb_ban_giao_id
+    note: Hoàn tất giao hàng thay thế sau đợt giao chưa đủ.
+
+  - id: CancelDelivery
+    domain: Delivery
+    trigger: Logistics / Admin
+    target: Delivery
+    flow: "Dispatched → Cancelled"
+    payload:
+      - cancellation_reason
+    note: Hủy chuyến giao khẩn cấp. Terminal state. Hàng lock sẽ được AutoRelease.
+
+  # -----------------------------------------------------------
+  # COMMANDS: CASHFLOW (FINANCE)
+  # -----------------------------------------------------------
+
+  - id: IssueInvoice
+    domain: Cash
+    trigger: Kế Toán (Finance)
+    target: Invoice
+    flow: "Draft → Issued"
+    payload:
+      - order_id
+      - total_amount
+    note: Chặn bằng C-FIN-001 (chỉ cho xuất khi có BB Nghiệm thu) và C-FIN-003 (sync với MISA).
+
+  - id: CancelAndReissue
+    domain: Cash
+    trigger: Kế Toán / Admin
+    target: Invoice
+    flow: "Issued → Voided"
+    payload:
+      - new_invoice_id
+      - reason_note
+    note: Thực thi C-FIN-002 (cấm sửa DB, phải tạo Invoice mới).
+
+  - id: RegisterPayment
+    domain: Cash
+    trigger: Hệ thống (Bank Webhook) / Kế Toán
+    target: Invoice
+    flow: "Issued / PartiallyPaid → Paid"
+    payload:
+      - amount_received
+      - bank_txn_id
+
+  - id: RegisterPartialPayment
+    domain: Cash
+    trigger: Hệ thống (Bank Webhook) / Kế Toán
+    target: Invoice
+    flow: "Issued → PartiallyPaid"
+    payload:
+      - amount_received
+      - bank_txn_id
+
+  # -----------------------------------------------------------
+  # COMMANDS: RETURNS & TRANSFERS (RMA & LOGISTICS)
+  # -----------------------------------------------------------
+
+  - id: ApproveReturn
+    domain: Inventory
+    trigger: Sale / Admin
+    target: ReturnOrder
+    flow: "Draft → Approved"
+    payload:
+      - order_id
+      - reason_note
+    note: Xác nhận chấp nhận yêu cầu trả hàng từ khách hàng.
+
+  - id: ProcessRestock
+    domain: Inventory
+    trigger: Warehouse
+    target: InventoryLot
+    flow: "Shipped → Available"
+    payload:
+      - return_order_id
+      - lot_id
+      - quantity
+    note: Nhập lại kho cho hàng trả về còn tốt. Cập nhật InventoryLedger.
+
+  - id: ProcessDispose
+    domain: Inventory
+    trigger: Warehouse
+    target: InventoryLot
+    flow: "Shipped → Disposed"
+    payload:
+      - return_order_id
+      - lot_id
+      - quantity
+    note: Hủy hàng trả về bị hỏng/lỗi. Ghi nhận chi phí hủy.
+
+  - id: CompleteRefund
+    domain: Cash
+    trigger: Finance
+    target: ReturnOrder
+    flow: "Processing → Refunded"
+    payload:
+      - amount
+      - refund_method
+    note: Thực hiện hoàn tiền cho khách hàng. Sinh ra Credit Note.
+
+  - id: ShipTransfer
+    domain: Inventory
+    trigger: Warehouse
+    target: StockTransfer
+    flow: "Pending → Shipped"
+    payload:
+      - source_warehouse_id
+      - items_list
+    note: Bắt đầu điều chuyển hàng khỏi kho nguồn. Giảm OnHand tại Nguồn.
+
+  - id: ReceiveTransfer
+    domain: Inventory
+    trigger: Warehouse
+    target: StockTransfer
+    flow: "Shipped → Received"
+    payload:
+      - dest_warehouse_id
+      - actual_items_received
+    note: Nhận hàng tại kho đích. Tăng OnHand tại Đích, giữ nguyên Lot ID.

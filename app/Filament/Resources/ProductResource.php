@@ -134,6 +134,7 @@ class ProductResource extends Resource
                                         Forms\Components\FileUpload::make('path')
                                             ->label(__('Image'))
                                             ->image()
+                                            ->disk('public')
                                             ->directory('products')
                                             ->required(),
 
@@ -205,6 +206,7 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('primaryImage.path')
                     ->label(__('Image'))
+                    ->disk('public')
                     ->square(),
 
                 Tables\Columns\TextColumn::make('name')

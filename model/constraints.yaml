@@ -1,0 +1,235 @@
+# =============================================================
+# DVT CONSTRAINT REGISTRY — Business Rules & Gating Logic
+# =============================================================
+# Mỗi constraint là 1 luật cứng (hard rule) hoặc cảnh báo (warn).
+# Khi implement: đây là danh sách kiểm thử integration test bắt buộc.
+#
+# Format:
+#   id:         mã constraint (unique, dùng để ref trong states.yaml)
+#   type:       hard (reject nếu fail) | warn (alert nhưng cho phép)
+#   domain:     entity/domain bị ảnh hưởng
+#   trigger:    command hoặc event kích hoạt kiểm tra
+#   rule:       mô tả logic bằng ngôn ngữ tự nhiên
+#   error_msg:  message trả về khi vi phạm
+# =============================================================
+
+constraints:
+
+  # -----------------------------------------------------------
+  # DEMAND / ORDER CONSTRAINTS
+  # -----------------------------------------------------------
+
+  - id: C-ORD-001
+    type: hard
+    domain: Order
+    trigger: SubmitTender
+    rule: >
+      Order phải có đầy đủ 3 Document: DOC_HSMT (hồ sơ mời thầu),
+      DOC_HSDT (hồ sơ dự thầu), BL_DU_THAU (bảng lương dự thầu).
+    error_msg: "Thiếu hồ sơ thầu. Cần có HSMT, HSDT và BL_DU_THAU."
+
+  - id: C-ORD-002
+    type: warn
+    domain: Order
+    trigger: SubmitTender
+    rule: >
+      Mọi Product trong TenderItem phải có đủ chứng nhận theo
+      TenderItem.requirements (cross-check PRODUCT_REQ_MAPPING vs
+      TENDER_REQ_MAPPING). Nếu thiếu ISO/FSC → cảnh báo vàng.
+    error_msg: "Cảnh báo: Sản phẩm [X] thiếu chứng nhận [ISO/FSC] theo yêu cầu thầu."
+
+  - id: C-ORD-003
+    type: hard
+    domain: Order
+    trigger: ConfirmContract
+    rule: >
+      Phải có Document.tag = HD_KY (hợp đồng đã ký đóng dấu).
+      Customer.credit_limit không được vượt tổng giá trị đơn.
+    error_msg: "Thiếu hợp đồng ký đỏ hoặc khách hàng vượt hạn mức tín dụng."
+
+  - id: C-ORD-004
+    type: hard
+    domain: Order
+    trigger: CloseContract
+    rule: >
+      Phải có đủ: DOC_BB_THANH_LY (biên bản thanh lý) +
+      DOC_CV_HOAN_TRA_BL (công văn hoàn trả bảo lãnh).
+    error_msg: "Thiếu biên bản thanh lý hoặc công văn hoàn trả bảo lãnh."
+
+  - id: C-ORD-005
+    type: hard
+    domain: Order
+    trigger: ConfirmContract
+    rule: >
+      Nếu Customer có overdue_debt > 30 ngày, khóa toàn bộ lệnh
+      ConfirmContract cho Customer đó. Chỉ Founder (với mã xác thực riêng)
+      mới được Overrule.
+    error_msg: "Khách hàng đang có nợ quá hạn. Liên hệ Founder để ghi đè."
+
+  - id: C-ORD-006
+    type: warn
+    domain: Order
+    trigger: ConfirmContract
+    rule: >
+      Nếu estimated_profit < 0 (giá đầu vào tăng vượt giá thầu),
+      đặt Order vào trạng thái Flagged/Risk và yêu cầu Founder xác nhận
+      trước khi cho phép Confirm.
+    error_msg: "Cảnh báo lỗ: Lợi nhuận ước tính < 0. Yêu cầu Founder phê duyệt."
+
+  - id: C-ORD-007
+    type: hard
+    domain: Order
+    trigger: AwardTender
+    rule: >
+      Khi ghi nhận kết quả thầu (AwardTender):
+        - 1. Nếu một hạng mục (OrderItem) không nằm trong won_item_ids →
+             Hệ thống tự động thực hiện AutoReleaseReservation ngay lập tức.
+        - 2. Chuyển trạng thái Order sang WonWaiting.
+        - 3. Loại bỏ các hạng mục trượt thầu khỏi danh sách thanh toán của Order này.
+    error_msg: "(Hệ thống tự động) Đã giải phóng tồn kho cho các hạng mục trượt thầu."
+
+  # -----------------------------------------------------------
+  # INVENTORY CONSTRAINTS
+  # -----------------------------------------------------------
+
+  - id: C-INV-001
+    type: hard
+    domain: InventoryLot
+    trigger: ReceiveGoods
+    rule: >
+      Spec hàng nhập (barcode/model/lot) phải khớp với SupplyOrder.
+      Nếu Mismatch → Reject Inbound, không phát sự kiện GoodsReceived,
+      ghi AuditLog "Inbound Rejected - Spec Mismatch".
+    error_msg: "Sai quy cách so với PO. Không được nhập kho. Xử lý trả hàng hoặc gọi Founder ghi đè."
+
+  - id: C-INV-002
+    type: hard
+    domain: InventoryReservation
+    trigger: AutoReleaseReservation
+    rule: >
+      Nếu Order đã Reserve hàng nhưng không StartDelivery sau X ngày
+      (cấu hình theo từng khách), hệ thống tự động mở khóa để đơn khác
+      có thể lấy hàng. X mặc định = 7 ngày.
+    error_msg: "(System auto-action) Reservation expired — hàng đã được giải phóng."
+
+  - id: C-INV-003
+    type: hard
+    domain: InventoryLot
+    trigger: ReserveInventory
+    rule: >
+      Satellite_Depot (kho vệ tinh cạnh bệnh viện) chỉ được phép
+      Reserve cho Order có customer.type = Hospital. Đại lý và thương
+      mại thông thường KHÔNG được rút từ Satellite Depot.
+    error_msg: "Satellite Depot chỉ dành cho bệnh viện. Không được xuất cho đại lý."
+
+  - id: C-INV-004
+    type: hard
+    domain: InventoryLot
+    trigger: ReserveInventory
+    rule: >
+      Khi tồn kho của sản phẩm Nhóm A (Fast Moving) chạm dưới ROP
+      (Reorder Point), tự động trigger EmergencyProcurement và cảnh
+      báo ngay cho Sale + Procurement.
+    error_msg: "(Auto-alert) Tồn kho [Product X] chạm đáy ROP. Đã khởi động mua hàng khẩn."
+
+  - id: C-INV-005
+    type: hard
+    domain: InventoryLot
+    trigger: RefineBatchSpec
+    rule: >
+      Thông số refined_spec phải bao phủ 100% thuộc tính trong
+      TenderItem.raw_requirement. Phải có Document.tag = TEM_PHU 
+      (với hàng nhập khẩu) và Document.tag = HD_HUONG_DAN_VN.
+    error_msg: "Thông số tinh chỉnh chưa đạt yêu cầu thầu hoặc thiếu tem phụ/hướng dẫn tiếng Việt."
+
+  # -----------------------------------------------------------
+  # DELIVERY CONSTRAINTS
+  # -----------------------------------------------------------
+
+  - id: C-DEL-001
+    type: hard
+    domain: Delivery
+    trigger: StartDelivery
+    rule: >
+      Phải có Document.tag = LENH_XUAT_KHO trong hệ thống trước khi
+      xe được phép lăn bánh. App tài xế phải hiển thị chứng từ này —
+      không có chứng từ → cửa kho không mở.
+    error_msg: "Thiếu Lệnh Xuất Kho. Không được phép xuất hàng."
+
+  - id: C-DEL-002
+    type: hard
+    domain: Delivery
+    trigger: CompleteDelivery
+    rule: >
+      Phải upload ảnh biên bản có chữ ký (Document.tag = DOC_BB_BAN_GIAO).
+      Tọa độ GPS lúc Complete phải không lệch quá ngưỡng MAX_GPS_DEVIATION
+      so với địa chỉ trong Order. Nếu lệch → yêu cầu Driver xác thực bổ sung.
+    error_msg: "Thiếu biên bản giao hàng có chữ ký hoặc GPS lệch khỏi địa điểm giao."
+
+  - id: C-DEL-003
+    type: hard
+    domain: Delivery
+    trigger: StartDelivery
+    rule: >
+      Cấm xuất xe bán tải để giao 1 đơn có Volume < 1 CBM từ DC nếu
+      đơn không phải Cấp Cứu (priority != Critical). Bắt buộc gom
+      chuyến Milk-Run hoặc chờ ngày hôm sau.
+    error_msg: "Không giao lẻ từ DC. Đơn này phải được gom vào chuyến Milk-Run."
+
+  # -----------------------------------------------------------
+  # FINANCE / INVOICE CONSTRAINTS
+  # -----------------------------------------------------------
+
+  - id: C-FIN-001
+    type: hard
+    domain: Invoice
+    trigger: IssueInvoice
+    rule: >
+      Delivery phải ở trạng thái Delivered VÀ phải tồn tại Document
+      DOC_BB_NGHIEM_THU (biên bản nghiệm thu). Chặn hoàn toàn hóa
+      đơn lụi (xuất trước khi giao hàng).
+    error_msg: "Chưa hoàn tất giao hàng hoặc thiếu biên bản nghiệm thu. Không xuất được hóa đơn."
+
+  - id: C-FIN-002
+    type: hard
+    domain: Invoice
+    trigger: CancelAndReissue
+    rule: >
+      Không được xóa Invoice nội bộ. Phải tạo Invoice mới (Draft_Reissue)
+      và link vào Invoice cũ (replaced_by_invoice_id). Invoice cũ chuyển
+      sang Voided. Cả hai phải được ghi AuditLog đầy đủ.
+    error_msg: "Không thể sửa trực tiếp hóa đơn đã xuất. Phải dùng luồng Cancel & Reissue."
+
+  - id: C-FIN-003
+    type: hard
+    domain: Invoice
+    trigger: IssueInvoice
+    rule: >
+      Invoice chỉ được tạo từ Core System. Phân quyền trên MISA bị chặn
+      tạo thủ công. Core System tự động gọi MisaInvoiceAdapter.issue()
+      sau khi tạo xong.
+    error_msg: "(Luật tích hợp) Không tạo hóa đơn thủ công trên MISA. Phải xuất từ Core System."
+
+  - id: C-ORD-008
+    type: hard
+    domain: Order
+    trigger: SubmitTender
+    rule: >
+      Nếu Product.current_stock == 0 VÀ Product.leverage_eligible == false,
+      chặn không cho phép nộp thầu. Nếu leverage_eligible == true, cho phép
+      nộp nhưng hệ thống ghi nhận trạng thái "Short-selling/Leveraged".
+    error_msg: "Sản phẩm không có sẵn trong kho và không thuộc danh mục Leverage. Không được nộp thầu."
+
+  # -----------------------------------------------------------
+  # SUPPLY / PROCUREMENT CONSTRAINTS
+  # -----------------------------------------------------------
+
+  - id: C-SUP-001
+    type: hard
+    domain: SupplyOrder
+    trigger: AwardTender
+    rule: >
+      Khi trúng thầu hạng mục Leverage, hệ thống tự động khởi tạo 
+      Draft SupplyOrder (PR) và gửi thông báo cho Procurement. 
+      Phải có link FK_ORDER_ID để truy vết mục đích mua hàng.
+    error_msg: "(Hệ thống tự động) Đã khởi tạo yêu cầu mua hàng cho hạng mục thầu vừa trúng."

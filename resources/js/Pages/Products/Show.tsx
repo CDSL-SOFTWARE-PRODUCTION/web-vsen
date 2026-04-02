@@ -63,9 +63,10 @@ export default function Show({ product }: Props) {
             <div>
               <span className="text-sm uppercase font-bold text-ge-blue tracking-widest mb-2 block">{product.category}</span>
               <h1 className="text-4xl font-bold text-gray-900 mb-6">{product.name}</h1>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                {product.description}
-              </p>
+              <div 
+                className="text-lg text-gray-600 mb-8 leading-relaxed" 
+                dangerouslySetInnerHTML={{ __html: product.description }} 
+              />
 
               <div className="space-y-8 mb-10">
                 <div>

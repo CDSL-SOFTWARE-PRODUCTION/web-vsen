@@ -55,6 +55,7 @@ class ResourceResource extends Resource
 
                         Forms\Components\FileUpload::make('file_path')
                             ->label(__('File Upload'))
+                            ->disk('public')
                             ->directory('resources')
                             ->openable()
                             ->downloadable(),
@@ -67,6 +68,7 @@ class ResourceResource extends Resource
                         Forms\Components\FileUpload::make('thumbnail')
                             ->label(__('Thumbnail'))
                             ->image()
+                            ->disk('public')
                             ->directory('resource-thumbnails'),
 
                         Forms\Components\TextInput::make('specialty')
@@ -90,7 +92,9 @@ class ResourceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('thumbnail')->label(__('Thumbnail')),
+                Tables\Columns\ImageColumn::make('thumbnail')
+                    ->label(__('Thumbnail'))
+                    ->disk('public'),
 
                 Tables\Columns\TextColumn::make('title')
                     ->label(__('Title'))

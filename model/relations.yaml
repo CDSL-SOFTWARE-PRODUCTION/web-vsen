@@ -1,0 +1,255 @@
+# =============================================================
+# DVT RELATION REGISTRY — Quan hệ giữa các Entity
+# =============================================================
+# Format:
+#   from:        entity.id (nguồn)
+#   to:          entity.id (đích)
+#   type:        owns | has | references | triggers | constrains
+#   cardinality: one-to-one | one-to-many | many-to-many
+#   note:        mô tả nghiệp vụ
+# =============================================================
+
+relations:
+
+  # -----------------------------------------------------------
+  # MASTER DATA → TRANSACTION
+  # -----------------------------------------------------------
+
+  - from: LegalEntity
+    to: Order
+    type: owns
+    cardinality: one-to-many
+    note: Mỗi Order phải thuộc về 1 LegalEntity (A/B/C/D).
+
+  - from: LegalEntity
+    to: SupplyOrder
+    type: owns
+    cardinality: one-to-many
+    note: PO mua hàng phải được phát hành dưới tên 1 pháp nhân.
+
+  - from: LegalEntity
+    to: Invoice
+    type: owns
+    cardinality: one-to-many
+    note: Hóa đơn xuất dưới MST của pháp nhân nào thì thuộc về pháp nhân đó.
+
+  - from: LegalEntity
+    to: Ledger
+    type: owns
+    cardinality: one-to-many
+    note: Mỗi ví tiền thuộc về 1 pháp nhân.
+
+  - from: Partner
+    to: Order
+    type: references
+    cardinality: one-to-many
+    note: Khách hàng (type=Customer) đặt Order.
+
+  - from: Partner
+    to: SupplyOrder
+    type: references
+    cardinality: one-to-many
+    note: Nhà cung cấp (type=Supplier) thực hiện SupplyOrder.
+
+  - from: Product
+    to: OrderItem
+    type: references
+    cardinality: one-to-many
+    note: Mỗi OrderItem chỉ định 1 sản phẩm cụ thể.
+
+  - from: CanonicalProduct
+    to: Product
+    type: has
+    cardinality: one-to-many
+    note: Product được chuẩn hóa bởi 1 CanonicalProduct.
+
+  - from: Product
+    to: Requirement
+    type: has
+    cardinality: many-to-many
+    via: PRODUCT_REQ_MAPPING
+    note: Sản phẩm thỏa mãn các yêu cầu chứng nhận gì (ISO, CE, FSC...).
+
+  - from: TenderItem
+    to: Requirement
+    type: constrains
+    cardinality: many-to-many
+    via: TENDER_REQ_MAPPING
+    note: Gói thầu yêu cầu sản phẩm phải có chứng nhận gì.
+
+  - from: TenderItem
+    to: Product
+    type: references
+    cardinality: many-to-one
+    note: Sau khi Intelligence OS match, TenderItem liên kết với 1 Product.
+
+  # -----------------------------------------------------------
+  # ORDER → DEPENDENTS
+  # -----------------------------------------------------------
+
+  - from: Order
+    to: OrderItem
+    type: has
+    cardinality: one-to-many
+    note: 1 Order có nhiều dòng hàng.
+
+  - from: Order
+    to: Invoice
+    type: triggers
+    cardinality: one-to-one
+    note: 1 Order sinh ra đúng 1 Invoice (có thể reissue nếu hủy).
+
+  - from: Order
+    to: Delivery
+    type: triggers
+    cardinality: one-to-many
+    note: 1 Order có thể có nhiều chuyến giao (partial, replacement).
+
+  - from: Order
+    to: Document
+    type: has
+    cardinality: one-to-many
+    note: Hồ sơ đính kèm (báo giá, hợp đồng, biên bản...).
+
+  - from: Order
+    to: SupplyOrder
+    type: triggers
+    cardinality: one-to-many
+    note: Thắng thầu (AwardTender) cho sản phẩm Leverage kích hoạt PR/PO tự động.
+
+  # -----------------------------------------------------------
+  # INVENTORY FLOW
+  # -----------------------------------------------------------
+
+  - from: SupplyOrder
+    to: InventoryLot
+    type: triggers
+    cardinality: one-to-many
+    note: Khi hàng về kho (GoodsReceived), SupplyOrder sinh ra 1+ InventoryLot.
+
+  - from: InventoryLot
+    to: InventoryReservation
+    type: has
+    cardinality: one-to-many
+    note: 1 Lô có thể được reserve theo từng phần.
+
+  - from: OrderItem
+    to: InventoryReservation
+    type: triggers
+    cardinality: one-to-many
+    note: OrderItem lock hàng từ 1+ InventoryLot.
+
+  - from: InventoryLot
+    to: InventoryLedger
+    type: triggers
+    cardinality: one-to-many
+    note: Mọi thao tác trên Lô đều ghi vào Ledger (append-only).
+
+  - from: Warehouse
+    to: InventoryLot
+    type: has
+    cardinality: one-to-many
+    note: Kho chứa các lô hàng.
+
+  - from: InventoryLot
+    to: Delivery
+    type: references
+    cardinality: one-to-many
+    note: Hàng trong chuyến giao được lấy từ 1+ InventoryLot.
+
+  # -----------------------------------------------------------
+  # DELIVERY FLOW
+  # -----------------------------------------------------------
+
+  - from: Warehouse
+    to: Delivery
+    type: references
+    cardinality: one-to-many
+    note: Delivery xuất hàng từ 1 Warehouse (source_warehouse_id).
+
+  - from: Vehicle
+    to: DeliveryRoute
+    type: has
+    cardinality: one-to-many
+    note: 1 xe chạy nhiều Route theo ngày.
+
+  - from: DeliveryRoute
+    to: Delivery
+    type: has
+    cardinality: one-to-many
+    note: 1 Route (Milk-Run) gom nhiều Delivery.
+
+  # -----------------------------------------------------------
+  # FINANCE FLOW
+  # -----------------------------------------------------------
+
+  - from: Invoice
+    to: Ledger
+    type: triggers
+    cardinality: one-to-many
+    note: Khi thanh toán, Invoice sinh ra bản ghi Ledger (Inflow).
+
+  - from: Invoice
+    to: Document
+    type: has
+    cardinality: one-to-many
+    note: Hóa đơn VAT, phiếu giao đính kèm.
+
+  # -----------------------------------------------------------
+  # DOCUMENT & AUDIT
+  # -----------------------------------------------------------
+
+  - from: Product
+    to: Document
+    type: has
+    cardinality: one-to-many
+    note: Chứng từ sản phẩm (BSM spec, ISO cert, tem nhãn...).
+
+  - from: User
+    to: AuditLog
+    type: triggers
+    cardinality: one-to-many
+    note: Mọi hành động của User đều ghi AuditLog.
+
+  # -----------------------------------------------------------
+  # RETURN & TRANSFER FLOWS
+  # -----------------------------------------------------------
+
+  - from: Order
+    to: ReturnOrder
+    type: triggers
+    cardinality: one-to-many
+    note: 1 đơn hàng có thể có nhiều lượt trả hàng (từng phần).
+
+  - from: ReturnOrder
+    to: ReturnLineItem
+    type: has
+    cardinality: one-to-many
+
+  - from: ReturnOrder
+    to: Invoice
+    type: triggers
+    cardinality: one-to-one
+    note: ReturnOrder sinh ra Credit Note (Invoice type=Void/Adjustment).
+
+  - from: ReturnLineItem
+    to: InventoryLot
+    type: references
+    cardinality: many-to-one
+    note: Hàng trả về được nhập lại vào đúng lô ban đầu.
+
+  - from: Warehouse
+    to: StockTransfer
+    type: references
+    cardinality: one-to-many
+    note: Kho đóng vai trò Source hoặc Dest trong lệnh chuyển.
+
+  - from: StockTransfer
+    to: StockTransferLine
+    type: has
+    cardinality: one-to-many
+
+  - from: StockTransferLine
+    to: InventoryLot
+    type: references
+    cardinality: many-to-one

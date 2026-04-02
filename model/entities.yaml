@@ -1,0 +1,413 @@
+# =============================================================
+# DVT ENTITY REGISTRY — Single Source of Truth
+# =============================================================
+# Mỗi entity = 1 block.
+# Các field bắt buộc: id, description, domain, owner_role, db_table
+# Thêm "commands" nếu entity là aggregate root (có state machine).
+# Thêm "key_fields" để ghi nhận các cột DB quan trọng (không phải full schema).
+# =============================================================
+
+entities:
+
+  # -----------------------------------------------------------
+  # DOMAIN: DEMAND & CONTRACT
+  # -----------------------------------------------------------
+
+  - id: Order
+    description: >
+      Quản lý toàn bộ vòng đời của một giao dịch thương mại — từ
+      Lead/Thầu cho đến khi Thanh lý hợp đồng. Là Aggregate Root
+      của Domain Demand.
+    domain: Demand
+    owner_role: Sale
+    db_table: ORDER
+    key_fields:
+      order_type: "Tender / Commercial — phân biệt 2 kênh bán"
+      priority: "Critical / Contract / Retail — ảnh hưởng Reserve & Delivery routing"
+      virtual_account_no: "Mã VA Ngân Hàng để đối soát tự động (9999 + Contract_Code)"
+    commands:
+      - SubmitTender
+      - AwardTender
+      - ConfirmContract
+      - StartExecution
+      - ConfirmFulfillment
+      - CloseContract
+      - AbandonTender
+    ref_states: Order
+
+  - id: OrderItem
+    description: >
+      Dòng hàng cụ thể trong một Order. Liên kết Order ↔ Product
+      và là đầu vào của InventoryReservation.
+    domain: Demand
+    owner_role: Sale
+    db_table: ORDER_ITEM
+
+  - id: Tender
+    description: >
+      Gói thầu nhập từ muasamcong hoặc tay. Được Intelligence OS
+      phân tích (normalize + match) trước khi chuyển thành Order.
+    domain: Demand
+    owner_role: Sale
+    db_table: TENDER
+    key_fields:
+      tender_code: "Mã gói thầu (VD: IB26...)"
+      raw_text: "Text bóc thô từ muasamcong"
+
+  - id: TenderItem
+    description: >
+      Dòng yêu cầu kỹ thuật trong một Tender. Sau khi match xong
+      sẽ liên kết với một Product (canonical).
+    domain: Demand
+    owner_role: Sale
+    db_table: TENDER_ITEM
+    key_fields:
+      raw_requirement: "Yêu cầu kỹ thuật thô (Text từ PDF thầu)"
+      matched_product_id: "FK → Product sau khi Intelligence OS match"
+
+  # -----------------------------------------------------------
+  # DOMAIN: SUPPLY / PROCUREMENT
+  # -----------------------------------------------------------
+
+  - id: SupplyOrder
+    description: >
+      Lệnh mua hàng (Purchase Order) gửi cho Nhà cung cấp hoặc
+      lệnh sản xuất nội bộ. Sinh ra InventoryLot khi hàng về.
+    domain: Supply
+    owner_role: Procurement
+    db_table: SUPPLY_ORDER
+    key_fields:
+      type: "Procurement / Production"
+      target_warehouse_id: "FK → Warehouse — nhập hàng vào kho nào (DC mặc định)"
+
+  # -----------------------------------------------------------
+  # DOMAIN: INVENTORY
+  # -----------------------------------------------------------
+
+  - id: InventoryLot
+    description: >
+      Lô hàng vật lý trong kho. Gắn với Warehouse + Product +
+      số lô + hạn dùng. Là đơn vị nhỏ nhất để Reserve và Dispatch.
+    domain: Inventory
+    owner_role: Warehouse
+    db_table: INVENTORY_LOT
+    key_fields:
+      batch_no: "Số Lô — truy vết nguồn gốc"
+      expiry_date: "Hạn dùng — ưu tiên FEFO khi Reserve"
+      iso_cert: "Chứng từ chứng nhận đi kèm lô hàng"
+      total_qty: "Số lượng nhập ban đầu"
+      inbound_spec: "Thông số gốc lúc nhập (Imported Spec)"
+      refined_spec: "Thông số sau khi tinh chỉnh (Customized for Tender)"
+      is_refined: "Flag xác định lô hàng đã qua tinh chỉnh hay chưa"
+    ref_states: InventoryLot
+
+  - id: InventoryReservation
+    description: >
+      Bản ghi khóa (lock) số lượng từ một InventoryLot cho một
+      OrderItem cụ thể. Tự động giải phóng khi quá hạn (Auto-Release).
+    domain: Inventory
+    owner_role: Warehouse
+    db_table: INVENTORY_RESERVATION
+    key_fields:
+      reserved_qty: "Số lượng đang bị khóa"
+      locked_at: "Timestamp bắt đầu lock — dùng để tính Auto-Release timeout"
+
+  - id: InventoryLedger
+    description: >
+      Sổ nhật ký từng thao tác kho (IN / OUT / ADJUST / RESERVE).
+      Append-only, dùng để tính tổng tồn kho tại bất kỳ thời điểm.
+    domain: Inventory
+    owner_role: Warehouse
+    db_table: INVENTORY_LEDGER
+    key_fields:
+      action: "IN / OUT / ADJUST / RESERVE"
+      qty_change: "Delta số lượng (dương = vào, âm = ra)"
+
+  - id: ReturnOrder
+    description: >
+      Quy trình trả hàng (RMA). Liên kết với Order cũ để truy vết
+      nguồn gốc và xử lý hoàn tiền/nhập kho lại.
+    domain: Inventory
+    owner_role: Warehouse
+    db_table: RETURN_ORDER
+    key_fields:
+      order_id: "FK → Order — trả cho đơn hàng nào"
+      status: "Draft / Approved / Processing / Closed / Refunded"
+      total_refund_amount: "Tổng tiền cần hoàn trả"
+    commands:
+      - ApproveReturn
+      - ProcessRestock
+      - ProcessDispose
+      - CompleteRefund
+    ref_states: ReturnOrder
+
+  - id: ReturnLineItem
+    description: >
+      Chi tiết từng sản phẩm trong ReturnOrder.
+    domain: Inventory
+    owner_role: Warehouse
+    db_table: RETURN_LINE_ITEM
+    key_fields:
+      sku: "Mã SKU sản phẩm trả"
+      lot_id: "FK → InventoryLot — lô hàng được trả về"
+      quantity: "Số lượng trả"
+      condition: "Good (Restock) / Defective (Dispose)"
+
+  - id: StockTransfer
+    description: >
+      Lệnh điều chuyển kho nội bộ. Di chuyển hàng giữa các kho
+      mà không làm thay đổi ID lô hàng (giữ nguyên traceability).
+    domain: Inventory
+    owner_role: Warehouse
+    db_table: STOCK_TRANSFER
+    key_fields:
+      source_warehouse_id: "FK → Warehouse (Nguồn)"
+      dest_warehouse_id: "FK → Warehouse (Đích)"
+      status: "Pending / Shipped / Received"
+    commands:
+      - ShipTransfer
+      - ReceiveTransfer
+    ref_states: StockTransfer
+
+  - id: StockTransferLine
+    description: >
+      Chi tiết lô hàng trong một chuyến điều chuyển.
+    domain: Inventory
+    owner_role: Warehouse
+    db_table: STOCK_TRANSFER_LINE
+    key_fields:
+      lot_id: "FK → InventoryLot — lô hàng được chuyển"
+      quantity: "Số lượng"
+
+  # -----------------------------------------------------------
+  # DOMAIN: DELIVERY
+  # -----------------------------------------------------------
+
+  - id: Delivery
+    description: >
+      Một chuyến giao hàng vật lý. Gắn với Order, Warehouse xuất,
+      Vehicle thực hiện. Là điều kiện tiên quyết để IssueInvoice.
+    domain: Delivery
+    owner_role: Logistics
+    db_table: DELIVERY
+    key_fields:
+      source_warehouse_id: "FK → Warehouse — xuất từ kho nào (DC hay Satellite)"
+      vehicle_id: "FK → Vehicle — ghép vào xe nào (Milk Run)"
+      route_type: "Emergency / MilkRun / Direct — ảnh hưởng C-DEL-003"
+      gps_coordinates_actual: "Toạ độ thực tế lúc hoàn tất — chống giao nhầm (C-DEL-002)"
+      tracking_code: "Mã theo dõi chuyến giao"
+    commands:
+      - StartDelivery
+      - CompleteDelivery
+    ref_states: Delivery
+
+  - id: DeliveryRoute
+    description: >
+      Tuyến đường gom chuyến (Milk-Run). Một Route có thể ghép
+      nhiều Delivery của nhiều Order trong cùng ngày.
+    domain: Delivery
+    owner_role: Logistics
+    db_table: DELIVERY_ROUTE
+    key_fields:
+      route_date: "Ngày chạy tuyến"
+      status: "Planned / Dispatched / Completed"
+
+  - id: Vehicle
+    description: >
+      Phương tiện vận chuyển. Có capacity (CBM) dùng để kiểm tra
+      Constraint gom chuyến (C-DEL-003: không được xuất xe bán tải 1 đơn nhỏ).
+    domain: Delivery
+    owner_role: Logistics
+    db_table: VEHICLE
+    key_fields:
+      plate_no: "Biển số xe"
+      type: "Xe_Tải / Xe_Máy / 3rd_Party"
+      max_capacity_cbm: "Thể tích tối đa (CBM) — dùng kiểm tra Milk-Run constraint"
+
+  # -----------------------------------------------------------
+  # DOMAIN: CASH / FINANCE
+  # -----------------------------------------------------------
+
+  - id: Invoice
+    description: >
+      Hóa đơn VAT điện tử. Chỉ được phép tạo sau khi Delivery
+      ở trạng thái Delivered + có DOC_BB_NGHIEM_THU. Đẩy sang MISA
+      qua API tự động.
+    domain: Cash
+    owner_role: Finance
+    db_table: INVOICE
+    key_fields:
+      total_amount: "Tổng giá trị hóa đơn"
+      misa_transaction_id: "ID đẩy sang MISA API — đối soát kế toán"
+      replaced_by_invoice_id: "FK → Invoice mới (nếu bản này bị Voided — C-FIN-002)"
+    commands:
+      - IssueInvoice
+      - CancelAndReissue
+    ref_states: Invoice
+
+  - id: Ledger
+    description: >
+      Sổ cái dòng tiền của từng Pháp nhân (A/B/C/D). Ghi Inflow,
+      Outflow và Internal transfer. Liên kết với Partner để truy vết
+      tiền của khách nào / trả NCC nào.
+    domain: Cash
+    owner_role: Finance
+    db_table: LEDGER
+    key_fields:
+      type: "Inflow / Outflow / Internal_Transfer"
+      amount: "Giá trị giao dịch"
+      related_ledger_id: "FK → Ledger đối ứng (Founder chuyển tiền nội bộ)"
+      partner_id: "FK → Partner — tiền của Khách nào / trả NCC nào"
+
+  # -----------------------------------------------------------
+  # MASTER DATA
+  # -----------------------------------------------------------
+
+  - id: Product
+    description: >
+      Sản phẩm chuẩn hóa (Canonical). Có 3 tầng: RawName →
+      JSON Spec → CanonicalProduct. Gắn ABC class (A/B/C) để điều
+      phối tồn kho, và Safety Stock để tính ROP.
+    domain: MasterData
+    owner_role: Admin
+    db_table: PRODUCT
+    key_fields:
+      sku: "Mã SKU nội bộ"
+      standard_spec: "Spec chuẩn nội bộ"
+      customized_spec: "Spec tùy chỉnh theo thầu (khi cần)"
+      abc_class: "Nhóm A / B / C — quyết định chiến lược tồn kho & logistics"
+      safety_stock: "Tồn kho an toàn — dùng tính ROP (Reorder Point)"
+      leverage_eligible: "Flag cho phép đấu thầu dù tồn kho = 0 (Leverage model)"
+      vendor_lead_time_days: "Thời gian chờ hàng từ NCC — dùng để cam kết tiến độ thầu"
+
+  - id: CanonicalProduct
+    description: >
+      Thực thể chuẩn hóa từ Intelligence OS. Một Canonical Product
+      có thể có nhiều alias (tên gọi khác nhau trên hồ sơ thầu).
+    domain: MasterData
+    owner_role: Admin
+    db_table: CANONICAL_PRODUCT
+    key_fields:
+      name: "Tên chuẩn hóa (VD: Pediatric Ventilator)"
+      canonical_spec: "Spec chuẩn dạng JSONB — nguồn so sánh khi match Tender"
+
+  - id: ProductAlias
+    description: >
+      Tên gọi thay thế của một CanonicalProduct (free text từ hồ sơ
+      thầu hoặc catalog NCC). Cho phép Intelligence OS match ngữ nghĩa
+      đa dạng về tên gọi cho cùng 1 sản phẩm.
+    domain: MasterData
+    owner_role: Admin
+    db_table: PRODUCT_ALIAS
+    key_fields:
+      canonical_product_id: "FK → CanonicalProduct"
+      alias_name: "Tên gọi khác (free text)"
+
+  - id: ProductReqMapping
+    description: >
+      Bảng nối many-to-many giữa Product và Requirement. Ghi nhận
+      sản phẩm nào thỏa mãn chứng nhận nào (ISO, CE, FSC...).
+      Là một nửa của cross-check tự động khi SubmitTender.
+    domain: MasterData
+    owner_role: Admin
+    db_table: PRODUCT_REQ_MAPPING
+
+  - id: TenderReqMapping
+    description: >
+      Bảng nối many-to-many giữa TenderItem và Requirement. Ghi nhận
+      gói thầu yêu cầu chứng nhận gì. Là nửa còn lại của cross-check
+      tự động khi SubmitTender (C-ORD-002).
+    domain: MasterData
+    owner_role: Admin
+    db_table: TENDER_REQ_MAPPING
+
+  - id: Partner
+    description: >
+      Là Customer hoặc Supplier. Customer có credit_limit (hạn mức
+      tín dụng). Supplier có lead_time_days (để tính ROP).
+    domain: MasterData
+    owner_role: Admin
+    db_table: PARTNER
+    key_fields:
+      type: "Customer / Supplier"
+      credit_limit: "Hạn mức tín dụng — dùng kiểm tra C-ORD-003 & C-ORD-005"
+      lead_time_days: "Thời gian NCC giao hàng thực tế — dùng tính ROP"
+
+  - id: LegalEntity
+    description: >
+      Một trong các pháp nhân nội bộ (A, B, C, D). Mọi Order,
+      SupplyOrder, Invoice đều phải thuộc về một LegalEntity.
+    domain: MasterData
+    owner_role: Admin
+    db_table: LEGAL_ENTITY
+    key_fields:
+      name: "Tên pháp nhân"
+      tax_code: "Mã số thuế — dùng xuất hóa đơn VAT"
+
+  - id: Warehouse
+    description: >
+      Kho vật lý. Có 2 loại: DC (Distribution Center - kho trung tâm)
+      và Satellite_Depot (kho vệ tinh cạnh bệnh viện). Loại kho quyết
+      định Constraint được phép xuất hàng cho ai (C-INV-003).
+    domain: MasterData
+    owner_role: Admin
+    db_table: WAREHOUSE
+    key_fields:
+      type: "DC / Satellite_Depot — kiểm soát ai được phép rút hàng"
+      location: "Tọa độ — tối ưu routing logistics"
+
+  - id: Document
+    description: >
+      Chứng từ điện tử (PDF/Ảnh) lưu trên Nextcloud/S3. Mỗi Document
+      gắn với một entity (polymorphic). Không xóa vật lý — chỉ đổi
+      status flag trong DB.
+    domain: MasterData
+    owner_role: Admin
+    db_table: DOCUMENT
+    key_fields:
+      type: "tender_doc / invoice / delivery_note / ISO_cert / ..."
+      file_url: "Nextcloud/S3 URL"
+      related_entity_type: "Tên entity chứa document (polymorphic: ORDER, PRODUCT...)"
+      related_entity_id: "ID của entity đó"
+      version: "Phiên bản — tăng khi upload bản mới (không xóa bản cũ)"
+
+  - id: Requirement
+    description: >
+      Một yêu cầu chứng nhận/pháp lý (ISO 13485, CE, FSC, Catalog).
+      Được gắn vào Product (sản phẩm có cert gì) và TenderItem (thầu
+      yêu cầu cert gì) để cross-check tự động (C-ORD-002).
+    domain: MasterData
+    owner_role: Admin
+    db_table: REQUIREMENT
+    key_fields:
+      type: "ISO_13485 / CE / FSC / Catalog"
+
+  # -----------------------------------------------------------
+  # SYSTEM / CONTROL
+  # -----------------------------------------------------------
+
+  - id: User
+    description: >
+      Người dùng hệ thống. Có role (Admin / Sale / Warehouse /
+      Procurement / Finance). Mọi action đều ghi AuditLog.
+    domain: System
+    owner_role: Admin
+    db_table: USER
+    key_fields:
+      role: "Admin / Sale / Warehouse / Procurement / Finance"
+      legal_entity_id: "FK → LegalEntity — phân quyền dữ liệu theo pháp nhân"
+
+  - id: AuditLog
+    description: >
+      Nhật ký bất biến (append-only) của mọi thao tác. Ghi actor,
+      action, entity bị tác động, payload cũ/mới và timestamp.
+      Không được xóa hay sửa.
+    domain: System
+    owner_role: System
+    db_table: AUDIT_LOG
+    key_fields:
+      action: "Tên event (VD: SubmitTender, ForceReceiveGoods...)"
+      entity_type: "Bảng bị tác động (ORDER, DOCUMENT...)"
+      entity_id: "ID record bị tác động"
+      old_payload: "Dữ liệu trước khi thay đổi (JSON)"
+      new_payload: "Dữ liệu sau khi thay đổi (JSON)"

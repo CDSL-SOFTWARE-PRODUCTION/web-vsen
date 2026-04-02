@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -64,12 +65,13 @@ class ProductController extends Controller
         }
 
         $products = $query->get()->map(function ($product) {
+            $imagePath = $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '';
             return [
                 'id' => (string) $product->id,
                 'name' => $product->name,
                 'category' => $product->category->name ?? __('Uncategorized'),
-                'image' => $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '',
-                'description' => $product->short_description ?? $product->description,
+                'image' => $imagePath ? Storage::disk('public')->url($imagePath) : '',
+                'description' => $product->short_description ?? strip_tags($product->description),
             ];
         });
 
@@ -89,11 +91,13 @@ class ProductController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
+        $imagePath = $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '';
+        
         $transformedProduct = [
             'id' => (string) $product->id,
             'name' => $product->name,
             'category' => $product->category->name ?? 'Uncategorized',
-            'image' => $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '',
+            'image' => $imagePath ? Storage::disk('public')->url($imagePath) : '',
             'description' => $product->description,
             'features' => $product->specs->pluck('spec_value')->toArray(),
         ];

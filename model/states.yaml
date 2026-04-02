@@ -1,0 +1,356 @@
+# =============================================================
+# DVT STATE REGISTRY — Định nghĩa State Machine cho mỗi Entity
+# =============================================================
+# Format mỗi state machine:
+#   entity:     ref entity.id từ entities.yaml
+#   states:     danh sách trạng thái hợp lệ
+#   initial:    trạng thái khởi tạo
+#   terminal:   trạng thái kết thúc (read-only sau đây)
+#   transitions:
+#     - from / to / command / guard (constraint bắt buộc)
+# =============================================================
+
+state_machines:
+
+  # -----------------------------------------------------------
+  # ORDER (Demand & Contract Lifecycle)
+  # -----------------------------------------------------------
+  - entity: Order
+    initial: Draft
+    terminal:
+      - ContractClosed
+      - Abandoned
+    states:
+      - Draft
+      - BidSubmitted
+      - WonWaiting
+      - ContractSigned
+      - InExecution
+      - Fulfilled
+      - ContractClosed
+      - Abandoned
+    transitions:
+      - from: Draft
+        to: BidSubmitted
+        command: SubmitTender
+        guard:
+          - "docs.has(DOC_HSMT)"
+          - "docs.has(DOC_HSDT)"
+          - "docs.has(BL_DU_THAU)"
+          - "products.all(p => p.has_required_certs)"   # Cross-check ISO/FSC
+
+      - from: BidSubmitted
+        to: WonWaiting
+        command: AwardTender
+        guard: []   # Nhận thông báo trúng thầu từ bên ngoài
+
+      - from: WonWaiting
+        to: ContractSigned
+        command: ConfirmContract
+        guard:
+          - "docs.has(HD_KY)"
+          - "customer.credit_limit_ok"
+
+      - from: Draft
+        to: ContractSigned
+        command: ConfirmContract
+        note: Bỏ qua bước thầu (bán lẻ / thương mại trực tiếp)
+        guard:
+          - "docs.has(HD_KY)"
+          - "customer.credit_limit_ok"
+
+      - from: ContractSigned
+        to: InExecution
+        command: StartExecution
+        guard:
+          - "exists(BL_THUC_HIEN)"
+
+      - from: InExecution
+        to: Fulfilled
+        command: ConfirmFulfillment
+        guard:
+          - "delivery.state == Delivered"
+          - "docs.has(DOC_BB_NGHIEM_THU)"
+
+      - from: Fulfilled
+        to: ContractClosed
+        command: CloseContract
+        guard:
+          - "docs.has(DOC_BB_THANH_LY)"
+          - "docs.has(DOC_CV_HOAN_TRA_BL)"
+
+      - from: Draft
+        to: Abandoned
+        command: AbandonTender
+        note: Nộp thầu thất bại hoặc hủy cơ hội
+        guard: []
+
+  # -----------------------------------------------------------
+  # INVENTORY LOT (Kho — từng Lô hàng vật lý)
+  # -----------------------------------------------------------
+  - entity: InventoryLot
+    initial: Receiving
+    terminal:
+      - Shipped
+      - Disposed
+    states:
+      - Receiving        # Đang nhập kho (chờ xác nhận spec)
+      - Refining         # Đang trong quá trình tinh chỉnh (dán tem/cấu hình)
+      - Quarantined      # Spec Mismatch — bị cách ly
+      - Available        # Sẵn sàng phân bổ
+      - Reserved         # Đã lock cho 1 OrderItem
+      - Shipped          # Đã rời kho
+      - Disposed         # Hủy (hết hạn, hỏng, reject NCC)
+    transitions:
+      - from: Receiving
+        to: Available
+        command: ReceiveGoods
+        guard:
+          - "inbound_spec_matches_purchase_order"
+
+      - from: Receiving
+        to: Refining
+        command: RefineBatchSpec
+        note: Chuyển sang tinh chỉnh thay vì nhập thẳng (nếu cần Custom)
+        guard: []
+
+      - from: Receiving
+        to: Quarantined
+        command: ForceReceiveGoods
+        guard:
+          - "actor.role == Founder"
+
+      - from: Quarantined
+        to: Refining
+        command: RefineBatchSpec
+        note: Tinh chỉnh lại hàng lỗi spec để khớp thầu (Adjustment)
+        guard: []
+
+      - from: Refining
+        to: Available
+        command: RefineBatchSpec
+        note: Hoàn tất tinh chỉnh, xác nhận khớp thầu + pháp lý.
+        guard:
+          - "refined_spec_matches_tender"
+          - "has_doc(TEM_PHU)"
+
+      - from: Quarantined
+        to: Available
+        command: ReceiveGoods
+        note: Hậu kiểm Spec OK sau khi cách ly (Adjustment)
+        guard:
+          - "actor.role == Founder"
+
+      - from: Quarantined
+        to: Disposed
+        command: DisposeInventory
+        note: Loại bỏ hàng cách ly sau khi xác định không thể nhập kho
+        guard:
+          - "actor.role in [Warehouse, Admin]"
+
+      - from: Available
+        to: Reserved
+        command: ReserveInventory
+        guard:
+          - "reserved_qty <= available_qty"
+          - "order.priority >= lot.priority_threshold"
+
+      - from: Reserved
+        to: Available
+        command: AutoReleaseReservation
+        note: Tự động khi quá hạn lock (configurable per customer)
+        guard:
+          - "now() > locked_at + release_timeout"
+
+      - from: Reserved
+        to: Shipped
+        command: StartDelivery
+        guard:
+          - "delivery.has(LENH_XUAT_KHO)"
+
+      - from: Available
+        to: Disposed
+        command: DisposeInventory
+        note: Hủy lô hàng (hết hạn, hỏng, reject NCC)
+        guard:
+          - "actor.role in [Warehouse, Admin]"
+          - "existing(disposal_reason)"
+
+      - from: Shipped
+        to: Available
+        command: ProcessRestock
+        note: Nhập kho lại từ hàng trả về (Good Condition)
+        guard:
+          - "return_order.state == Approved"
+          - "item.condition == Good"
+
+  # -----------------------------------------------------------
+  # RETURN ORDER (Quy trình trả hàng)
+  # -----------------------------------------------------------
+  - entity: ReturnOrder
+    initial: Draft
+    terminal:
+      - Refunded
+      - Closed
+    states:
+      - Draft
+      - Approved
+      - Processing
+      - Refunded
+      - Closed
+    transitions:
+      - from: Draft
+        to: Approved
+        command: ApproveReturn
+        guard:
+          - "order.state in [Fulfilled, ContractClosed]"
+
+      - from: Approved
+        to: Processing
+        command: ProcessRestock
+        note: Kích hoạt nhập lại kho cho hàng còn tốt
+        guard: []
+
+      - from: Approved
+        to: Processing
+        command: ProcessDispose
+        note: Kích hoạt hủy hàng cho hàng hỏng
+        guard: []
+
+      - from: Processing
+        to: Refunded
+        command: CompleteRefund
+        guard:
+          - "actor.role == Finance"
+
+      - from: Refunded
+        to: Closed
+        command: CloseContract
+        guard: []
+
+  # -----------------------------------------------------------
+  # STOCK TRANSFER (Điều chuyển kho)
+  # -----------------------------------------------------------
+  - entity: StockTransfer
+    initial: Pending
+    terminal:
+      - Received
+    states:
+      - Pending
+      - Shipped
+      - Received
+    transitions:
+      - from: Pending
+        to: Shipped
+        command: ShipTransfer
+        guard:
+          - "source_warehouse.has_inventory"
+
+      - from: Shipped
+        to: Received
+        command: ReceiveTransfer
+        guard:
+          - "actual_qty_received == sent_qty"
+
+  # -----------------------------------------------------------
+  # DELIVERY (Chuyến giao hàng)
+  # -----------------------------------------------------------
+  - entity: Delivery
+    initial: Draft
+    terminal:
+      - Delivered
+      - Cancelled
+    states:
+      - Draft
+      - Dispatched        # Xe đã lăn bánh
+      - InTransit
+      - PartiallyDelivered
+      - Delivered
+      - Cancelled
+    transitions:
+      - from: Draft
+        to: Dispatched
+        command: StartDelivery
+        guard:
+          - "docs.has(LENH_XUAT_KHO)"
+          - "inventory_reservation.state == Reserved"
+
+      - from: Dispatched
+        to: InTransit
+        command: DriverConfirmPickup
+        guard: []
+
+      - from: InTransit
+        to: Delivered
+        command: CompleteDelivery
+        guard:
+          - "docs.has(DOC_BB_BAN_GIAO)"
+          - "gps_delta < MAX_ALLOWED_GPS_DEVIATION"
+
+      - from: InTransit
+        to: PartiallyDelivered
+        command: ReportPartialDelivery
+        guard:
+          - "delivered_qty < ordered_qty"
+
+      - from: PartiallyDelivered
+        to: Delivered
+        command: CompleteReplacementDelivery
+        guard:
+          - "replacement_order.state == Delivered"
+
+      - from: Dispatched
+        to: Cancelled
+        command: CancelDelivery
+        note: Hủy chuyến giao sau khi xe đã xuất phát (emergency / sự cố)
+        guard:
+          - "actor.role in [Logistics, Admin]"
+          - "existing(cancellation_reason)"
+
+  # -----------------------------------------------------------
+  # INVOICE (Hóa đơn VAT)
+  # -----------------------------------------------------------
+  - entity: Invoice
+    initial: Draft
+    terminal:
+      - Paid
+      - Voided
+    states:
+      - Draft
+      - Issued           # Đã xuất VAT, đẩy sang MISA
+      - PartiallyPaid
+      - Paid
+      - Voided           # Đã hủy — link sang invoice mới (replaced_by)
+    transitions:
+      - from: Draft
+        to: Issued
+        command: IssueInvoice
+        guard:
+          - "delivery.state == Delivered"
+          - "docs.has(DOC_BB_NGHIEM_THU)"
+          - "misa_adapter.issue_ok"
+
+      - from: Issued
+        to: PartiallyPaid
+        command: RegisterPartialPayment
+        guard:
+          - "paid_amount < total_amount"
+
+      - from: Issued
+        to: Paid
+        command: RegisterPayment
+        guard:
+          - "paid_amount == total_amount"
+
+      - from: PartiallyPaid
+        to: Paid
+        command: RegisterPayment
+        guard:
+          - "cumulative_paid == total_amount"
+
+      - from: Issued
+        to: Voided
+        command: CancelAndReissue
+        guard:
+          - "actor.role in [Finance, Admin]"
+          - "new_invoice_id != null"   # Phải có invoice thay thế đi kèm

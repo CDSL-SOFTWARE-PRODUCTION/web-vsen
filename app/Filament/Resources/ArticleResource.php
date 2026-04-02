@@ -78,6 +78,7 @@ class ArticleResource extends Resource
                                 Forms\Components\FileUpload::make('featured_image')
                                     ->label(__('Image'))
                                     ->image()
+                                    ->disk('public')
                                     ->directory('articles'),
                             ]),
                     ])->columnSpan(['lg' => 1]),
@@ -88,7 +89,9 @@ class ArticleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('featured_image')->label(__('Image')),
+                Tables\Columns\ImageColumn::make('featured_image')
+                    ->label(__('Image'))
+                    ->disk('public'),
 
                 Tables\Columns\TextColumn::make('title')
                     ->label(__('Title'))

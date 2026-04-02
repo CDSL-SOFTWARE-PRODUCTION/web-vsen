@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
@@ -19,7 +20,7 @@ class ArticleController extends Controller
                     'title' => $article->title,
                     'slug' => $article->slug,
                     'excerpt' => $article->excerpt,
-                    'image' => $article->featured_image,
+                    'image' => $article->featured_image ? Storage::disk('public')->url($article->featured_image) : null,
                     'category' => $article->category,
                     'published_at' => $article->published_at ? $article->published_at->format('M d, Y') : null,
                 ];
@@ -41,7 +42,7 @@ class ArticleController extends Controller
                 'id' => $article->id,
                 'title' => $article->title,
                 'content' => $article->content,
-                'image' => $article->featured_image,
+                'image' => $article->featured_image ? Storage::disk('public')->url($article->featured_image) : null,
                 'category' => $article->category,
                 'published_at' => $article->published_at ? $article->published_at->format('M d, Y') : null,
             ]
