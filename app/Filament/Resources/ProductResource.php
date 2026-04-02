@@ -146,12 +146,18 @@ class ProductResource extends Resource
                                             ->label(__('Is Primary'))
                                             ->default(false)
                                             ->live()
-                                            ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
+                                            ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set, $component) {
                                                 if ($state) {
+                                                    $statePath = $component->getStatePath();
+                                                    preg_match('/images\.([^\.]+)\./', $statePath, $matches);
+                                                    $currentUuid = $matches[1] ?? null;
+
                                                     $container = $get('../../images');
-                                                    foreach ($container as $uuid => $item) {
-                                                        if ($uuid !== $get('.')) {
-                                                            $set("../../images.{$uuid}.is_primary", false);
+                                                    if (is_array($container)) {
+                                                        foreach ($container as $uuid => $item) {
+                                                            if ($currentUuid && $uuid !== $currentUuid) {
+                                                                $set("../../images.{$uuid}.is_primary", false);
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -163,7 +169,8 @@ class ProductResource extends Resource
                                     ])
                                     ->columns(2)
                                     ->defaultItems(0)
-                                    ->reorderableWithButtons(),
+                                    ->reorderableWithButtons()
+                                    ->orderColumn('sort_order'),
                             ]),
 
                         Forms\Components\Tabs\Tab::make(__('Specifications'))
@@ -193,7 +200,8 @@ class ProductResource extends Resource
                                     ])
                                     ->columns(2)
                                     ->defaultItems(0)
-                                    ->reorderableWithButtons(),
+                                    ->reorderableWithButtons()
+                                    ->orderColumn('sort_order'),
                             ]),
 
                         Forms\Components\Tabs\Tab::make(__('SEO'))
