@@ -127,6 +127,32 @@ class ProductResource extends Resource
 
                         Forms\Components\Tabs\Tab::make(__('Images'))
                             ->schema([
+                                Forms\Components\FileUpload::make('temp_images')
+                                    ->label(__('Tải ảnh hàng loạt'))
+                                    ->helperText(__('Chọn hoặc kéo thả nhiều ảnh cùng lúc, chúng sẽ tự động được thêm vào danh sách phía dưới.'))
+                                    ->image()
+                                    ->multiple()
+                                    ->directory('products')
+                                    ->disk('public')
+                                    ->dehydrated(false)
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        if (empty($state)) return;
+                                        
+                                        $currentImages = $get('images') ?? [];
+                                        
+                                        foreach ($state as $filePath) {
+                                            $currentImages[] = [
+                                                'path' => $filePath,
+                                                'is_primary' => false,
+                                                'sort_order' => count($currentImages),
+                                            ];
+                                        }
+                                        
+                                        $set('images', $currentImages);
+                                        $set('temp_images', null);
+                                    }),
+
                                 Forms\Components\Repeater::make('images')
                                     ->label(__('Images'))
                                     ->relationship()
