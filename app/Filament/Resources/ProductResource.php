@@ -144,7 +144,18 @@ class ProductResource extends Resource
 
                                         Forms\Components\Toggle::make('is_primary')
                                             ->label(__('Is Primary'))
-                                            ->default(false),
+                                            ->default(false)
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
+                                                if ($state) {
+                                                    $container = $get('../../images');
+                                                    foreach ($container as $uuid => $item) {
+                                                        if ($uuid !== $get('.')) {
+                                                            $set("../../images.{$uuid}.is_primary", false);
+                                                        }
+                                                    }
+                                                }
+                                            }),
 
                                         Forms\Components\TextInput::make('sort_order')
                                             ->numeric()
