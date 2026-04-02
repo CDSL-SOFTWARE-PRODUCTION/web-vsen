@@ -17,11 +17,19 @@ class PageController extends Controller
             ->take(4)
             ->get()
             ->map(function ($product) {
+                $imagePath = $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '';
+                $imageUrl = '';
+                if ($imagePath) {
+                    $imageUrl = filter_var($imagePath, FILTER_VALIDATE_URL) || str_starts_with($imagePath, 'http')
+                        ? $imagePath
+                        : Storage::disk('public')->url($imagePath);
+                }
+
                 return [
                     'id' => (string) $product->id,
                     'name' => $product->name,
                     'category' => $product->category->name ?? __('Uncategorized'),
-                    'image' => $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '',
+                    'image' => $imageUrl,
                     'description' => $product->short_description ?? $product->description,
                 ];
             });

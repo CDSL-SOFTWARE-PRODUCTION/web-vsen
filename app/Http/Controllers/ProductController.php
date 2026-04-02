@@ -66,11 +66,18 @@ class ProductController extends Controller
 
         $products = $query->get()->map(function ($product) {
             $imagePath = $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '';
+            $imageUrl = '';
+            if ($imagePath) {
+                $imageUrl = filter_var($imagePath, FILTER_VALIDATE_URL) || str_starts_with($imagePath, 'http')
+                    ? $imagePath
+                    : Storage::disk('public')->url($imagePath);
+            }
+
             return [
                 'id' => (string) $product->id,
                 'name' => $product->name,
                 'category' => $product->category->name ?? __('Uncategorized'),
-                'image' => $imagePath ? Storage::disk('public')->url($imagePath) : '',
+                'image' => $imageUrl,
                 'description' => $product->short_description ?? strip_tags($product->description),
             ];
         });
@@ -92,12 +99,18 @@ class ProductController extends Controller
             ->firstOrFail();
 
         $imagePath = $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '';
+        $imageUrl = '';
+        if ($imagePath) {
+            $imageUrl = filter_var($imagePath, FILTER_VALIDATE_URL) || str_starts_with($imagePath, 'http')
+                ? $imagePath
+                : Storage::disk('public')->url($imagePath);
+        }
         
         $transformedProduct = [
             'id' => (string) $product->id,
             'name' => $product->name,
             'category' => $product->category->name ?? 'Uncategorized',
-            'image' => $imagePath ? Storage::disk('public')->url($imagePath) : '',
+            'image' => $imageUrl,
             'description' => $product->description,
             'features' => $product->specs->pluck('spec_value')->toArray(),
         ];
