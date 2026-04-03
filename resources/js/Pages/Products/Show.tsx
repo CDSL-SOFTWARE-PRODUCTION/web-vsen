@@ -1,7 +1,7 @@
 import MainLayout from '@/Layouts/MainLayout';
 import { Link } from '@inertiajs/react';
 import { Product } from '@/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import QuoteModal from '@/Components/QuoteModal';
 import { useTranslate } from '@/helpers';
 
@@ -12,6 +12,11 @@ interface Props {
 export default function Show({ product }: Props) {
   const { __ } = useTranslate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeImage, setActiveImage] = useState(product?.image);
+
+  useEffect(() => {
+    setActiveImage(product?.images?.[0] || product?.image);
+  }, [product]);
 
   if (!product) return (
     <MainLayout title={__('Not Found')}>
@@ -48,15 +53,21 @@ export default function Show({ product }: Props) {
             {/* Image Gallery */}
             <div className="space-y-4">
               <div className="rounded-2xl overflow-hidden bg-gray-100 shadow-inner">
-                <img src={product.image} alt={product.name} className="w-full h-auto object-cover" />
+                <img src={activeImage} alt={product.name} className="w-full h-auto object-cover aspect-[4/3] object-contain bg-white" />
               </div>
-              <div className="grid grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="aspect-square bg-gray-50 rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:border-ge-blue transition-colors">
-                    <img src={product.image} className="w-full h-full object-cover opacity-60 hover:opacity-100" />
-                  </div>
-                ))}
-              </div>
+              {product.images && product.images.length > 1 && (
+                <div className="grid grid-cols-4 gap-4">
+                  {product.images.map((imgSrc, i) => (
+                    <div 
+                      key={i} 
+                      onClick={() => setActiveImage(imgSrc)}
+                      className={`aspect-square bg-white rounded-lg border overflow-hidden cursor-pointer transition-colors ${activeImage === imgSrc ? 'border-ge-blue ring-2 ring-ge-blue/50' : 'border-gray-200 hover:border-ge-blue'}`}
+                    >
+                      <img src={imgSrc} className={`w-full h-full object-contain ${activeImage === imgSrc ? 'opacity-100' : 'opacity-60 hover:opacity-100'}`} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Details */}

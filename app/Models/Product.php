@@ -28,6 +28,7 @@ class Product extends Model
         'is_featured',
         'is_active',
         'view_count',
+        'images',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
         'view_count' => 'integer',
+        'images' => 'array',
     ];
 
     public function category(): BelongsTo
@@ -43,14 +45,13 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function images(): HasMany
+    public function getPrimaryImageUrlAttribute(): ?string
     {
-        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
-    }
+        if (!empty($this->images) && is_array($this->images)) {
+            return $this->images[0];
+        }
 
-    public function primaryImage(): HasOne
-    {
-        return $this->hasOne(ProductImage::class)->where('is_primary', true);
+        return null;
     }
 
     public function specs(): HasMany

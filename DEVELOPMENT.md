@@ -1,90 +1,74 @@
-# Hướng Dẫn Phát Triển (Development Guide) - Business OS
+# 🛠️ HƯỚNG DẪN PHÁT TRIỂN (DEVELOPMENT GUIDE)
 
-Dự án này đang chuyển mình từ một Website Sản phẩm thông thường sang một **Business OS (ERP/CRM)** toàn diện dành cho VSEN Medical.
-
-Tài liệu này đóng vai trò là "kim chỉ nam" cho mọi lập trình viên khi tham gia phát triển và duy trì hệ thống.
+Tài liệu này là "Kim chỉ nam" duy nhất cho lập trình viên. Dự án này không phải website thông thường, nó là một **Business OS (ERP/CRM)** vận hành trên triết lý **Axiom: Event + Constraint = Business Physics**.
 
 ---
 
-## 1. Khởi tạo Dự án (Local Development)
+## 1. KHỞI TẠO NHANH (LOCAL SETUP)
 
-Để chạy dự án ở môi trường Local lần đầu tiên, hãy làm theo các bước sau. Dự án hỗ trợ cả chạy native hoặc dùng Laravel Sail (Docker).
+Làm theo hướng dẫn tại [README.md](./README.md).
 
-### Cài đặt Dependencies
-```bash
-# Cài đặt PHP packages
-composer install
-
-# Cài đặt Node packages (cho Frontend React/Inertia)
-npm install
-```
-
-### Cấu hình Môi trường
-```bash
-# Tạo file .env từ template
-cp .env.example .env
-
-# Tạo application key
-php artisan key:generate
-```
-
-### Chạy Database và Serve
-Nếu bạn đã cài sẵn PostgreSQL ở Local:
-```bash
-# Khởi tạo các bảng và Bơm dữ liệu giả (Bắt buộc để test UI)
-php artisan migrate:fresh --seed
-
-# Bật chạy ứng dụng Backend
-php artisan serve
-
-# (Mở Terminal khác) Bật chạy Frontend Vite để hot-reload
-npm run dev
-```
-
-Nếu dùng Docker (Laravel Sail):
-```bash
-./vendor/bin/sail up -d
-./vendor/bin/sail artisan migrate:fresh --seed
-./vendor/bin/sail npm run dev
-```
-
-> **Lưu ý:** Sau khi chạy seeder, bạn sẽ có sẵn 1 tài khoản Admin là `admin@vsen.com` / Pass: `password` và danh sách 5 thiết bị y tế giả lập sẵn.
+**Lưu ý quan trọng về Port:**
+- **Database/Redis:** Chạy trong Docker (Port 5433, 6379).
+- **Backend PHP:** Chạy qua `php artisan serve` (Port 8000).
+- **Frontend Vite:** Chạy qua `npm run dev` (Port 5173).
 
 ---
 
-## 2. Quy Trình Làm Việc (The MDD Workflow)
+## 2. TRIẾT LÝ VẬN HÀNH (CORE ARCHITECTURE)
 
-Dự án áp dụng phương pháp **Model-Driven Documentation (MDD)**. Mọi thứ bắt đầu từ thư mục `model/` ở Root project.
+Hệ thống được chia làm 5 lớp (Layers) liên kết chặt chẽ bằng **Events**:
 
-**KHI BẠN NHẬN ĐƯỢC YÊU CẦU LÀM TÍNH NĂNG MỚI (Ví dụ: Thêm tính năng "Quản lý Hợp đồng"):**
-
-1. **Planning:** Mở file `model/entities.yaml` và định nghĩa Entity `Contract` với các trường dữ liệu cần thiết. Nếu Hợp đồng liên quan đến `Employee`, hãy khai báo nó ở `model/relations.yaml`.
-2. **Migrations & Models:** Tạo Laravel Model dựa theo YAML đã định nghĩa, và luôn luôn gộp nó theo **Nghiệp vụ (Domain)**:
-   ```bash
-   php artisan make:model HR/Contract -m
-   ```
-3. **UI Generation (Cho Admin/Staff):** Hầu hết các ứng dụng của Business OS nên được xây dựng bằng Filament. Chạy lệnh để sinh ra giao diện:
-   ```bash
-   php artisan make:filament-resource HR/Contract --cluster=HrCluster
-   ```
-
-Tuyệt đối KHÔNG gõ code (Controller/Blade cũ) trước khi cập nhật các file trong thư mục `model/`. Thư mục này là **Single Source of Truth**.
+1.  **Demand (Nhu cầu - Sale):** Quản lý thầu, báo giá. Entity chính: `Order`.
+2.  **Supply (Nguồn cung - Mua hàng):** Nhập hàng từ NCC, dán tem phụ. Entity chính: `SupplyOrder`.
+3.  **Inventory (Kho):** Quản lý lô (batch), hạn dùng. Tự động lock hàng cho đơn thầu. Entity chính: `InventoryLot`.
+4.  **Delivery (Giao nhận):** Tài xế chụp ảnh minh chứng (Proof of Delivery). Entity chính: `Delivery`.
+5.  **Cash (Dòng tiền - Kế toán):** Chỉ cho phép xuất hóa đơn khi có minh chứng giao hàng. Entity chính: `Invoice`, `Ledger`.
 
 ---
 
-## 3. Tech Stack cốt lõi
-Để giữ hệ thống nguyên khối ổn định, hạn chế cài các công nghệ bên ngoài nếu không thật sự cần thiết. Hệ thống OS chúng ta dùng 100% stack mặc định:
+## 3. QUY TRÌNH PHÁT TRIỂN TÍNH NĂNG (MDD WORKFLOW)
 
-✅ **Backend Quản Nội Bộ:** Laravel 12 + Filament v3 (Sử dụng Clusters, Infolist, Custom Pages)
-✅ **Frontend Khách Hàng:** React 18 + Inertia.js + TailwindCSS + Vite
-✅ **Database:** PostgreSQL (Mạnh mẽ về xử lý JSON, Constraints và Full-Text Search)
+Tuyệt đối KHÔNG gõ code ngay. Hãy tuân thủ quy trình **Model-First**:
+
+### Bước 1: Định nghĩa Model (YAML)
+Mọi Logic nghiệp vụ nằm ở thư mục `model/`:
+- `entities.yaml`: Khai báo bảng và các trường dữ liệu.
+- `states.yaml`: Định nghĩa các trạng thái (Draft -> Confirmed -> Shipped).
+- `constraints.yaml`: Các điều kiện chặn (Ví dụ: "Không được xuất kho nếu chưa đủ giấy tờ").
+
+### Bước 2: Sinh Code & UI
+- **Backend:** Tạo Migration và Model (Nên gộp theo Module như `app/Models/HR`, `app/Models/Inventory`).
+- **Admin UI:** Dùng **Filament v3**. Ưu tiên dùng `Cluster` để nhóm các màn hình liên quan.
+- **Client UI:** Dùng **React + Inertia.js**. Toàn bộ giao diện nằm trong `resources/js/Pages`.
 
 ---
 
-## 4. Quản lý Database
+## 4. MA TRẬN QUYỀN (ROLE MATRIX)
 
-*   **Môi trường Dev:** Cứ thoải mái thiết kế tính năng mới và gõ `php artisan migrate:fresh --seed` để có database chuẩn. Hãy luôn tạo Factory cho Model mới.
-*   **Môi trường Production:** Chặn tuyệt đối lệnh migrate fresh. Chúng ta dùng **Additive Migrations** (Tạo thêm các file migration mới để alter update bảng cũ) thay vì sửa chữa lại file migration ban đầu.
+| Role | Quyền hạn chính | Điều hạn chế |
+| :--- | :--- | :--- |
+| **Sale** | Xem giá bán, tạo đơn khách mình. | KHÔNG thấy giá vốn NCC. |
+| **Kho** | Quét mã, xuất/nhập lô, in phiếu. | "Mù giá": KHÔNG thấy bất kỳ thông tin tiền bạc nào. |
+| **Kế toán** | Xuất VAT, đối soát tiền về. | Chỉ thấy dữ liệu của pháp nhân mình quản lý. |
+| **Founder** | Duyệt lệnh lách luật, xem lợi nhuận gộp. | Thấy toàn bộ 4 pháp nhân của công ty. |
 
 ---
-*Tài liệu kế thừa và lược bỏ từ hệ thống cũ nhằm mục tiêu tinh gọn cho Business OS.*
+
+## 5. TECH STACK CỐT LÕI
+
+- **Framework:** Laravel 12.
+- **Admin Panel:** Filament v3 (Tốc độ phát triển nhanh cho ERP).
+- **Frontend:** React 18 + Tailwind CSS (Trải nghiệm mượt cho khách hàng).
+- **Database:** PostgreSQL (Mạnh về JSON và ràng buộc dữ liệu).
+
+---
+
+## 6. LƯU Ý KHI CODE
+
+- **Audit Log:** Mọi thay đổi State của Entity phải được ghi log (Ai làm, lúc nào, giá trị cũ/mới).
+- **Constraint Engine:** Luôn kiểm tra điều kiện tại Service Layer trước khi lưu vào Database.
+- **Migration:** Trên Dev có thể `migrate:fresh`. Trên Prod chỉ được dùng migration thêm mới (Additive).
+
+---
+*DVT Enterprise OS — Bảo mật nội bộ.*

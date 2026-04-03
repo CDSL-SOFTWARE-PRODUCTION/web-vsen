@@ -8,7 +8,7 @@ export default function ChatBot() {
             {isOpen ? (
                 <div className="bg-white rounded-lg shadow-xl border border-gray-200 w-80 overflow-hidden flex flex-col">
                     <div className="bg-ge-blue text-white p-4 flex justify-between items-center">
-                        <span className="font-bold">VSEN Support</span>
+                        <span className="font-bold">VSENS Support</span>
                         <button onClick={() => setIsOpen(false)} className="text-white hover:text-gray-200">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -21,7 +21,7 @@ export default function ChatBot() {
                     </div>
                 </div>
             ) : (
-                <button 
+                <button
                     onClick={() => setIsOpen(true)}
                     className="bg-ge-blue text-white p-4 rounded-full shadow-lg hover:bg-blue-800 transition-all hover:scale-110"
                 >

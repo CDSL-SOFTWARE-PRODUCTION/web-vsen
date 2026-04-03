@@ -127,76 +127,16 @@ class ProductResource extends Resource
 
                         Forms\Components\Tabs\Tab::make(__('Images'))
                             ->schema([
-                                Forms\Components\FileUpload::make('temp_images')
-                                    ->label(__('Tải ảnh hàng loạt'))
-                                    ->helperText(__('Chọn hoặc kéo thả nhiều ảnh cùng lúc, chúng sẽ tự động được thêm vào danh sách phía dưới.'))
+                                Forms\Components\FileUpload::make('images')
+                                    ->label(__('Product Images'))
+                                    ->helperText(__('Kéo thả hàng loạt ảnh vào đây. Bạn có thể kéo các ảnh để thay đổi thứ tự. Ảnh đầu tiên (góc trên bên trái) sẽ tự động là ảnh đại diện.'))
                                     ->image()
                                     ->multiple()
+                                    ->reorderable()
+                                    ->panelLayout('grid')
                                     ->directory('products')
                                     ->disk('public')
-                                    ->dehydrated(false)
-                                    ->live()
-                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                                        if (empty($state)) return;
-                                        
-                                        $currentImages = $get('images') ?? [];
-                                        
-                                        foreach ($state as $filePath) {
-                                            $currentImages[] = [
-                                                'path' => $filePath,
-                                                'is_primary' => false,
-                                                'sort_order' => count($currentImages),
-                                            ];
-                                        }
-                                        
-                                        $set('images', $currentImages);
-                                        $set('temp_images', null);
-                                    }),
-
-                                Forms\Components\Repeater::make('images')
-                                    ->label(__('Images'))
-                                    ->relationship()
-                                    ->schema([
-                                        Forms\Components\FileUpload::make('path')
-                                            ->label(__('Image'))
-                                            ->image()
-                                            ->disk('public')
-                                            ->directory('products')
-                                            ->required(),
-
-                                        Forms\Components\TextInput::make('alt_text')
-                                            ->label(__('Alt Text'))
-                                            ->maxLength(255),
-
-                                        Forms\Components\Toggle::make('is_primary')
-                                            ->label(__('Is Primary'))
-                                            ->default(false)
-                                            ->live()
-                                            ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set, $component) {
-                                                if ($state) {
-                                                    $statePath = $component->getStatePath();
-                                                    preg_match('/images\.([^\.]+)\./', $statePath, $matches);
-                                                    $currentUuid = $matches[1] ?? null;
-
-                                                    $container = $get('../../images');
-                                                    if (is_array($container)) {
-                                                        foreach ($container as $uuid => $item) {
-                                                            if ($currentUuid && $uuid !== $currentUuid) {
-                                                                $set("../../images.{$uuid}.is_primary", false);
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }),
-
-                                        Forms\Components\TextInput::make('sort_order')
-                                            ->numeric()
-                                            ->default(0),
-                                    ])
-                                    ->columns(2)
-                                    ->defaultItems(0)
-                                    ->reorderableWithButtons()
-                                    ->orderColumn('sort_order'),
+                                    ->columnSpanFull(),
                             ]),
 
                         Forms\Components\Tabs\Tab::make(__('Specifications'))
@@ -249,10 +189,12 @@ class ProductResource extends Resource
                 fn (Product $record): string => Pages\EditProduct::getUrl([$record->id]),
             )
             ->columns([
-                Tables\Columns\ImageColumn::make('primaryImage.path')
-                    ->label(__('Image'))
+                Tables\Columns\ImageColumn::make('images')
+                    ->label(__('Images'))
                     ->disk('public')
-                    ->square(),
+                    ->circular()
+                    ->stacked()
+                    ->limit(3),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label(__('Name'))

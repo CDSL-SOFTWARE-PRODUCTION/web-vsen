@@ -12,7 +12,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'images'])
+        $query = Product::with(['category'])
             ->where('is_active', true);
 
         // Search
@@ -65,7 +65,7 @@ class ProductController extends Controller
         }
 
         $products = $query->get()->map(function ($product) {
-            $imagePath = $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '';
+            $imagePath = $product->primary_image_url;
             $imageUrl = '';
             if ($imagePath) {
                 $imageUrl = filter_var($imagePath, FILTER_VALIDATE_URL) || str_starts_with($imagePath, 'http')
@@ -93,12 +93,12 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['category', 'images', 'specs'])
+        $product = Product::with(['category', 'specs'])
             ->where('id', $id) // Ideally use slug, but maintaining ID for now as per previous frontend
             ->where('is_active', true)
             ->firstOrFail();
 
-        $imagePath = $product->images->where('is_primary', true)->first()->path ?? $product->images->first()->path ?? '';
+        $imagePath = $product->primary_image_url;
         $imageUrl = '';
         if ($imagePath) {
             $imageUrl = filter_var($imagePath, FILTER_VALIDATE_URL) || str_starts_with($imagePath, 'http')
@@ -111,6 +111,11 @@ class ProductController extends Controller
             'name' => $product->name,
             'category' => $product->category->name ?? 'Uncategorized',
             'image' => $imageUrl,
+            'images' => array_map(function($path) {
+                return filter_var($path, FILTER_VALIDATE_URL) || str_starts_with($path, 'http')
+                    ? $path
+                    : Storage::disk('public')->url($path);
+            }, $product->images && is_array($product->images) ? $product->images : []),
             'description' => $product->description,
             'features' => $product->specs->pluck('spec_value')->toArray(),
         ];

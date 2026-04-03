@@ -71,7 +71,7 @@ export default function Index() {
             {/* Contact Info */}
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-8">{__('Get in Touch')}</h2>
-              
+
               <div className="space-y-8">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-ge-blue flex-shrink-0">
@@ -106,7 +106,7 @@ export default function Index() {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">{__('Email')}</h3>
-                    <p className="text-gray-600">contact@vsen-medical.com</p>
+                    <p className="text-gray-600">contact@vsensmedical.com</p>
                   </div>
                 </div>
               </div>
@@ -123,43 +123,43 @@ export default function Index() {
               <form onSubmit={submit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">{__('Full Name')}</label>
-                  <input 
-                    type="text" 
-                    id="name" 
+                  <input
+                    type="text"
+                    id="name"
                     value={data.name}
                     onChange={(e) => setData('name', e.target.value)}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-ge-blue focus:ring focus:ring-ge-blue/20" 
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-ge-blue focus:ring focus:ring-ge-blue/20"
                     required
                   />
                   {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">{__('Email Address')}</label>
-                  <input 
-                    type="email" 
-                    id="email" 
+                  <input
+                    type="email"
+                    id="email"
                     value={data.email}
                     onChange={(e) => setData('email', e.target.value)}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-ge-blue focus:ring focus:ring-ge-blue/20" 
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-ge-blue focus:ring focus:ring-ge-blue/20"
                     required
                   />
                   {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                 </div>
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">{__('Phone')}</label>
-                  <input 
-                    type="tel" 
-                    id="phone" 
+                  <input
+                    type="tel"
+                    id="phone"
                     value={data.phone}
                     onChange={(e) => setData('phone', e.target.value)}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-ge-blue focus:ring focus:ring-ge-blue/20" 
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-ge-blue focus:ring focus:ring-ge-blue/20"
                   />
                   {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                 </div>
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">{__('Subject')}</label>
-                  <select 
-                    id="subject" 
+                  <select
+                    id="subject"
                     value={data.subject}
                     onChange={(e) => setData('subject', e.target.value)}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-ge-blue focus:ring focus:ring-ge-blue/20"
@@ -173,9 +173,9 @@ export default function Index() {
                 </div>
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">{__('Message')}</label>
-                  <textarea 
-                    id="message" 
-                    rows={4} 
+                  <textarea
+                    id="message"
+                    rows={4}
                     value={data.message}
                     onChange={(e) => setData('message', e.target.value)}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-ge-blue focus:ring focus:ring-ge-blue/20"
@@ -183,8 +183,8 @@ export default function Index() {
                   ></textarea>
                   {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={processing}
                   className="w-full bg-ge-blue text-white py-3 rounded-md font-bold uppercase tracking-widest hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
