@@ -5,9 +5,7 @@
     "scripts": {
         "build": "tsc && vite build && vite build --ssr",
         "dev": "vite",
-        "lint": "eslint resources/js --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore --fix",
-        "validate": "node scripts/validate_model.js",
-        "validate:report": "node scripts/validate_report.js"
+        "lint": "eslint resources/js --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore --fix"
     },
     "devDependencies": {
         "@headlessui/react": "^2.2.9",

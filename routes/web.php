@@ -10,7 +10,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-use App\Http\Controllers\ResourceController;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/solutions', [PageController::class, 'solutions'])->name('solutions.index');
@@ -27,7 +26,6 @@ Route::get('/products/{id}', [ProductController::class, 'show'])->name('products
 Route::get('/insights/news', [ArticleController::class, 'index'])->name('news.index');
 Route::get('/insights/news/{slug}', [ArticleController::class, 'show'])->name('news.show');
 
-Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');
 
 Route::post('/quote-request', [QuoteRequestController::class, 'store'])->name('quote.store');
 

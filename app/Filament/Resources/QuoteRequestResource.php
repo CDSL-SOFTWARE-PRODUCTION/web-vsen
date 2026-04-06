@@ -18,6 +18,7 @@ class QuoteRequestResource extends Resource
     protected static ?string $model = QuoteRequest::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'CRM & Sales';
 
     public static function form(Form $form): Form
     {

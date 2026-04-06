@@ -20,10 +20,7 @@ class ProductResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return __('Shop');
-    }
+    protected static ?string $navigationGroup = 'Catalog Management';
 
     protected static ?int $navigationSort = 1;
 

@@ -23,8 +23,8 @@ composer install && npm install
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate:fresh --seed
 
-# 5. Chạy giao diện (Vite)
-npm run dev
+# 5. Chạy dev
+composer dev
 ```
 
 **Sau khi chạy xong:**
