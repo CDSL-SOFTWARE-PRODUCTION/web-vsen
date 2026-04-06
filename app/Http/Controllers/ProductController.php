@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Product;
-use App\Models\Category;
+use App\Models\Cms\CmsProduct;
+use App\Models\Cms\Category;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category'])
+        $query = CmsProduct::with(['category'])
             ->where('is_active', true);
 
         // Search
@@ -93,7 +93,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['category', 'specs'])
+        $product = CmsProduct::with(['category', 'specs'])
             ->where('id', $id) // Ideally use slug, but maintaining ID for now as per previous frontend
             ->where('is_active', true)
             ->firstOrFail();

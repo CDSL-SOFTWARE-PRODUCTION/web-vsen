@@ -14,12 +14,30 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Determine if the user can access the Filament admin panel.
-     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->role === 'admin';
+        // Admin_PM (Founder) có quyền truy cập toàn bộ hệ thống
+        if ($this->role === 'Admin_PM') {
+            return true;
+        }
+
+        // Panel CMS: Chỉ dành cho Admin_PM (hoặc Marketing nếu bổ sung sau)
+        if ($panel->getId() === 'cms') {
+            return $this->role === 'Admin_PM';
+        }
+
+        // Panel Ops (Business OS): Dành cho các bộ phận chuyên môn
+        if ($panel->getId() === 'ops') {
+            return in_array($this->role, [
+                'Sale',
+                'MuaHang',
+                'Kho',
+                'KeToan',
+                'Admin_PM',
+            ]);
+        }
+
+        return false;
     }
 
     /**

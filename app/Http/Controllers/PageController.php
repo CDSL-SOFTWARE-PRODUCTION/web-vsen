@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Product;
+use App\Models\Cms\CmsProduct;
 use Illuminate\Support\Facades\Storage;
 
 class PageController extends Controller
@@ -12,7 +12,7 @@ class PageController extends Controller
     public function home()
     {
         // Fetch featured products for the home page
-        $featuredProducts = Product::with(['category'])
+        $featuredProducts = CmsProduct::with(['category'])
             ->where('is_featured', true)
             ->where('is_active', true)
             ->take(4)

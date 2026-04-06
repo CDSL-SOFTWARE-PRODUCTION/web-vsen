@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contact;
+use App\Models\Cms\Contact;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\QuoteRequest;
-use App\Models\Product;
+use App\Models\Cms\QuoteRequest;
+use App\Models\Cms\CmsProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 

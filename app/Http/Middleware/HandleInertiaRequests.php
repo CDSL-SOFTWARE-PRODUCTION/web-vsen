@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
-use App\Models\Category;
+use App\Models\Cms\Category;
 
 class HandleInertiaRequests extends Middleware
 {
