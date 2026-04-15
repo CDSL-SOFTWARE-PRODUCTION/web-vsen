@@ -22,9 +22,11 @@ entities:
     owner_role: Sale
     db_table: ORDER
     key_fields:
+      legal_entity_id: "FK → LegalEntity — pháp nhân sở hữu đơn (C-ORD scope)"
       order_type: "Tender / Commercial — phân biệt 2 kênh bán"
       priority: "Critical / Contract / Retail — ảnh hưởng Reserve & Delivery routing"
       virtual_account_no: "Mã VA Ngân Hàng để đối soát tự động (9999 + Contract_Code)"
+      execution_risk_level: "Green / Amber / Red — tổng hợp từ OrderItem + ExecutionIssue + cash/docs"
     commands:
       - SubmitTender
       - AwardTender
@@ -38,10 +40,17 @@ entities:
   - id: OrderItem
     description: >
       Dòng hàng cụ thể trong một Order. Liên kết Order ↔ Product
-      và là đầu vào của InventoryReservation.
+      và là đầu vào của InventoryReservation. Hỗ trợ theo dõi thực thi
+      sau trúng thầu (mốc giao, NCC, risk) tách khỏi trạng thái Order tổng.
     domain: Demand
     owner_role: Sale
     db_table: ORDER_ITEM
+    key_fields:
+      committed_delivery_date: "Mốc giao cam kết (line) — phục vụ risk & execution board"
+      supplier_partner_id: "FK → Partner (Supplier) phụ trách nguồn hàng dòng này"
+      line_execution_status: "not_ordered / vendor_confirmed / inbound / ready_to_ship / delivered / accepted"
+      line_risk_level: "Green / Amber / Red — cache từ rule engine (C-EXE-*)"
+      price_list_item_id: "FK → PriceListItem khi giá lấy từ bảng giá (Commercial)"
 
   - id: Tender
     description: >
@@ -66,6 +75,113 @@ entities:
       matched_product_id: "FK → Product sau khi Intelligence OS match"
 
   # -----------------------------------------------------------
+  # DOMAIN: POST-AWARD EXECUTION (Thực thi sau trúng thầu / vận hành gói)
+  # -----------------------------------------------------------
+  # Không thay thế Order — bổ sung "issue log", mốc thu tiền, cash plan.
+  # Trùng ý với workspace post-award: một nơi truth thay chat/Excel rời.
+
+  - id: ExecutionIssue
+    description: >
+      Sự cố hoặc thay đổi phạm vi sau trúng thầu / đang thực thi: trễ NCC,
+      thiếu CO/CQ, đổi lịch BV, gap vốn, đổi model. Thay thế xử lý rời trên
+      Zalo bằng bản ghi có owner, ETA, bằng chứng và audit trail.
+    domain: PostAward
+    owner_role: Sale
+    db_table: EXECUTION_ISSUE
+    key_fields:
+      order_id: "FK → Order — bắt buộc"
+      order_item_id: "FK → OrderItem — nullable nếu issue cấp gói"
+      issue_type: "Delay / DocMissing / Quality / ScopeChange / CashGap / VendorSilence / Other"
+      severity: "Low / Medium / High / Critical"
+      impact_flags: "deadline | cost | documents | payment (multi)"
+      owner_user_id: "FK → User — người chịu trách nhiệm xử lý"
+      due_at: "ETA xử lý"
+      evidence_document_ids: "Tham chiếu Document (JSON list id) — không lưu file trong row"
+    commands:
+      - CreateExecutionIssue
+      - UpdateExecutionIssue
+      - ResolveExecutionIssue
+      - CancelExecutionIssue
+    ref_states: ExecutionIssue
+
+  - id: PaymentMilestone
+    description: >
+      Mốc thu tiền theo hợp đồng (tạm ứng, nghiệm thu, bảo lưu...).
+      Gắn checklist chứng từ (payment readiness) trước khi coi mốc đạt.
+    domain: PostAward
+    owner_role: Finance
+    db_table: PAYMENT_MILESTONE
+    key_fields:
+      order_id: "FK → Order"
+      milestone_name: "Nhãn hiển thị (VD: Tạm ứng 30%)"
+      due_date: "Ngày theo hợp đồng hoặc baseline"
+      amount_planned: "Số tiền dự kiến thu"
+      checklist_status: "pending | partial | complete — chi tiết checklist trong JSON hoặc bảng con"
+      payment_ready: "Boolean — đủ điều kiện kế toán/PM chốt thu"
+
+  - id: CashPlanEvent
+    description: >
+      Mốc cần chi tiền mặt ngắn hạn phục vụ vận hành (trả NCC, logistics...).
+      Không phải sổ kế toán đầy đủ — dùng cho cảnh báo financing gap (C-EXE-002).
+    domain: PostAward
+    owner_role: Finance
+    db_table: CASH_PLAN_EVENT
+    key_fields:
+      legal_entity_id: "FK → LegalEntity"
+      order_id: "FK → Order — nullable nếu chi không gắn một gói"
+      scheduled_date: "Ngày cần có tiền"
+      amount: "Số tiền"
+      purpose: "PaySupplier / Customs / Logistics / InternalTransfer / Other"
+
+  # -----------------------------------------------------------
+  # DOMAIN: COMMERCIAL PRICING (Giá đa kênh — giảm bottleneck founder)
+  # -----------------------------------------------------------
+
+  - id: PriceList
+    description: >
+      Bảng giá theo kênh, pháp nhân, khách (optional), khoảng hiệu lực.
+      Nền cho giá BV vs đại lý vs tender — Order/OrderItem tham chiếu dòng giá.
+    domain: Commercial
+    owner_role: Admin
+    db_table: PRICE_LIST
+    key_fields:
+      name: "Tên bảng (VD: Dealer miền Nam Q1/2026)"
+      channel: "Hospital / Dealer / Tender / Retail"
+      legal_entity_id: "FK → LegalEntity — phạm vi áp dụng"
+      partner_id: "FK → Partner — nullable, giá riêng một khách"
+      valid_from: "Ngày bắt đầu hiệu lực"
+      valid_to: "Ngày hết hiệu lực — null = open-ended"
+
+  - id: PriceListItem
+    description: >
+      Dòng giá: SKU + đơn giá + ngưỡng SL tối thiểu (volume tier đơn giản).
+      Rebate theo hãng / chương trình riêng: mở rộng sau (entity RebateProgram), tránh trùng logic trong Order.
+    domain: Commercial
+    owner_role: Admin
+    db_table: PRICE_LIST_ITEM
+    key_fields:
+      price_list_id: "FK → PriceList"
+      product_id: "FK → Product"
+      unit_price: "Đơn giá"
+      min_qty: "Ngưỡng SL tối thiểu để áp bậc (1 = không phân bậc)"
+      currency: "VND (default)"
+
+  - id: SalesTouchpoint
+    description: >
+      Hoạt động tương tác khách (gọi, gặp, email) gắn Partner/Order.
+      Giảm phụ thuộc chat cá nhân và mất knowledge khi sales nghỉ — không thay CRM đầy đủ.
+    domain: Demand
+    owner_role: Sale
+    db_table: SALES_TOUCHPOINT
+    key_fields:
+      partner_id: "FK → Partner (Customer)"
+      order_id: "FK → Order — nullable"
+      activity_type: "Call / Visit / Email / Message / Other"
+      occurred_at: "Thời điểm"
+      summary: "Nội dung ngắn — handover cho đồng nghiệp"
+      created_by_user_id: "FK → User"
+
+  # -----------------------------------------------------------
   # DOMAIN: SUPPLY / PROCUREMENT
   # -----------------------------------------------------------
 
@@ -77,6 +193,7 @@ entities:
     owner_role: Procurement
     db_table: SUPPLY_ORDER
     key_fields:
+      legal_entity_id: "FK → LegalEntity — PO phát hành dưới pháp nhân nào"
       type: "Procurement / Production"
       target_warehouse_id: "FK → Warehouse — nhập hàng vào kho nào (DC mặc định)"
 
@@ -237,9 +354,12 @@ entities:
     owner_role: Finance
     db_table: INVOICE
     key_fields:
+      legal_entity_id: "FK → LegalEntity — MST xuất VAT"
       total_amount: "Tổng giá trị hóa đơn"
       misa_transaction_id: "ID đẩy sang MISA API — đối soát kế toán"
       replaced_by_invoice_id: "FK → Invoice mới (nếu bản này bị Voided — C-FIN-002)"
+      payment_due_date: "Hạn thanh toán theo hợp đồng/terms — phục vụ aging"
+      days_overdue_cached: "Số ngày quá hạn (0 nếu không quá) — C-AR-001"
     commands:
       - IssueInvoice
       - CancelAndReissue
@@ -332,6 +452,9 @@ entities:
       type: "Customer / Supplier"
       credit_limit: "Hạn mức tín dụng — dùng kiểm tra C-ORD-003 & C-ORD-005"
       lead_time_days: "Thời gian NCC giao hàng thực tế — dùng tính ROP"
+      segment: "Hospital / Dealer / Clinic / Other — chọn PriceList & policy bán"
+      outstanding_balance_cached: "Tổng nợ mở (cache từ Invoice chưa Paid — C-AR-001)"
+      max_overdue_days_cached: "Tuổi nợ tối đa hiện tại (cache — cảnh báo AR)"
 
   - id: LegalEntity
     description: >

@@ -57,6 +57,12 @@ relations:
     cardinality: one-to-many
     note: Mỗi OrderItem chỉ định 1 sản phẩm cụ thể.
 
+  - from: Partner
+    to: OrderItem
+    type: references
+    cardinality: one-to-many
+    note: supplier_partner_id — NCC phụ trách nguồn hàng dòng bán (Partner type=Supplier).
+
   - from: CanonicalProduct
     to: Product
     type: has
@@ -211,6 +217,18 @@ relations:
     cardinality: one-to-many
     note: Mọi hành động của User đều ghi AuditLog.
 
+  - from: User
+    to: ExecutionIssue
+    type: references
+    cardinality: one-to-many
+    note: owner_user_id — người được gán xử lý ExecutionIssue.
+
+  - from: User
+    to: SalesTouchpoint
+    type: triggers
+    cardinality: one-to-many
+    note: created_by_user_id — người ghi SalesTouchpoint.
+
   # -----------------------------------------------------------
   # RETURN & TRANSFER FLOWS
   # -----------------------------------------------------------
@@ -253,3 +271,79 @@ relations:
     to: InventoryLot
     type: references
     cardinality: many-to-one
+
+  # -----------------------------------------------------------
+  # POST-AWARD EXECUTION & COMMERCIAL
+  # -----------------------------------------------------------
+
+  - from: Order
+    to: ExecutionIssue
+    type: has
+    cardinality: one-to-many
+    note: Một hợp đồng có nhiều issue/thay đổi phạm vi có audit.
+
+  - from: OrderItem
+    to: ExecutionIssue
+    type: references
+    cardinality: one-to-many
+    note: Issue có thể gắn một dòng hàng cụ thể hoặc chỉ cấp Order.
+
+  - from: Order
+    to: PaymentMilestone
+    type: has
+    cardinality: one-to-many
+    note: Mốc thu tiền theo hợp đồng; checklist payment readiness.
+
+  - from: Order
+    to: CashPlanEvent
+    type: has
+    cardinality: one-to-many
+    note: Chi phí vận hành gắn gói (nullable trên Order nếu chi chung).
+
+  - from: LegalEntity
+    to: CashPlanEvent
+    type: owns
+    cardinality: one-to-many
+    note: Mọi mốc chi đều thuộc pháp nhân để cảnh báo gap vốn.
+
+  - from: LegalEntity
+    to: PriceList
+    type: owns
+    cardinality: one-to-many
+    note: Bảng giá theo phạm vi pháp nhân (và kênh).
+
+  - from: PriceList
+    to: PriceListItem
+    type: has
+    cardinality: one-to-many
+    note: Dòng giá theo SKU + bậc volume đơn giản.
+
+  - from: Product
+    to: PriceListItem
+    type: references
+    cardinality: one-to-many
+    note: Cùng SKU có thể nhiều dòng trên các bảng giá khác nhau.
+
+  - from: Partner
+    to: PriceList
+    type: references
+    cardinality: one-to-many
+    note: Giá riêng khách khi partner_id set (nullable trên PriceList).
+
+  - from: OrderItem
+    to: PriceListItem
+    type: references
+    cardinality: many-to-one
+    note: Truy vết giá áp dụng cho dòng bán (nullable nếu báo giá tay có approval).
+
+  - from: Partner
+    to: SalesTouchpoint
+    type: has
+    cardinality: one-to-many
+    note: Lịch sử chạy khách — handover khi đổi người.
+
+  - from: Order
+    to: SalesTouchpoint
+    type: has
+    cardinality: one-to-many
+    note: Touchpoint gắn cơ hội/gói cụ thể khi có order_id.

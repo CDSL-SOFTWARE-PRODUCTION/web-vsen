@@ -233,3 +233,84 @@ constraints:
       Draft SupplyOrder (PR) và gửi thông báo cho Procurement. 
       Phải có link FK_ORDER_ID để truy vết mục đích mua hàng.
     error_msg: "(Hệ thống tự động) Đã khởi tạo yêu cầu mua hàng cho hạng mục thầu vừa trúng."
+
+  # -----------------------------------------------------------
+  # POST-AWARD EXECUTION & RISK (C-EXE-*)
+  # -----------------------------------------------------------
+
+  - id: C-EXE-001
+    type: warn
+    domain: OrderItem
+    trigger: ReserveInventory
+    rule: >
+      Nếu committed_delivery_date - today() < Partner(supplier).lead_time_days
+      (hoặc Product.vendor_lead_time_days khi chưa gán NCC), đặt line_risk_level = Red
+      và cảnh báo "Late risk: lead time không kịp mốc giao".
+    error_msg: "Cảnh báo: Thời gian còn lại đến mốc giao có thể ngắn hơn lead time NCC."
+
+  - id: C-EXE-002
+    type: warn
+    domain: CashPlanEvent
+    trigger: "System_RollupCashPlan"
+    rule: >
+      Tổng CashPlanEvent.amount trong cửa sổ 14 ngày tới (theo legal_entity_id)
+      vượt ngưỡng vốn vận hành phân bổ (cấu hình trên LegalEntity hoặc policy nội bộ)
+      → cảnh báo financing gap; không chặn thanh toán tự động trừ khi cấu hình hard.
+    error_msg: "Cảnh báo: Nhu cầu chi 14 ngày tới có thể vượt hạn mức vốn vận hành."
+
+  - id: C-EXE-003
+    type: warn
+    domain: Order
+    trigger: StartDelivery
+    rule: >
+      Nếu tồn tại ExecutionIssue mở (state != Resolved/Cancelled) loại DocMissing
+      hoặc Quality trên OrderItem của lô hàng sắp giao → cảnh báo "cannot ship"
+      cho đến khi có biện pháp khắc phục hoặc Founder waiver (ghi AuditLog).
+    error_msg: "Cảnh báo: Còn issue hồ sơ/chất lượng mở trên dòng hàng liên quan."
+
+  - id: C-EXE-004
+    type: warn
+    domain: PaymentMilestone
+    trigger: IssueInvoice
+    rule: >
+      Nếu PaymentMilestone.due_date trong 7 ngày mà checklist_status != complete,
+      cảnh báo payment blocked / chưa payment-ready (không thay C-FIN-001 — vẫn cần
+      chứng từ giao hàng theo luật thuế).
+    error_msg: "Cảnh báo: Mốc thu sắp đến nhưng checklist hồ sơ mốc chưa đủ."
+
+  # -----------------------------------------------------------
+  # ACCOUNTS RECEIVABLE & COMMERCIAL PRICING
+  # -----------------------------------------------------------
+
+  - id: C-AR-001
+    type: warn
+    domain: Invoice
+    trigger: "System_AR_AgingCron"
+    rule: >
+      Với Invoice Issued/PartiallyPaid: nếu today() > payment_due_date thì cập nhật
+      days_overdue_cached và Partner.max_overdue_days_cached / outstanding_balance_cached;
+      đồng bộ ngưỡng chặn đơn với C-ORD-005 khi nợ quá hạn kéo dài.
+    error_msg: "Cảnh báo: Hóa đơn quá hạn thanh toán — cập nhật tuổi nợ khách."
+
+  - id: C-PR-001
+    type: warn
+    domain: OrderItem
+    trigger: ConfirmContract
+    rule: >
+      Nếu tồn tại PriceList/PriceListItem hợp lệ cho Partner.segment + Product
+      mà unit_price chốt lệch > ngưỡng % so với bảng giá (config), yêu cầu
+      ghi nhận approval_note hoặc Founder flag (giảm bottleneck hỏi giá tay).
+    error_msg: "Cảnh báo: Giá chốt lệch đáng kể so với bảng giá kênh — cần xác nhận."
+
+  # -----------------------------------------------------------
+  # INVENTORY — EXPIRY & DEAD STOCK
+  # -----------------------------------------------------------
+
+  - id: C-INV-006
+    type: warn
+    domain: InventoryLot
+    trigger: ReserveInventory
+    rule: >
+      Nếu expiry_date - today() < N ngày (config, VD 90) và qty_available > 0,
+      cảnh báo hết hạn sắp tới / ưu tiên FEFO — tránh tồn chết và bán nhầm lô.
+    error_msg: "Cảnh báo: Lô sắp đến hạn dùng — xem xét xuất FEFO hoặc khuyến mãi xả."

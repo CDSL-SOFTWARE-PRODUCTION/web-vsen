@@ -6,7 +6,7 @@
 > **Axiom (Tiên đề 2):** Document là chứng từ (Proof) - chìa khóa mở cổng State.
 > Đừng bắt user nhập liệu, hãy để họ "Confirm" gợi ý của máy (Intelligence).
 >
-> **📌 Model Reference:** Toàn bộ State Machine, Constraint, Entity spec được định nghĩa tại `0. Model/`. Tài liệu này chỉ giải thích **tại sao** hệ thống cần vận hành theo cách đó.
+> **📌 Model Reference:** Toàn bộ State Machine, Constraint, Entity spec được định nghĩa tại `model/`. Tài liệu này chỉ giải thích **tại sao** hệ thống cần vận hành theo cách đó.
 
 ---
 
@@ -29,12 +29,12 @@ Ngành TBYT có đặc thù: cùng 1 sản phẩm nhưng **mỗi bệnh viện g
 
 DVT bán hàng qua 2 kênh: **đấu thầu công** (chiếm ~60% doanh thu, quy trình nặng chứng từ) và **thương mại trực tiếp** (nhanh hơn, bỏ qua bước thầu). Hệ thống phải xử lý cả 2 trên cùng 1 entity `Order` mà không phá vỡ flow.
 
-**Entity Owner:** `Order` — Ref: [entities.yaml → Order](../0.%20Model/entities.yaml)
+**Entity Owner:** `Order` — Ref: [entities.yaml → Order](../model/entities.yaml)
 
 ### State Machine & Commands
 
-- **State Machine đầy đủ:** Xem [states.yaml → Order](../0.%20Model/states.yaml)
-- **Constraints áp dụng:** `C-ORD-001`, `C-ORD-002`, `C-ORD-003`, `C-ORD-004`, `C-ORD-005`, `C-ORD-006`. Xem [constraints.yaml](../0.%20Model/constraints.yaml)
+- **State Machine đầy đủ:** Xem [states.yaml → Order](../model/states.yaml)
+- **Constraints áp dụng (Order / thầu):** `C-ORD-001` … `C-ORD-008`. **Sau trúng thầu (SupplyOrder):** `C-SUP-001`. Xem [constraints.yaml](../model/constraints.yaml)
 
 ### Context nghiệp vụ (không có trong Model)
 
@@ -50,12 +50,12 @@ DVT bán hàng qua 2 kênh: **đấu thầu công** (chiếm ~60% doanh thu, quy
 
 Kho DVT không phải kho bán lẻ — hàng TBYT có lô, hạn dùng, cert đi kèm. Việc "ai được lấy lô nào" phải do hệ thống quyết định, không phải nhân viên kho chọn tay. Sai một lô = sai cert = khách trả hàng = mất thầu.
 
-**Entity Owner:** `InventoryLot` — Ref: [entities.yaml → InventoryLot](../0.%20Model/entities.yaml)
+**Entity Owner:** `InventoryLot` — Ref: [entities.yaml → InventoryLot](../model/entities.yaml)
 
 ### State Machine & Commands (Inventory)
 
 - **State Machine đầy đủ:** Xem [states.yaml → InventoryLot](../model/states.yaml)
-- **Constraints áp dụng:** `C-INV-001` → `C-INV-004`. Xem [constraints.yaml](../model/constraints.yaml)
+- **Constraints áp dụng:** `C-INV-001` … `C-INV-006`. Xem [constraints.yaml](../model/constraints.yaml)
 
 ### Context nghiệp vụ (Inventory)
 
@@ -70,7 +70,7 @@ Kho DVT không phải kho bán lẻ — hàng TBYT có lô, hạn dùng, cert đ
 
 Giao cho bệnh viện ≠ giao cho đại lý. Bệnh viện yêu cầu biên bản mộc đỏ, nghiệm thu kỹ thuật, GPS đúng trạm. Mất 1 biên bản = không xuất được VAT = tiền treo vô thời hạn.
 
-**Entity Owner:** `Delivery` — Ref: [entities.yaml → Delivery](../0.%20Model/entities.yaml)
+**Entity Owner:** `Delivery` — Ref: [entities.yaml → Delivery](../model/entities.yaml)
 
 ### State Machine & Commands (Delivery)
 
@@ -85,7 +85,7 @@ Giao cho bệnh viện ≠ giao cho đại lý. Bệnh viện yêu cầu biên b
 
 Triết lý: **Tiền chỉ được phép chảy khi chứng từ thực địa đã hoàn tất.** Đây là luật sắt chống "hóa đơn lụi" (xuất VAT trước khi giao hàng) — hành vi gây rủi ro thuế cực lớn cho DVT.
 
-**Entity Owner:** `Invoice` & `Ledger` — Ref: [entities.yaml → Invoice, Ledger](../0.%20Model/entities.yaml)
+**Entity Owner:** `Invoice` & `Ledger` — Ref: [entities.yaml → Invoice, Ledger](../model/entities.yaml)
 
 ### State Machine & Commands (Cash)
 
@@ -99,12 +99,33 @@ Triết lý: **Tiền chỉ được phép chảy khi chứng từ thực địa
 
 ---
 
+## 4b. 🟧 POST-AWARD EXECUTION & COMMERCIAL LAYER
+
+### Tại sao tách layer này?
+
+Một `Order` vẫn là aggregate root, nhưng **sau trúng thầu** cần thêm: **issue/change có owner & ETA** (thay chat rời), **mốc thu tiền + payment readiness**, **cash plan ngắn hạn** (cảnh báo gap vốn), **bảng giá theo kênh** (giảm bottleneck founder), **touchpoint sales** (handover khi đổi người). Các thực thể này gắn FK vào `Order` / `OrderItem` / `LegalEntity` — không nhân đôi luồng `Order` state machine.
+
+**Tham chiếu model:** [entities.yaml → ExecutionIssue, PaymentMilestone, CashPlanEvent, PriceList, PriceListItem, SalesTouchpoint](../model/entities.yaml) · [states.yaml → ExecutionIssue](../model/states.yaml) · Constraints `C-EXE-*`, `C-AR-001`, `C-PR-001`, `C-INV-006` trong [constraints.yaml](../model/constraints.yaml).
+
+### Ánh xạ pain ngành ↔ model (một nguồn, tránh trùng ý với ERP đầy đủ)
+
+| Pain | Neo trong model / rule |
+| --- | --- |
+| Lô, hạn dùng, FEFO, trace | `InventoryLot` (`expiry_date`, `batch_no`), Reserve ưu tiên FEFO, `C-INV-006` |
+| Giá BV / đại lý / volume | `PriceList`, `PriceListItem`, `Partner.segment`, `OrderItem.price_list_item_id`, `C-PR-001` |
+| Công nợ, invoice nhỏ, aging | `Invoice.payment_due_date`, cache trên `Partner`, `C-AR-001`, khóa đơn `C-ORD-005` |
+| Forecast nhập (ROP, ABC) | `Product` + `C-INV-004` (đã có trong Planning) |
+| Sales đi thị trường | `SalesTouchpoint` |
+| Thực thi sau trúng (trễ NCC, thiếu CQ, gap vốn) | `ExecutionIssue`, `OrderItem` line risk & dates, `PaymentMilestone`, `CashPlanEvent`, `C-EXE-*` |
+
+---
+
 ## 5. 🧠 ENGINEERING CORE: TRIẾT LÝ VẬN HÀNH
 
 Backend chạy theo "Phản ứng dây chuyền", không phải "Update dữ liệu":
 
 1. **Controller** nhận `Command`.
-2. **Rule Engine** check `Constraints` — Ref: toàn bộ [constraints.yaml](../0.%20Model/constraints.yaml).
+2. **Rule Engine** check `Constraints` — Ref: toàn bộ [constraints.yaml](../model/constraints.yaml).
 3. **Entity** nhảy State → Ghi Audit Log.
 4. **EventBus** bắn tin cho các Domain khác thực thi nhiệm vụ phái sinh.
 
@@ -124,7 +145,7 @@ DVT kinh doanh wholesale TBYT — lead time nhập hàng từ NCC nước ngoài
 
 #### 1.1 Phân loại Hàng hóa (ABC Analysis)
 
-> Ref: [entities.yaml → Product.abc_class](../0.%20Model/entities.yaml)
+> Ref: [entities.yaml → Product.abc_class](../model/entities.yaml)
 
 | Nhóm | Đặc điểm | Chiến lược tồn kho |
 | --- | --- | --- |
@@ -134,7 +155,7 @@ DVT kinh doanh wholesale TBYT — lead time nhập hàng từ NCC nước ngoài
 
 #### 1.2 Công thức hệ thống
 
-> ROP sử dụng `PARTNER.lead_time_days` (ref: [entities.yaml → Partner](../0.%20Model/entities.yaml)) + `PRODUCT.safety_stock`.
+> ROP sử dụng `PARTNER.lead_time_days` (ref: [entities.yaml → Partner](../model/entities.yaml)) + `PRODUCT.safety_stock`.
 
 - **Reorder Point (ROP):** `(Lead_Time × Avg_Daily_Demand) + Safety_Stock`
 - **Max Inventory Limit:** Ngưỡng khóa — không cho mua thêm để tránh dead stock.
@@ -172,7 +193,7 @@ Volume lớn + margin mỏng. Bù lỗ 1 chặng giao lẻ tẻ = bay toàn bộ
 
 #### 2.1 Cấu trúc Mạng Lưới Kho (Hub & Spoke)
 
-> Ref: [entities.yaml → Warehouse](../0.%20Model/entities.yaml). DB field: `WAREHOUSE.type = DC / Satellite_Depot`.
+> Ref: [entities.yaml → Warehouse](../model/entities.yaml). DB field: `WAREHOUSE.type = DC / Satellite_Depot`.
 
 | Loại kho | Vị trí | Vai trò |
 | --- | --- | --- |
@@ -226,7 +247,7 @@ deactivate Logic
 
 #### 2.3 Gating Constraints
 
-> Ref đầy đủ tại [constraints.yaml](../0.%20Model/constraints.yaml)
+> Ref đầy đủ tại [constraints.yaml](../model/constraints.yaml)
 
 | Constraint ID | Mục đích | Tóm tắt |
 | --- | --- | --- |
@@ -238,7 +259,7 @@ deactivate Logic
 
 ### 📌 DB TABLE MAPPING (Tham chiếu ERD)
 
-> Chi tiết: Entity specs: [entities.yaml](../0.%20Model/entities.yaml)
+> Chi tiết: Entity specs: [entities.yaml](../model/entities.yaml)
 
 | Nghiệp vụ | Bảng DB |
 | --- | --- |
@@ -252,7 +273,7 @@ deactivate Logic
 
 ## HỆ THỐNG ĐIỀU HÀNH (EXECUTION PIPELINE)
 
-> **📌 Model Reference:** State Machine tại [states.yaml](../0.%20Model/states.yaml), Constraints tại [constraints.yaml](../0.%20Model/constraints.yaml).
+> **📌 Model Reference:** State Machine tại [states.yaml](../model/states.yaml), Constraints tại [constraints.yaml](../model/constraints.yaml).
 > Diagram này thể hiện **thứ tự tương tác giữa các Domain** — bổ sung cho state machine (1 entity) và sequence diagram (actors).
 
 ```plantuml
@@ -442,7 +463,7 @@ deactivate FE
 
 ## SEQUENCE DIAGRAM CỐT LÕI (Bao gồm Document Constraints)
 
-> **📌 Model Reference:** Constraints chi tiết tại [constraints.yaml](../0.%20Model/constraints.yaml).
+> **📌 Model Reference:** Constraints chi tiết tại [constraints.yaml](../model/constraints.yaml).
 > Diagram này minh họa **thứ tự tương tác giữa actors** — bổ sung cho state machine (thể hiện logic 1 entity).
 
 ```mermaid
@@ -509,167 +530,182 @@ sequenceDiagram
 
 ## 🗄️ DATABASE ERD & SINGLE SOURCE OF TRUTH
 
-> **📌 Model Reference:** Entity definitions tại [entities.yaml](../0.%20Model/entities.yaml), quan hệ tại [relations.yaml](../0.%20Model/relations.yaml).
+> **📌 Model Reference:** Entity definitions tại [entities.yaml](../model/entities.yaml), quan hệ tại [relations.yaml](../model/relations.yaml).
 > ERD diagram dưới đây là **phiên bản render** từ Model. Khi cập nhật schema, sửa YAML trước rồi cập nhật diagram.
 
 ```mermaid
 erDiagram
-    %% Core & Master Data
+    %% Nguồn sự thật: model/entities.yaml + model/relations.yaml — cập nhật đồng bộ.
+    %% Core và Master Data
     LegalEntity {
-        string id PK "Pháp nhân A,B,C,D"
+        string id PK
         string name
         string tax_code
     }
     User {
         string id PK
-        string role "Admin, Sale, Kho, Plan, KeToan"
+        string role
         string legal_entity_id FK
     }
     Partner {
         string id PK
-        string type "Customer / Supplier"
+        string type "Customer Supplier"
         string name
         string credit_limit
-        int lead_time_days "Thời gian NCC giao hàng (thực tế, để tính ROP)"
+        int lead_time_days
+        string segment "Hospital Dealer Clinic"
+        decimal outstanding_balance_cached
+        int max_overdue_days_cached
     }
     Product {
         string id PK
         string sku
-        string standard_spec "Spec Nội bộ"
-        string customized_spec "Spec Thầu (khi cần)"
-        string abc_class "Nhóm A/B/C (Phân bổ Logistics)"
-        int safety_stock "Tồn kho an toàn"
+        string standard_spec
+        string customized_spec
+        string abc_class
+        int safety_stock
     }
     Warehouse {
         string id PK
-        string type "DC / Satellite_Depot"
+        string type "DC Satellite_Depot"
         string name
-        string location "Tọa độ tối ưu Logistics"
+        string location
     }
     Document {
         string id PK
-        string type "tender_doc, invoice, delivery_note, ISO_cert"
-        string file_url "Nextcloud URL"
-        string related_entity_type "Entity name (e.g., PRODUCT, ORDER)"
-        string related_entity_id "ID of the related entity"
+        string type
+        string file_url
+        string related_entity_type
+        string related_entity_id
         int version
         string status
     }
     Order {
         string id PK
-        string order_type "Tender / Commercial"
-        string priority "Critical / Contract / Retail"
-        string virtual_account_no "Mã VA Ngân Hàng để đối soát"
-        string status "Draft, Confirmed, Shipped, Completed"
+        string legal_entity_id FK
+        string order_type "Tender Commercial"
+        string priority
+        string virtual_account_no
+        string execution_risk_level "Green Amber Red"
+        string status "state machine Order"
     }
     OrderItem {
         string id PK
         string order_id FK
         string product_id FK
+        string supplier_partner_id FK
+        string price_list_item_id FK
         int quantity
+        date committed_delivery_date
+        string line_execution_status
+        string line_risk_level
     }
     SupplyOrder {
         string id PK
-        string type "Procurement / Production"
-        string target_warehouse_id FK "Nhập hàng vào kho nào (DC mặc định)"
+        string legal_entity_id FK
+        string type
+        string target_warehouse_id FK
         string status
     }
     InventoryLot {
         string id PK
         string warehouse_id FK
         string product_id FK
-        string batch_no "Số Lô"
-        date expiry_date "Hạn dùng"
-        string iso_cert "Chứng từ"
+        string batch_no
+        date expiry_date
+        string iso_cert
         int total_qty
     }
     InventoryReservation {
         string id PK
-        string order_item_id FK "Đơn vị đang giữ hàng"
-        string lot_id FK "Khóa từ Lô nào"
+        string order_item_id FK
+        string lot_id FK
         int reserved_qty
         timestamp locked_at
     }
     InventoryLedger {
         string id PK
-        string action "IN, OUT, ADJUST, RESERVE"
+        string action
         int qty_change
         timestamp created_at
     }
     Invoice {
         string id PK
+        string legal_entity_id FK
         string order_id FK
         decimal total_amount
-        string misa_transaction_id "ID đẩy sang MISA API"
-        string replaced_by_invoice_id FK "ID Hóa đơn mới (nếu bản này bị Hủy/Cancel)"
-        string status "Unpaid, Paid, Voided"
+        string misa_transaction_id
+        string replaced_by_invoice_id FK
+        date payment_due_date
+        int days_overdue_cached
+        string status
     }
     Delivery {
         string id PK
         string order_id FK
-        string source_warehouse_id FK "Xuất từ kho nào (DC hay Satellite)"
-        string vehicle_id FK "Ghép vào xe nào (Milk Run)"
-        string route_type "Emergency / MilkRun / Direct"
-        string gps_coordinates_actual "Toạ độ thực tế lúc hoàn tất (chống giao nhầm)"
-        string status "Draft, Dispatched, Delivered, Partially_Delivered"
+        string source_warehouse_id FK
+        string vehicle_id FK
+        string route_type
+        string gps_coordinates_actual
+        string status
         string tracking_code
     }
     Vehicle {
         string id PK
         string plate_no
-        string type "Xe_Tải / Xe_Máy / 3rd_Party"
-        decimal max_capacity_cbm "Thể tích tối đa (CBM) - Để check Constraint Milk Run"
+        string type
+        decimal max_capacity_cbm
     }
     DeliveryRoute {
         string id PK
         string vehicle_id FK
         date route_date
-        string status "Planned / Dispatched / Completed"
+        string status
     }
     Ledger {
         string id PK
-        string legal_entity_id FK "Ví tiền của Pháp nhân nào (A, B, C, D)"
-        string type "Inflow / Outflow / Internal_Transfer"
+        string legal_entity_id FK
+        string type
         decimal amount
-        string related_ledger_id FK "Lưu ID đối ứng (để Founder chuyển tiền Nội bộ)"
-        string partner_id FK "Tiền của Khách nào / Trả cho NCC nào"
+        string related_ledger_id FK
+        string partner_id FK
     }
     AuditLog {
         string id PK
-        string user_id FK "Người thực hiện"
-        string action "Event (VD: Update_Price, Approve_Doc)"
-        string entity_type "Bảng bị tác động (ORDER, DOCUMENT...)"
-        string entity_id "ID bị tác động"
-        json old_payload "Dữ liệu cũ (để truy vết)"
-        json new_payload "Dữ liệu mới"
-        timestamp created_at "Thời gian (Time-series)"
+        string user_id FK
+        string action
+        string entity_type
+        string entity_id
+        json old_payload
+        json new_payload
+        timestamp created_at
     }
     Tender {
         string id PK
-        string tender_code "Mã gói thầu (VD: IB26...)"
-        string raw_text "Text bóc từ muasamcong"
-        string document_id FK "File gốc đính kèm"
-        string status "Draft, Analyzing, Matched, Executing"
+        string tender_code
+        string raw_text
+        string document_id FK
+        string status
     }
     TenderItem {
         string id PK
         string tender_id FK
-        string raw_requirement "Yêu cầu thô (Text)"
-        string matched_product_id FK "Sản phẩm hệ thống gợi ý / User Confirm"
+        string raw_requirement
+        string matched_product_id FK
     }
     CanonicalProduct {
         string id PK
-        string name "Tên chuẩn hóa (VD: Pediatric Ventilator)"
-        jsonb canonical_spec "Spec chuẩn (JSONB)"
+        string name
+        jsonb canonical_spec
     }
     ProductAlias {
         string id PK
         string canonical_product_id FK
-        string alias_name "Tên gọi khác (Free text)"
+        string alias_name
     }
     Requirement {
         string id PK
-        string type "ISO_13485, CE, FSC, Catalog"
+        string type
         string description
     }
     ProductReqMapping {
@@ -680,58 +716,164 @@ erDiagram
         string tender_item_id FK
         string requirement_id FK
     }
+    %% Post-award execution và Commercial (domain mới — đồng bộ entities.yaml)
+    ExecutionIssue {
+        string id PK
+        string order_id FK
+        string order_item_id FK
+        string owner_user_id FK
+        string issue_type
+        string severity
+        string impact_flags
+        string status "Open InProgress PendingApproval Resolved Cancelled"
+    }
+    PaymentMilestone {
+        string id PK
+        string order_id FK
+        string milestone_name
+        date due_date
+        decimal amount_planned
+        string checklist_status
+        boolean payment_ready
+    }
+    CashPlanEvent {
+        string id PK
+        string legal_entity_id FK
+        string order_id FK
+        date scheduled_date
+        decimal amount
+        string purpose
+    }
+    PriceList {
+        string id PK
+        string legal_entity_id FK
+        string partner_id FK
+        string channel
+        string name
+        date valid_from
+        date valid_to
+    }
+    PriceListItem {
+        string id PK
+        string price_list_id FK
+        string product_id FK
+        decimal unit_price
+        int min_qty
+        string currency
+    }
+    SalesTouchpoint {
+        string id PK
+        string partner_id FK
+        string order_id FK
+        string created_by_user_id FK
+        string activity_type
+        timestamp occurred_at
+        string summary
+    }
+    %% Return và Transfer (đồng bộ entities.yaml)
+    ReturnOrder {
+        string id PK
+        string order_id FK
+        string status
+        decimal total_refund_amount
+    }
+    ReturnLineItem {
+        string id PK
+        string return_order_id FK
+        string lot_id FK
+        int quantity
+    }
+    StockTransfer {
+        string id PK
+        string source_warehouse_id FK
+        string dest_warehouse_id FK
+        string status
+    }
+    StockTransferLine {
+        string id PK
+        string stock_transfer_id FK
+        string lot_id FK
+        int quantity
+    }
 
-    %% ------ Relationships (ref: relations.yaml) ------
+    %% ------ Quan hệ: mirror relations.yaml ------
     LegalEntity ||--o{ Order : owns
     LegalEntity ||--o{ SupplyOrder : owns
-    LegalEntity ||--o{ Invoice : issues
-    Partner ||--o{ Order : places
-    Partner ||--o{ SupplyOrder : fulfills
-    
+    LegalEntity ||--o{ Invoice : owns
+    LegalEntity ||--o{ Ledger : owns
+    LegalEntity ||--o{ CashPlanEvent : owns
+    LegalEntity ||--o{ PriceList : owns
+
+    Partner ||--o{ Order : customer_places
+    Partner ||--o{ SupplyOrder : supplier_fulfills
+    Partner ||--o{ OrderItem : supplier_line
+    Partner ||--o{ PriceList : price_for_partner
+    Partner ||--o{ SalesTouchpoint : touchpoints
+
+    Product ||--o{ OrderItem : line_product
+    Product ||--o{ InventoryLot : stocked_as
+    Product ||--o{ PriceListItem : priced_in
+
     Order ||--|{ OrderItem : contains
-    OrderItem ||--|| Product : specifies
-    
+    Order ||--|| Invoice : triggers_invoice
+    Order ||--o{ Delivery : deliveries
+    Order ||--o{ Document : documents
+    Order ||--o{ SupplyOrder : triggers_supply
+    Order ||--o{ ReturnOrder : returns
+    Order ||--o{ ExecutionIssue : execution_issues
+    Order ||--o{ PaymentMilestone : payment_milestones
+    Order ||--o{ CashPlanEvent : cash_events
+    Order ||--o{ SalesTouchpoint : touchpoints
+
+    OrderItem ||--o{ InventoryReservation : locks
+    OrderItem ||--o{ ExecutionIssue : issue_targets
+    OrderItem }o--o| PriceListItem : price_row
+
+    SupplyOrder ||--o{ InventoryLot : receives_inbound
     Warehouse ||--o{ InventoryLot : stores
+    Warehouse ||--o{ Delivery : ships_from
+    Warehouse ||--o{ StockTransfer : transfer_source_or_dest
+
     InventoryLot ||--o{ InventoryReservation : held_in
-    OrderItem ||--o{ InventoryReservation : explicitly_locks
-    
-    Order ||--|{ InventoryLedger : triggers
-    SupplyOrder ||--|{ InventoryLot : creates
-    Product ||--|{ InventoryLot : has
-    InventoryLot ||--o{ InventoryLedger : tracks_history
-    
-    Order ||--|| Invoice : generates
+    InventoryLot ||--o{ InventoryLedger : ledger_moves
+    InventoryLot ||--o{ Delivery : fulfilled_via
+    InventoryLot ||--o{ ReturnLineItem : return_from_lot
+
     Invoice ||--o{ Ledger : settled_by
-    Order ||--o{ Delivery : requires
+    Invoice ||--o{ Document : documents
+    ReturnOrder ||--|| Invoice : credit_note
+
     Delivery ||--o{ DeliveryRoute : batched_into
     Vehicle ||--o{ DeliveryRoute : runs
-    Warehouse ||--o{ Delivery : source_of
-    InventoryLot ||--o{ Delivery : fulfilled_via
-    Product ||--o{ Document : "has (Spec, ISO, Tem)"
-    Order ||--o{ Document : "has (Báo giá, HSNL...)"
-    Invoice ||--o{ Document : "has (VAT, Phiếu giao)"
-    SupplyOrder ||--|| Warehouse : targets_inbound
-    
-    User ||--o{ AuditLog : "performs actions (tracked by)"
 
-    %% Intelligence Relationships
-    Tender ||--o{ TenderItem : contains
-    TenderItem ||--o| Product : matched_to
+    Product ||--o{ Document : product_docs
+    User ||--o{ AuditLog : audit
+    User ||--o{ ExecutionIssue : issue_owner
+    User ||--o{ SalesTouchpoint : touchpoint_author
+
+    PriceList ||--|{ PriceListItem : contains
+
+    ReturnOrder ||--|{ ReturnLineItem : lines
+    StockTransfer ||--|{ StockTransferLine : lines
+    StockTransferLine }o--|| InventoryLot : lot
+
     CanonicalProduct ||--o{ Product : standardizes
-    CanonicalProduct ||--o{ ProductAlias : has_aliases
-    
+    CanonicalProduct ||--o{ ProductAlias : aliases
     Product ||--o{ ProductReqMapping : satisfies
     Requirement ||--o{ ProductReqMapping : applied_to_product
-    
+    Tender ||--o{ TenderItem : contains
+    TenderItem ||--o| Product : matched_to
     TenderItem ||--o{ TenderReqMapping : strictly_requires
     Requirement ||--o{ TenderReqMapping : applied_to_tender
 ```
+
+> **Ghi chú:** ERD trên gom **mối** `Partner → Order` (khách) và `Partner → OrderItem` (NCC dòng) vào cùng một thực thể `Partner` — `type` phân biệt Customer/Supplier. Chi tiết cột và FK trong `entities.yaml`.
 
 ---
 
 ### DOMAIN OWNERSHIP (Tham chiếu từ Model)
 
-> Bảng dưới tóm tắt "Ai sở hữu entity nào". Chi tiết đầy đủ tại [entities.yaml](../0.%20Model/entities.yaml).
+> Bảng dưới tóm tắt "Ai sở hữu entity nào". Chi tiết đầy đủ tại [entities.yaml](../model/entities.yaml).
 
 | Domain | Source of Truth | Actor (Owner) | Ý nghĩa |
 | --- | --- | --- | --- |
@@ -740,12 +882,14 @@ erDiagram
 | **Inventory** | `InventoryLot` | Warehouse | Giám sát lô hàng. Event: `InventoryReserved`. |
 | **Delivery** | `Delivery` | Logistics / CSKH | Mang hàng đến khách. Event: `StartDelivery`. |
 | **Cash** | `Ledger` | Finance / Founder | Giữ ví, phân bổ tiền. Event: `RegisterPayment`. |
+| **PostAward** | `ExecutionIssue`, `PaymentMilestone`, `CashPlanEvent` | Sale / Finance / PM | Issue log, mốc thu, chi ngắn hạn; risk rollup lên `Order`. |
+| **Commercial** | `PriceList`, `PriceListItem` | Admin | Bảng giá đa kênh; `OrderItem` tham chiếu dòng giá. |
 
 ---
 
 ## 📋 ENTITY & COMMAND REGISTRY INDEX
 
-> **📌 Mục đích:** Bảng tham chiếu nhanh toàn bộ Entity và Command (Event) của hệ thống. Spec đầy đủ tại `0. Model/`. Đây là index giúp Dev tra cứu nhanh domain sở hữu, bảng DB tương ứng, và command khả dụng.
+> **📌 Mục đích:** Bảng tham chiếu nhanh toàn bộ Entity và Command (Event) của hệ thống. Spec đầy đủ tại `model/`. Đây là index giúp Dev tra cứu nhanh domain sở hữu, bảng DB tương ứng, và command khả dụng.
 
 ### Entity Index (Toàn bộ Aggregate & Data Model)
 
@@ -772,6 +916,12 @@ erDiagram
 | `LegalEntity` | MasterData | `LegalEntity` | Pháp nhân nội bộ A/B/C/D; mọi Order/Invoice đều thuộc về |
 | `Warehouse` | MasterData | `Warehouse` | Kho vật lý: DC (bulk) hoặc Satellite_Depot (cấp cứu) |
 | `Document` | MasterData | `Document` | Chứng từ điện tử polymorphic; không xóa vật lý, chỉ đổi flag |
+| `ExecutionIssue` | PostAward | `EXECUTION_ISSUE` | Sự cố/thay đổi sau trúng thầu; state machine riêng |
+| `PaymentMilestone` | PostAward | `PAYMENT_MILESTONE` | Mốc thu tiền + checklist payment-ready |
+| `CashPlanEvent` | PostAward | `CASH_PLAN_EVENT` | Mốc cần chi ngắn hạn (financing gap) |
+| `PriceList` | Commercial | `PRICE_LIST` | Bảng giá theo kênh/pháp nhân/khách |
+| `PriceListItem` | Commercial | `PRICE_LIST_ITEM` | Dòng giá SKU + bậc volume đơn giản |
+| `SalesTouchpoint` | Demand | `SALES_TOUCHPOINT` | Hoạt động chạy khách — giảm phụ thuộc chat cá nhân |
 | `User` | System | `User` | Người dùng; có role + legal_entity_id phân quyền dữ liệu |
 | `AuditLog` | System | `AuditLog` | Nhật ký bất biến mọi thao tác (actor, action, payload cũ/mới) |
 
@@ -802,3 +952,7 @@ erDiagram
 | `CancelAndReissue` | Cash | `Invoice` | `Issued → Voided` |
 | `RegisterPayment` | Cash | `Invoice` | `Issued → Paid` |
 | `RegisterPartialPayment` | Cash | `Invoice` | `Issued → PartiallyPaid` |
+| `CreateExecutionIssue` | PostAward | `ExecutionIssue` | `→ Open` |
+| `UpdateExecutionIssue` | PostAward | `ExecutionIssue` | Theo state machine `ExecutionIssue` |
+| `ResolveExecutionIssue` | PostAward | `ExecutionIssue` | `→ Resolved` |
+| `CancelExecutionIssue` | PostAward | `ExecutionIssue` | `→ Cancelled` |

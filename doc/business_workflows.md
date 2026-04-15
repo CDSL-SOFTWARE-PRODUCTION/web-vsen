@@ -123,7 +123,7 @@ journey
 
 ## TỔNG HỢP CÁC TRƯỜNG HỢP NGOẠI LỆ (EVERY EDGE CASES)
 
-> **📌 Model Reference:** Constraint logic chi tiết tại [constraints.yaml](<../0. Model/constraints.yaml>), State Machine tại [states.yaml](<../0. Model/states.yaml>).
+> **📌 Model Reference:** Constraint logic chi tiết tại [constraints.yaml](../model/constraints.yaml), State Machine tại [states.yaml](../model/states.yaml).
 > Tài liệu này bổ sung **ngữ cảnh thực tế** mà các rule đang bảo vệ — để Dev hiểu *tại sao* constraint tồn tại.
 
 ---
@@ -186,6 +186,18 @@ journey
 | **Spec Refinement** | Hàng nhập về cần tinh chỉnh (tem/cấu hình) để khớp thầu. | Kho/Xưởng thực hiện `RefineBatchSpec`. Hệ thống đối soát thầu + pháp lý. | `C-INV-005` |
 
 ---
+
+### 7. 🟧 POST-AWARD EXECUTION & COMMERCIAL (Sau trúng thầu / Giá / AR)
+
+| Case | Tình huống | Xử lý | Ref |
+| :--- | :--- | :--- | :--- |
+| **Late vs lead time** | Mốc giao line gần hơn lead time NCC còn lại. | Cảnh báo `line_risk_level`; tạo `ExecutionIssue` loại Delay. | `C-EXE-001` |
+| **Financing gap** | Tổng chi 14 ngày tới vượt hạn mức vốn vận hành. | Cảnh báo; Founder/Finance điều chỉnh `CashPlanEvent` hoặc nguồn. | `C-EXE-002` |
+| **Issue hồ sơ mở khi giao** | Còn issue DocMissing/Quality mở trên dòng hàng. | Cảnh báo trước `StartDelivery`; waiver + AuditLog nếu bắt buộc. | `C-EXE-003` |
+| **Mốc thu sắp đến, checklist thiếu** | `PaymentMilestone` gần hạn mà chưa đủ chứng từ mốc. | Cảnh báo payment-ready; không thay thế `C-FIN-001`. | `C-EXE-004` |
+| **Aging & nợ** | Hóa đơn quá `payment_due_date`. | Job cập nhật `days_overdue_cached`, đồng bộ với chặn đơn. | `C-AR-001`, `C-ORD-005` |
+| **Giá lệch bảng** | Giá chốt lệch đáng kể so với `PriceList` kênh. | Yêu cầu ghi nhận duyệt / Founder flag. | `C-PR-001` |
+| **Lô sắp hết hạn** | Reserve gần `expiry_date`. | Cảnh báo FEFO / xả tồn. | `C-INV-006` |
 
 ---
 

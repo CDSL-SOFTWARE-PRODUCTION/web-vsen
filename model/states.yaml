@@ -354,3 +354,68 @@ state_machines:
         guard:
           - "actor.role in [Finance, Admin]"
           - "new_invoice_id != null"   # Phải có invoice thay thế đi kèm
+
+  # -----------------------------------------------------------
+  # EXECUTION ISSUE (Post-award — Issue & change center)
+  # -----------------------------------------------------------
+  - entity: ExecutionIssue
+    initial: Open
+    terminal:
+      - Resolved
+      - Cancelled
+    states:
+      - Open
+      - InProgress
+      - PendingApproval
+      - Resolved
+      - Cancelled
+    transitions:
+      - from: Open
+        to: InProgress
+        command: UpdateExecutionIssue
+        guard:
+          - "actor.role in [Sale, Admin, Finance, Warehouse]"
+
+      - from: InProgress
+        to: PendingApproval
+        command: UpdateExecutionIssue
+        note: Cần Founder/PM duyệt khi ảnh hưởng giá hoặc phạt hợp đồng
+        guard:
+          - "severity in [High, Critical] OR impact_flags includes cost"
+
+      - from: PendingApproval
+        to: InProgress
+        command: UpdateExecutionIssue
+        guard:
+          - "actor.role == Admin"
+
+      - from: Open
+        to: Resolved
+        command: ResolveExecutionIssue
+        guard:
+          - "severity == Low"
+
+      - from: InProgress
+        to: Resolved
+        command: ResolveExecutionIssue
+        guard:
+          - "existing(resolution_note)"
+
+      - from: PendingApproval
+        to: Resolved
+        command: ResolveExecutionIssue
+        guard:
+          - "docs.has(approval_proof) OR actor.role == Admin"
+
+      - from: Open
+        to: Cancelled
+        command: CancelExecutionIssue
+        note: Đóng issue không còn hiệu lực (duplicate / nhập nhầm)
+        guard:
+          - "actor.role in [Sale, Admin]"
+
+      - from: InProgress
+        to: Cancelled
+        command: CancelExecutionIssue
+        guard:
+          - "actor.role in [Sale, Admin]"

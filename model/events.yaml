@@ -319,3 +319,51 @@ events:
       - dest_warehouse_id
       - actual_items_received
     note: Nhận hàng tại kho đích. Tăng OnHand tại Đích, giữ nguyên Lot ID.
+
+  # -----------------------------------------------------------
+  # POST-AWARD EXECUTION
+  # -----------------------------------------------------------
+
+  - id: CreateExecutionIssue
+    domain: PostAward
+    trigger: Sale / Admin
+    target: ExecutionIssue
+    flow: "→ Open"
+    payload:
+      - order_id
+      - order_item_id
+      - issue_type
+      - severity
+      - owner_user_id
+      - due_at
+    note: Ghi nhận sự cố có cấu trúc — thay chat rời; đẩy Order.execution_risk_level nếu Critical.
+
+  - id: UpdateExecutionIssue
+    domain: PostAward
+    trigger: Owner / Admin
+    target: ExecutionIssue
+    flow: "Open | InProgress | PendingApproval → (cùng nhóm)"
+    payload:
+      - issue_id
+      - status_note
+      - evidence_document_ids
+    note: Cập nhật ETA, bằng chứng, chuyển trạng thái theo state machine.
+
+  - id: ResolveExecutionIssue
+    domain: PostAward
+    trigger: Owner / Admin
+    target: ExecutionIssue
+    flow: "→ Resolved"
+    payload:
+      - issue_id
+      - resolution_note
+    note: Đóng issue — cập nhật lại risk rollup trên Order/OrderItem.
+
+  - id: CancelExecutionIssue
+    domain: PostAward
+    trigger: Sale / Admin
+    target: ExecutionIssue
+    flow: "Open | InProgress → Cancelled"
+    payload:
+      - issue_id
+      - reason_note
