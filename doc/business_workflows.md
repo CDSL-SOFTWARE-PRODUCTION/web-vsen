@@ -268,11 +268,13 @@ sankey-beta
     Lead Captured,Lost Opportunity,20
     
     %% 🟢 GIAI ĐOẠN CAM KẾT (COMMITMENT)
-    Qualified Tender,Signed Contract (Order),20
+    Qualified Tender,Tender Snapshot (Locked),20
+    Tender Snapshot (Locked),Signed Contract (Order),20
     Quotation Sent,Signed Contract (Order),15
     
     %% 🟠 GIAI ĐOẠN VẬN HÀNH (OPERATIONAL DATA)
-    Signed Contract (Order),Inventory Reserved (Physical),35
+    Signed Contract (Order),Contract Runtime (Ops Projection),35
+    Contract Runtime (Ops Projection),Inventory Reserved (Physical),35
     Inventory Reserved (Physical),Delivery Note (SOP),35
     Delivery Note (SOP),Handover Minutes (Proof),30
     Delivery Note (SOP),Loss/Damaged Data,5

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -14,6 +15,29 @@ class HandleInertiaRequests extends Middleware
 
     public function share(Request $request): array
     {
+        // #region agent log
+        try {
+            file_put_contents(
+                '/home/hungp0722/development/DVT/web-vsen/.cursor/debug-44995f.log',
+                json_encode([
+                    'sessionId' => '44995f',
+                    'runId' => 'inertia-share-check',
+                    'hypothesisId' => 'H3',
+                    'location' => 'app/Http/Middleware/HandleInertiaRequests.php:18',
+                    'message' => 'inertia_share_enter',
+                    'data' => [
+                        'path' => $request->path(),
+                        'db_default' => config('database.default'),
+                        'categories_table_exists' => Schema::hasTable('categories'),
+                    ],
+                    'timestamp' => (int) round(microtime(true) * 1000),
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL,
+                FILE_APPEND
+            );
+        } catch (\Throwable $e) {
+        }
+        // #endregion
+
         return [
             ...parent::share($request),
             'auth' => [

@@ -89,6 +89,30 @@ relations:
     cardinality: many-to-one
     note: Sau khi Intelligence OS match, TenderItem liên kết với 1 Product.
 
+  - from: Tender
+    to: TenderSnapshot
+    type: triggers
+    cardinality: one-to-one
+    note: Khi trúng thầu và chốt hồ sơ, tạo bản chụp immutable để làm bằng chứng vận hành.
+
+  - from: TenderSnapshot
+    to: Order
+    type: triggers
+    cardinality: one-to-one
+    note: Sau khi Lock snapshot, hệ thống Generate Order/OrderItems (core) khi module Order hoàn thiện.
+
+  - from: Order
+    to: Contract
+    type: has
+    cardinality: one-to-one
+    note: Contract là runtime projection cho Ops; không thay Order.
+
+  - from: Contract
+    to: ContractItem
+    type: has
+    cardinality: one-to-many
+    note: Contract runtime có nhiều dòng hàng vận hành.
+
   # -----------------------------------------------------------
   # ORDER → DEPENDENTS
   # -----------------------------------------------------------
@@ -299,6 +323,24 @@ relations:
     type: has
     cardinality: one-to-many
     note: Chi phí vận hành gắn gói (nullable trên Order nếu chi chung).
+
+  - from: Contract
+    to: ExecutionIssue
+    type: has
+    cardinality: one-to-many
+    note: MVP: issue neo theo Contract/ContractItem (projection). Dài hạn: neo theo Order/OrderItem.
+
+  - from: Contract
+    to: PaymentMilestone
+    type: has
+    cardinality: one-to-many
+    note: MVP: milestone neo theo Contract (projection). Dài hạn: neo theo Order.
+
+  - from: Contract
+    to: Document
+    type: has
+    cardinality: one-to-many
+    note: Checklist chứng từ vận hành cho Contract/Item/Milestone.
 
   - from: LegalEntity
     to: CashPlanEvent

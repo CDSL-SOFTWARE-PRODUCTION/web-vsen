@@ -5,3 +5,4 @@
 ## Learned Workspace Facts
 - The repository is an active git workspace at `web-vsen` with ongoing product/database and ops-related implementation work.
 - Parent agent transcripts for this workspace are persisted under the Cursor project transcript store and should be processed incrementally.
+- Current Ops direction includes standardizing public procurement tender documents into immutable Tender Snapshot data before mapping to execution runtime entities.

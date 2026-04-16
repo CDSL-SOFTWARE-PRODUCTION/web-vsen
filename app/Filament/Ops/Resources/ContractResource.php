@@ -37,6 +37,16 @@ class ContractResource extends Resource
             ->schema([
                 Forms\Components\Section::make(__('ops.contract.section.contract_info'))
                     ->schema([
+                        Forms\Components\TextInput::make('order_id')
+                            ->label('Order ID')
+                            ->numeric()
+                            ->helperText('Soft reference tới Order (core). Có thể để trống ở MVP hiện tại.')
+                            ->nullable(),
+                        Forms\Components\TextInput::make('tender_snapshot_ref')
+                            ->label('Tender Snapshot Ref')
+                            ->helperText('Ref snapshot từ muasamcong (notifyNo/planNo/hash).')
+                            ->nullable()
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('contract_code')
                             ->required()
                             ->maxLength(255)
@@ -71,6 +81,10 @@ class ContractResource extends Resource
         return $table
             ->defaultSort('next_delivery_due_date')
             ->columns([
+                Tables\Columns\TextColumn::make('order_id')
+                    ->label('Order ID')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('contract_code')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('name')

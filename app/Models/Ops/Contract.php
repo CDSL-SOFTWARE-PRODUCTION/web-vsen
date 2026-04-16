@@ -11,6 +11,8 @@ class Contract extends Model
     use HasFactory;
 
     protected $fillable = [
+        'order_id',
+        'tender_snapshot_ref',
         'contract_code',
         'name',
         'customer_name',
@@ -28,6 +30,7 @@ class Contract extends Model
     protected function casts(): array
     {
         return [
+            'order_id' => 'integer',
             'start_date' => 'date',
             'end_date' => 'date',
             'next_delivery_due_date' => 'date',

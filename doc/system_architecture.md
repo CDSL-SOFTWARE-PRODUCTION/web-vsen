@@ -107,6 +107,15 @@ Một `Order` vẫn là aggregate root, nhưng **sau trúng thầu** cần thêm
 
 **Tham chiếu model:** [entities.yaml → ExecutionIssue, PaymentMilestone, CashPlanEvent, PriceList, PriceListItem, SalesTouchpoint](../model/entities.yaml) · [states.yaml → ExecutionIssue](../model/states.yaml) · Constraints `C-EXE-*`, `C-AR-001`, `C-PR-001`, `C-INV-006` trong [constraints.yaml](../model/constraints.yaml).
 
+### Tender Snapshot → Contract runtime (Projection)
+
+Với thầu công, dữ liệu gốc nằm ở **muasamcong + file đính kèm**. Để “trúng là chạy được”, hệ thống cần 2 lớp:
+
+- **`TenderSnapshot` (immutable, Lock)**: bản chụp trúng thầu/hợp đồng từ muasamcong để làm bằng chứng. Sau khi Lock thì **không sửa** (chỉ tạo version mới nếu cần).
+- **`Contract` / `ContractItem` (mutable runtime projection)**: bảng vận hành cho Ops (deadline, vendor, docs_status, cash_status, issues, milestones). Contract **phải trace** về `Order` (dài hạn) hoặc ít nhất giữ `tender_snapshot_ref` (MVP) để không tạo 2 nguồn sự thật.
+
+> **Nguyên tắc:** Snapshot là “cam kết & bằng chứng”, Contract runtime là “điều khiển vận hành”.
+
 ### Ánh xạ pain ngành ↔ model (một nguồn, tránh trùng ý với ERP đầy đủ)
 
 | Pain | Neo trong model / rule |

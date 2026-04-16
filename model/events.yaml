@@ -19,6 +19,31 @@ events:
   # COMMANDS: DEMAND & ORDER
   # -----------------------------------------------------------
 
+  - id: LockTenderSnapshot
+    domain: Demand
+    trigger: Sale / Admin
+    target: TenderSnapshot
+    flow: "Draft → Locked"
+    payload:
+      - source_notify_no
+      - source_plan_no
+      - attachments
+    note: >
+      Đóng băng dữ liệu trúng thầu/hợp đồng từ muasamcong để làm bằng chứng vận hành.
+      Sau khi Lock: chỉ được bổ sung metadata runtime ở Contract, không sửa snapshot.
+
+  - id: GenerateExecutionPlan
+    domain: PostAward
+    trigger: System / Admin_PM
+    target: Contract
+    flow: "∅ → Active"
+    payload:
+      - tender_snapshot_ref
+      - order_id
+    note: >
+      Sinh Contract/ContractItems + checklist chứng từ + milestones từ snapshot (runtime projection).
+      Đây là bước “trúng là chạy được” cho Ops control tower.
+
   - id: SubmitTender
     domain: Demand
     trigger: Sale

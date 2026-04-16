@@ -74,11 +74,59 @@ entities:
       raw_requirement: "Yêu cầu kỹ thuật thô (Text từ PDF thầu)"
       matched_product_id: "FK → Product sau khi Intelligence OS match"
 
+  - id: TenderSnapshot
+    description: >
+      Bản chụp (immutable) của gói thầu/hợp đồng trúng từ muasamcong: metadata + điều khoản chính
+      + danh mục hàng đã chuẩn hóa để làm bằng chứng. Không sửa sau khi “Lock”.
+      Snapshot là nguồn tham chiếu pháp lý/đối soát, không dùng để vận hành trực tiếp.
+    domain: Demand
+    owner_role: Sale
+    db_table: TENDER_SNAPSHOT
+    key_fields:
+      source_system: "muasamcong (default)"
+      source_notify_no: "Số TBMT/notifyNo"
+      source_plan_no: "planNo / KHLCNT (nếu có)"
+      locked_at: "Timestamp lock snapshot"
+      locked_by_user_id: "FK → User"
+      snapshot_hash: "Checksum để phát hiện thay đổi ngoài hệ thống"
+      awarded_items_json: "JSON danh mục item đã trúng (immutable)"
+
   # -----------------------------------------------------------
   # DOMAIN: POST-AWARD EXECUTION (Thực thi sau trúng thầu / vận hành gói)
   # -----------------------------------------------------------
   # Không thay thế Order — bổ sung "issue log", mốc thu tiền, cash plan.
   # Trùng ý với workspace post-award: một nơi truth thay chat/Excel rời.
+
+  - id: Contract
+    description: >
+      Runtime Projection cho Ops theo dõi thực thi (control tower) của một gói/project.
+      Không phải hợp đồng pháp lý; hợp đồng pháp lý nằm ở Document và TenderSnapshot.
+      Contract phải trace về Order để đảm bảo không có 2 “nguồn sự thật”.
+    domain: PostAward
+    owner_role: Admin_PM
+    db_table: CONTRACT
+    key_fields:
+      order_id: "Soft FK → Order (unique khi core Order tồn tại) — nguồn sự thật vòng đời"
+      tender_snapshot_ref: "Ref tới TenderSnapshot (notifyNo/planNo/hash) — nguồn immutable"
+      risk_level: "Green / Amber / Red — cache rollup"
+      next_delivery_due_date: "Cache"
+      missing_docs_count: "Cache"
+      cash_needed_14d: "Cache"
+
+  - id: ContractItem
+    description: >
+      Dòng hàng vận hành trong Contract runtime. Là projection của OrderItem (khi Order tồn tại),
+      chứa status Ops (docs_status/cash_status) và deadline/lead time để cảnh báo.
+    domain: PostAward
+    owner_role: Ops
+    db_table: CONTRACT_ITEM
+    key_fields:
+      contract_id: "FK → Contract"
+      order_item_id: "Soft FK → OrderItem (nullable trong MVP)"
+      item_code: "Mã dòng nội bộ"
+      delivery_deadline: "Mốc giao runtime"
+      docs_status: "missing / partial / complete (runtime gate)"
+      cash_status: "not_needed / need_fund (runtime gate)"
 
   - id: ExecutionIssue
     description: >
@@ -89,7 +137,7 @@ entities:
     owner_role: Sale
     db_table: EXECUTION_ISSUE
     key_fields:
-      order_id: "FK → Order — bắt buộc"
+      order_id: "FK → Order — mục tiêu dài hạn (core). MVP có thể neo qua Contract"
       order_item_id: "FK → OrderItem — nullable nếu issue cấp gói"
       issue_type: "Delay / DocMissing / Quality / ScopeChange / CashGap / VendorSilence / Other"
       severity: "Low / Medium / High / Critical"
@@ -112,7 +160,7 @@ entities:
     owner_role: Finance
     db_table: PAYMENT_MILESTONE
     key_fields:
-      order_id: "FK → Order"
+      order_id: "FK → Order — mục tiêu dài hạn (core). MVP có thể neo qua Contract"
       milestone_name: "Nhãn hiển thị (VD: Tạm ứng 30%)"
       due_date: "Ngày theo hợp đồng hoặc baseline"
       amount_planned: "Số tiền dự kiến thu"
