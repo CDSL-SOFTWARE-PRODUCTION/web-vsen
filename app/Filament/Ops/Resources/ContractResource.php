@@ -4,6 +4,7 @@ namespace App\Filament\Ops\Resources;
 
 use App\Domain\Audit\AuditLogService;
 use App\Domain\Execution\GateEvaluator;
+use App\Domain\Execution\GateOverrideService;
 use App\Filament\Ops\Clusters\Demand;
 use App\Filament\Ops\Resources\ContractResource\Pages;
 use App\Filament\Ops\Resources\ContractResource\RelationManagers\ItemsRelationManager;
@@ -134,42 +135,92 @@ class ContractResource extends Resource
                         ->whereDate('next_delivery_due_date', '<', now()->toDateString())),
             ])
             ->actions([
-                Tables\Actions\Action::make('preActivateGate')
-                    ->label('Pre-activate gate')
+                Tables\Actions\Action::make('preActivateGateCheck')
+                    ->label('Pre-activate check')
                     ->color('warning')
+                    ->icon('heroicon-o-shield-check')
                     ->action(function (Contract $record): void {
-                        $result = app(GateEvaluator::class)->evaluatePreActivate($record);
-                        app(AuditLogService::class)->log(
-                            auth()->id(),
-                            'Contract',
-                            $record->id,
-                            'GateCheckPreActivate',
-                            $result
-                        );
+                        $service = app(GateOverrideService::class);
+                        $decision = $service->evaluate($record, 'preActivate');
+                        $service->writeAudit(auth()->id(), $record, $decision);
 
                         Notification::make()
-                            ->title($result['hasWarnings'] ? 'Gate warnings found' : 'Gate check passed')
-                            ->body(implode("\n", $result['warnings']) ?: 'No warning.')
-                            ->color($result['hasWarnings'] ? 'warning' : 'success')
+                            ->title($decision->hasWarnings ? 'Gate warnings found' : 'Gate check passed')
+                            ->body(implode("\n", $decision->warnings) ?: 'No warning.')
+                            ->color($decision->hasWarnings ? 'warning' : 'success')
                             ->send();
                     }),
-                Tables\Actions\Action::make('preDeliveryGate')
-                    ->label('Pre-delivery gate')
-                    ->color('warning')
-                    ->action(function (Contract $record): void {
-                        $result = app(GateEvaluator::class)->evaluatePreDelivery($record);
-                        app(AuditLogService::class)->log(
-                            auth()->id(),
-                            'Contract',
-                            $record->id,
-                            'GateCheckPreDelivery',
-                            $result
-                        );
+                Tables\Actions\Action::make('preActivateGateOverride')
+                    ->label('Override pre-activate')
+                    ->icon('heroicon-o-shield-exclamation')
+                    ->color('danger')
+                    ->form([
+                        Forms\Components\Textarea::make('override_reason')
+                            ->label('Override reason')
+                            ->helperText('Required for audit trail.')
+                            ->required()
+                            ->maxLength(1000),
+                    ])
+                    ->requiresConfirmation()
+                    ->modalHeading('Override pre-activate gate')
+                    ->modalDescription('Use override only when warnings are acceptable and documented.')
+                    ->visible(function (Contract $record): bool {
+                        return app(GateEvaluator::class)->evaluatePreActivate($record)['hasWarnings'];
+                    })
+                    ->action(function (Contract $record, array $data): void {
+                        $overrideReason = trim((string) ($data['override_reason'] ?? ''));
+                        $service = app(GateOverrideService::class);
+                        $decision = $service->override($record, 'preActivate', $overrideReason);
+                        $service->writeAudit(auth()->id(), $record, $decision);
 
                         Notification::make()
-                            ->title($result['hasWarnings'] ? 'Gate warnings found' : 'Gate check passed')
-                            ->body(implode("\n", $result['warnings']) ?: 'No warning.')
-                            ->color($result['hasWarnings'] ? 'warning' : 'success')
+                            ->title('Pre-activate gate override recorded')
+                            ->body(implode("\n", $decision->warnings))
+                            ->color('warning')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('preDeliveryGateCheck')
+                    ->label('Pre-delivery check')
+                    ->color('warning')
+                    ->icon('heroicon-o-shield-check')
+                    ->action(function (Contract $record): void {
+                        $service = app(GateOverrideService::class);
+                        $decision = $service->evaluate($record, 'preDelivery');
+                        $service->writeAudit(auth()->id(), $record, $decision);
+
+                        Notification::make()
+                            ->title($decision->hasWarnings ? 'Gate warnings found' : 'Gate check passed')
+                            ->body(implode("\n", $decision->warnings) ?: 'No warning.')
+                            ->color($decision->hasWarnings ? 'warning' : 'success')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('preDeliveryGateOverride')
+                    ->label('Override pre-delivery')
+                    ->icon('heroicon-o-shield-exclamation')
+                    ->color('danger')
+                    ->form([
+                        Forms\Components\Textarea::make('override_reason')
+                            ->label('Override reason')
+                            ->helperText('Required for audit trail.')
+                            ->required()
+                            ->maxLength(1000),
+                    ])
+                    ->requiresConfirmation()
+                    ->modalHeading('Override pre-delivery gate')
+                    ->modalDescription('Use override only when warnings are acceptable and documented.')
+                    ->visible(function (Contract $record): bool {
+                        return app(GateEvaluator::class)->evaluatePreDelivery($record)['hasWarnings'];
+                    })
+                    ->action(function (Contract $record, array $data): void {
+                        $overrideReason = trim((string) ($data['override_reason'] ?? ''));
+                        $service = app(GateOverrideService::class);
+                        $decision = $service->override($record, 'preDelivery', $overrideReason);
+                        $service->writeAudit(auth()->id(), $record, $decision);
+
+                        Notification::make()
+                            ->title('Pre-delivery gate override recorded')
+                            ->body(implode("\n", $decision->warnings))
+                            ->color('warning')
                             ->send();
                     }),
                 Tables\Actions\Action::make('prePaymentGate')

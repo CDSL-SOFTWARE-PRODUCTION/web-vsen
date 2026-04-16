@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Resources;
 
+use App\Domain\Demand\ConfirmContractCommandService;
 use App\Filament\Ops\Clusters\Demand;
 use App\Filament\Ops\Resources\OrderResource\Pages;
 use App\Filament\Ops\Resources\OrderResource\RelationManagers\ItemsRelationManager;
@@ -9,6 +10,7 @@ use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -45,6 +47,9 @@ class OrderResource extends Resource
                         ->maxLength(255),
                     Forms\Components\Select::make('state')
                         ->required()
+                        ->helperText('State transitions are controlled via command actions.')
+                        ->disabled()
+                        ->dehydrated(false)
                         ->options([
                             'SubmitTender' => 'SubmitTender',
                             'AwardTender' => 'AwardTender',
@@ -90,6 +95,25 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
+                Tables\Actions\Action::make('confirmContract')
+                    ->label('Confirm contract')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn (Order $record): bool => $record->state === 'AwardTender')
+                    ->action(function (Order $record): void {
+                        $result = app(ConfirmContractCommandService::class)->handle($record->id, auth()->id());
+
+                        Notification::make()
+                            ->title('Order moved to ConfirmContract')
+                            ->body(
+                                $result->warningRaised
+                                    ? implode("\n", $result->warnings)
+                                    : 'Transition completed without warnings.'
+                            )
+                            ->color($result->warningRaised ? 'warning' : 'success')
+                            ->send();
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ]);

@@ -1,12 +1,15 @@
 <?php
 
 use App\Domain\Audit\AuditLogService;
+use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Execution\GateEvaluator;
+use App\Domain\Execution\GateOverrideService;
 use App\Domain\Execution\GenerateExecutionPlanService;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
 use App\Models\Demand\TenderSnapshotItem;
 use App\Models\Ops\Contract;
+use App\Models\Ops\ExecutionIssue;
 use App\Models\Ops\PaymentMilestone;
 use App\Models\System\AuditLog;
 use App\Models\User;
@@ -116,5 +119,179 @@ it('stores audit trail and supports order transitions', function () {
     /** @var Contract $runtime */
     $runtime = Contract::query()->findOrFail($contract->id);
     expect($runtime->tenderSnapshot)->not->toBeNull();
+});
+
+it('records gate override audit with reason for pre delivery and pre activate', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-OVERRIDE-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item D',
+        'uom' => 'Cai',
+        'quantity_awarded' => 8,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $service = app(GateOverrideService::class);
+
+    $preDeliveryOverride = $service->override($contract, 'preDelivery', 'Proceed due to customer urgency.');
+    $service->writeAudit($actor->id, $contract, $preDeliveryOverride);
+
+    $contract->update(['tender_snapshot_id' => null]);
+    $preActivateOverride = $service->override($contract, 'preActivate', 'Allow startup while documents are being completed.');
+    $service->writeAudit($actor->id, $contract, $preActivateOverride);
+
+    $deliveryAudit = AuditLog::query()
+        ->where('entity_type', 'Contract')
+        ->where('entity_id', $contract->id)
+        ->where('action', 'GateOverridePreDelivery')
+        ->first();
+
+    expect($deliveryAudit)->not->toBeNull()
+        ->and($deliveryAudit->context['overrideApplied'])->toBeTrue()
+        ->and($deliveryAudit->context['overrideReason'])->toBe('Proceed due to customer urgency.')
+        ->and($deliveryAudit->context['hasWarnings'])->toBeTrue();
+
+    $activateAudit = AuditLog::query()
+        ->where('entity_type', 'Contract')
+        ->where('entity_id', $contract->id)
+        ->where('action', 'GateOverridePreActivate')
+        ->first();
+
+    expect($activateAudit)->not->toBeNull()
+        ->and($activateAudit->context['overrideApplied'])->toBeTrue()
+        ->and($activateAudit->context['overrideReason'])->toBe('Allow startup while documents are being completed.')
+        ->and($activateAudit->context['hasWarnings'])->toBeTrue();
+});
+
+it('rejects gate override when there are no warnings', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-OVERRIDE-002',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item E',
+        'uom' => 'Cai',
+        'quantity_awarded' => 4,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    PaymentMilestone::query()
+        ->where('contract_id', $contract->id)
+        ->update([
+            'checklist_status' => 'complete',
+            'payment_ready' => true,
+        ]);
+
+    $service = app(GateOverrideService::class);
+
+    expect(fn () => $service->override($contract->fresh(), 'prePayment', 'Force payment gate.'))
+        ->toThrow(\InvalidArgumentException::class);
+});
+
+it('confirms contract through command service and writes order audit trail', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-CONFIRM-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item F',
+        'uom' => 'Cai',
+        'quantity_awarded' => 6,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $result = app(ConfirmContractCommandService::class)->handle($contract->order_id, $actor->id);
+
+    $order = Order::query()->findOrFail($contract->order_id);
+
+    expect($order->state)->toBe('ConfirmContract')
+        ->and($order->confirmed_at)->not->toBeNull()
+        ->and($result->toState)->toBe('ConfirmContract');
+
+    $audit = AuditLog::query()
+        ->where('entity_type', 'Order')
+        ->where('entity_id', $order->id)
+        ->where('action', 'ConfirmContractCommand')
+        ->first();
+
+    expect($audit)->not->toBeNull()
+        ->and($audit->context['from_state'])->toBe('AwardTender')
+        ->and($audit->context['to_state'])->toBe('ConfirmContract');
+});
+
+it('rejects confirm contract command when order is not in award state', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-CONFIRM-002',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item G',
+        'uom' => 'Cai',
+        'quantity_awarded' => 6,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $order = Order::query()->findOrFail($contract->order_id);
+    $order->transitionTo('ConfirmContract');
+
+    expect(fn () => app(ConfirmContractCommandService::class)->handle($order->id, $actor->id))
+        ->toThrow(\RuntimeException::class);
+});
+
+it('confirms contract with warnings and syncs contract projection counters', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-CONFIRM-003',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item H',
+        'uom' => 'Cai',
+        'quantity_awarded' => 6,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    ExecutionIssue::query()->create([
+        'contract_id' => $contract->id,
+        'issue_type' => 'Quality',
+        'severity' => 'Medium',
+        'status' => 'Open',
+        'description' => 'Quality check pending.',
+    ]);
+
+    $result = app(ConfirmContractCommandService::class)->handle($contract->order_id, $actor->id);
+    $runtimeContract = Contract::query()->findOrFail($contract->id);
+
+    expect($result->warningRaised)->toBeTrue()
+        ->and(count($result->warnings))->toBeGreaterThan(0)
+        ->and($runtimeContract->risk_level)->toBe('Amber')
+        ->and($runtimeContract->missing_docs_count)->toBeGreaterThan(0)
+        ->and($runtimeContract->open_issues_count)->toBeGreaterThan(0);
 });
 
