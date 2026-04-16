@@ -6,6 +6,11 @@ use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Demand\CreateOrderFromSnapshotCommandService;
 use App\Domain\Demand\StartExecutionCommandService;
+use App\Domain\Supply\GenerateSupplyOrderFromOrderService;
+use App\Domain\Supply\ReceiveSupplyOrderService;
+use App\Domain\Supply\ReserveInventoryService;
+use App\Domain\Supply\StockTransferService;
+use App\Domain\Supply\ProcessReturnOrderService;
 use App\Domain\Execution\GateEvaluator;
 use App\Domain\Execution\GateOverrideService;
 use App\Domain\Execution\GenerateExecutionPlanService;
@@ -20,6 +25,13 @@ use App\Models\Ops\ExecutionIssue;
 use App\Models\Ops\PaymentMilestone;
 use App\Models\System\AuditLog;
 use App\Models\User;
+use App\Models\Supply\InventoryLot;
+use App\Models\Supply\InventoryLedger;
+use App\Models\Supply\InventoryReservation;
+use App\Models\Supply\SupplyOrder;
+use App\Models\Supply\StockTransfer;
+use App\Models\Supply\ReturnOrder;
+use App\Models\Supply\ReturnLineItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -455,5 +467,254 @@ it('raises pricing deviation warning on confirm contract when line price diverge
     $result = app(ConfirmContractCommandService::class)->handle($order->id, $actor->id);
     expect($result->warningRaised)->toBeTrue()
         ->and(collect($result->warnings)->contains(fn (string $warning): bool => str_contains($warning, 'Price deviation line')))->toBeTrue();
+});
+
+it('creates supply order lines for shortage items only', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-SUP-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item N',
+        'uom' => 'Cai',
+        'quantity_awarded' => 10,
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 2,
+        'name' => 'Item O',
+        'uom' => 'Cai',
+        'quantity_awarded' => 5,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    InventoryLot::query()->create([
+        'item_name' => 'Item O',
+        'available_qty' => 9,
+    ]);
+
+    $result = app(GenerateSupplyOrderFromOrderService::class)->handle((int) $contract->order_id, $actor->id);
+    $supplyOrder = SupplyOrder::query()->findOrFail((int) $result->supplyOrderId);
+
+    expect($result->shortageLinesCount)->toBe(1)
+        ->and($supplyOrder->lines()->count())->toBe(1)
+        ->and($supplyOrder->lines()->firstOrFail()->item_name)->toBe('Item N');
+});
+
+it('skips supply order generation when inventory is sufficient', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-SUP-002',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item P',
+        'uom' => 'Cai',
+        'quantity_awarded' => 4,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    InventoryLot::query()->create([
+        'item_name' => 'Item P',
+        'available_qty' => 10,
+    ]);
+
+    $result = app(GenerateSupplyOrderFromOrderService::class)->handle((int) $contract->order_id, $actor->id);
+    expect($result->supplyOrderId)->toBeNull()
+        ->and($result->shortageLinesCount)->toBe(0);
+});
+
+it('receives supply order and appends inventory ledger entries', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-SUP-003',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item Q',
+        'uom' => 'Cai',
+        'quantity_awarded' => 6,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $generated = app(GenerateSupplyOrderFromOrderService::class)->handle((int) $contract->order_id, $actor->id);
+    $supplyOrderId = (int) $generated->supplyOrderId;
+
+    $received = app(ReceiveSupplyOrderService::class)->handle($supplyOrderId, $actor->id);
+    $lot = InventoryLot::query()->where('item_name', 'Item Q')->firstOrFail();
+    $ledger = InventoryLedger::query()
+        ->where('supply_order_id', $supplyOrderId)
+        ->where('item_name', 'Item Q')
+        ->firstOrFail();
+    $supplyOrder = SupplyOrder::query()->findOrFail($supplyOrderId);
+
+    expect($received->receivedLinesCount)->toBe(1)
+        ->and((float) $lot->available_qty)->toBe(6.0)
+        ->and($ledger->action)->toBe('IN')
+        ->and((float) $ledger->qty_change)->toBe(6.0)
+        ->and((float) $ledger->balance_after)->toBe(6.0)
+        ->and($supplyOrder->status)->toBe('Received')
+        ->and($supplyOrder->lines()->firstOrFail()->status)->toBe('Received');
+});
+
+it('reserves inventory, prevents over reserve, and supports release flow', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-RES-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item R',
+        'uom' => 'Cai',
+        'quantity_awarded' => 3,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $order = Order::query()->findOrFail((int) $contract->order_id);
+    $orderItem = $order->items()->firstOrFail();
+
+    $lot = InventoryLot::query()->create([
+        'item_name' => 'Item R',
+        'available_qty' => 5,
+    ]);
+
+    $service = app(ReserveInventoryService::class);
+    $reserved = $service->reserve($orderItem->id, $lot->id, 3, $actor->id);
+
+    $lot->refresh();
+    $reservation = InventoryReservation::query()->findOrFail($reserved->reservationId);
+    $reserveLedger = InventoryLedger::query()
+        ->where('inventory_lot_id', $lot->id)
+        ->where('action', 'RESERVE')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect((float) $lot->available_qty)->toBe(2.0)
+        ->and((float) $reservation->reserved_qty)->toBe(3.0)
+        ->and((float) $reserveLedger->qty_change)->toBe(-3.0);
+
+    expect(fn () => $service->reserve($orderItem->id, $lot->id, 3, $actor->id))
+        ->toThrow(\RuntimeException::class);
+
+    $service->release($reservation->id, $actor->id);
+    $lot->refresh();
+    $reservation->refresh();
+    $releaseLedger = InventoryLedger::query()
+        ->where('inventory_lot_id', $lot->id)
+        ->where('action', 'RELEASE')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect((float) $lot->available_qty)->toBe(5.0)
+        ->and($reservation->status)->toBe('Released')
+        ->and((float) $releaseLedger->qty_change)->toBe(3.0);
+});
+
+it('ships and receives stock transfer between warehouses with ledger updates', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $sourceLot = InventoryLot::query()->create([
+        'item_name' => 'Item S',
+        'warehouse_code' => 'WH-A',
+        'available_qty' => 8,
+    ]);
+
+    $service = app(StockTransferService::class);
+    $shipped = $service->ship('Item S', 'WH-A', 'WH-B', 5, $actor->id);
+    $transfer = StockTransfer::query()->findOrFail($shipped->transferId);
+    $sourceLot->refresh();
+
+    $outLedger = InventoryLedger::query()
+        ->where('inventory_lot_id', $sourceLot->id)
+        ->where('action', 'TRANSFER_OUT')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($transfer->status)->toBe('Shipped')
+        ->and((float) $sourceLot->available_qty)->toBe(3.0)
+        ->and((float) $outLedger->qty_change)->toBe(-5.0);
+
+    $received = $service->receive($transfer->id, $actor->id);
+    $transfer->refresh();
+    $destLot = InventoryLot::query()
+        ->where('item_name', 'Item S')
+        ->where('warehouse_code', 'WH-B')
+        ->firstOrFail();
+    $inLedger = InventoryLedger::query()
+        ->where('inventory_lot_id', $destLot->id)
+        ->where('action', 'TRANSFER_IN')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($received->status)->toBe('Received')
+        ->and($transfer->status)->toBe('Received')
+        ->and((float) $destLot->available_qty)->toBe(5.0)
+        ->and((float) $inLedger->qty_change)->toBe(5.0);
+});
+
+it('blocks stock transfer when source warehouse has no matching lot', function () {
+    $service = app(StockTransferService::class);
+    expect(fn () => $service->ship('Item T', 'WH-EMPTY', 'WH-B', 1))
+        ->toThrow(\RuntimeException::class);
+});
+
+it('processes return order for restock and dispose paths', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+
+    $returnOrder = ReturnOrder::query()->create([
+        'return_code' => 'RO-001',
+        'status' => 'Approved',
+    ]);
+    ReturnLineItem::query()->create([
+        'return_order_id' => $returnOrder->id,
+        'item_name' => 'Item U',
+        'warehouse_code' => 'WH-A',
+        'quantity' => 4,
+        'condition' => 'Good',
+    ]);
+    ReturnLineItem::query()->create([
+        'return_order_id' => $returnOrder->id,
+        'item_name' => 'Item V',
+        'warehouse_code' => 'WH-A',
+        'quantity' => 2,
+        'condition' => 'Defective',
+    ]);
+
+    $result = app(ProcessReturnOrderService::class)->handle($returnOrder->id, $actor->id);
+    $returnOrder->refresh();
+
+    $restockLot = InventoryLot::query()
+        ->where('item_name', 'Item U')
+        ->where('warehouse_code', 'WH-A')
+        ->firstOrFail();
+    $restockLedger = InventoryLedger::query()
+        ->where('item_name', 'Item U')
+        ->where('action', 'RESTOCK')
+        ->latest('id')
+        ->firstOrFail();
+    $disposeLedger = InventoryLedger::query()
+        ->where('item_name', 'Item V')
+        ->where('action', 'DISPOSE')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($result->restockedLinesCount)->toBe(1)
+        ->and($result->disposedLinesCount)->toBe(1)
+        ->and($returnOrder->status)->toBe('Processing')
+        ->and((float) $restockLot->available_qty)->toBe(4.0)
+        ->and((float) $restockLedger->qty_change)->toBe(4.0)
+        ->and((float) $disposeLedger->qty_change)->toBe(-2.0);
 });
 

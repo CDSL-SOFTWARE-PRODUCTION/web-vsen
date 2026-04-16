@@ -18,6 +18,16 @@ class OrderTransitionService
 
     public function transition(Order $order, string $command, ?int $actorUserId = null): OrderTransitionResult
     {
+        // #region agent log
+        @file_get_contents('http://127.0.0.1:7271/ingest/c3f87a09-8801-4c97-9286-e3072a8d15fd', false, stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/json\r\nX-Debug-Session-Id: dd6099\r\n",
+                'content' => json_encode(['sessionId' => 'dd6099', 'runId' => 'phaseAtoC', 'hypothesisId' => 'H3', 'location' => 'OrderTransitionService.php:transition:entry', 'message' => 'Order transition requested', 'data' => ['order_id' => $order->id, 'from_state' => $order->state, 'command' => $command], 'timestamp' => round(microtime(true) * 1000)]),
+                'timeout' => 1,
+            ],
+        ]));
+        // #endregion
         $order->loadMissing(['items.priceListItem', 'contracts.documents', 'contracts.issues']);
         $fromState = $order->state;
         $toState = $this->resolveNextState($command, $fromState);

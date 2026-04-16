@@ -3,6 +3,7 @@
 namespace App\Models\Demand;
 
 use App\Models\Ops\Contract;
+use App\Models\Supply\SupplyOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -52,6 +53,11 @@ class Order extends Model
     public function salesTouchpoints(): HasMany
     {
         return $this->hasMany(SalesTouchpoint::class);
+    }
+
+    public function supplyOrders(): HasMany
+    {
+        return $this->hasMany(SupplyOrder::class);
     }
 
     public function transitionTo(string $nextState): void
