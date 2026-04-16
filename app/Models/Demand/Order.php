@@ -13,10 +13,11 @@ class Order extends Model
 {
     use HasFactory;
 
+    private bool $allowStateMutation = false;
+
     protected $fillable = [
         'order_code',
         'name',
-        'state',
         'tender_snapshot_id',
         'awarded_at',
         'confirmed_at',
@@ -48,6 +49,11 @@ class Order extends Model
         return $this->hasMany(Contract::class);
     }
 
+    public function salesTouchpoints(): HasMany
+    {
+        return $this->hasMany(SalesTouchpoint::class);
+    }
+
     public function transitionTo(string $nextState): void
     {
         $allowedTransitions = [
@@ -76,7 +82,23 @@ class Order extends Model
         if ($nextState === 'StartExecution') {
             $this->execution_started_at = now();
         }
+        $this->allowStateMutation = true;
         $this->save();
+        $this->allowStateMutation = false;
+    }
+
+    public function setInitialState(string $initialState): void
+    {
+        $this->state = $initialState;
+    }
+
+    protected static function booted(): void
+    {
+        static::updating(function (Order $order): void {
+            if ($order->isDirty('state') && ! $order->allowStateMutation) {
+                throw new RuntimeException('Order state updates must go through command transition services.');
+            }
+        });
     }
 }
 

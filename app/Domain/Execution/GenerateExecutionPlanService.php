@@ -3,9 +3,8 @@
 namespace App\Domain\Execution;
 
 use App\Domain\Audit\AuditLogService;
+use App\Domain\Demand\CreateOrderFromSnapshotCommandService;
 use App\Domain\Demand\OrderContractProjectionUpdater;
-use App\Models\Demand\Order;
-use App\Models\Demand\OrderItem;
 use App\Models\Demand\TenderSnapshot;
 use App\Models\Ops\Contract;
 use App\Models\Ops\ContractItem;
@@ -18,7 +17,8 @@ class GenerateExecutionPlanService
 {
     public function __construct(
         private readonly AuditLogService $auditLogService,
-        private readonly OrderContractProjectionUpdater $projectionUpdater
+        private readonly OrderContractProjectionUpdater $projectionUpdater,
+        private readonly CreateOrderFromSnapshotCommandService $createOrderFromSnapshotCommandService
     ) {
     }
 
@@ -52,10 +52,10 @@ class GenerateExecutionPlanService
 
         /** @var Contract $contract */
         $contract = DB::transaction(function () use ($snapshot, $actorUserId): Contract {
-            $order = $this->createOrderFromSnapshot($snapshot);
+            $orderResult = $this->createOrderFromSnapshotCommandService->handle($snapshot, $actorUserId);
 
             $contract = Contract::query()->create([
-                'order_id' => $order->id,
+                'order_id' => $orderResult->orderId,
                 'tender_snapshot_ref' => $snapshot->source_notify_no . ':' . ($snapshot->snapshot_hash ?? 'na'),
                 'tender_snapshot_id' => $snapshot->id,
                 'contract_code' => 'CT-' . $snapshot->id . '-' . now()->format('YmdHis'),
@@ -84,6 +84,7 @@ class GenerateExecutionPlanService
 
             $this->seedChecklistDocuments($contract->id);
             $this->seedDefaultMilestone($contract->id);
+            $order = $contract->order()->firstOrFail();
             $this->projectionUpdater->syncFromOrder($order, $contract);
 
             $this->auditLogService->log(
@@ -93,7 +94,7 @@ class GenerateExecutionPlanService
                 'GenerateExecutionPlan',
                 [
                     'contract_id' => $contract->id,
-                    'order_id' => $order->id,
+                    'order_id' => $orderResult->orderId,
                 ]
             );
 
@@ -101,30 +102,6 @@ class GenerateExecutionPlanService
         });
 
         return $contract;
-    }
-
-    private function createOrderFromSnapshot(TenderSnapshot $snapshot): Order
-    {
-        $order = Order::query()->create([
-            'order_code' => 'ORD-' . $snapshot->id . '-' . now()->format('YmdHis'),
-            'name' => 'Order from ' . $snapshot->source_notify_no,
-            'state' => 'AwardTender',
-            'tender_snapshot_id' => $snapshot->id,
-            'awarded_at' => now(),
-        ]);
-
-        foreach ($snapshot->items as $item) {
-            OrderItem::query()->create([
-                'order_id' => $order->id,
-                'line_no' => $item->line_no,
-                'name' => $item->name,
-                'uom' => $item->uom,
-                'quantity' => (float) $item->quantity_awarded,
-                'status' => 'planned',
-            ]);
-        }
-
-        return $order;
     }
 
     private function seedChecklistDocuments(int $contractId): void

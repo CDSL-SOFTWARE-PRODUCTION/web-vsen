@@ -4,11 +4,15 @@ use App\Domain\Audit\AuditLogService;
 use App\Domain\Demand\CloseContractCommandService;
 use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
+use App\Domain\Demand\CreateOrderFromSnapshotCommandService;
 use App\Domain\Demand\StartExecutionCommandService;
 use App\Domain\Execution\GateEvaluator;
 use App\Domain\Execution\GateOverrideService;
 use App\Domain\Execution\GenerateExecutionPlanService;
 use App\Models\Demand\Order;
+use App\Models\Demand\PriceList;
+use App\Models\Demand\PriceListItem;
+use App\Models\Demand\SalesTouchpoint;
 use App\Models\Demand\TenderSnapshot;
 use App\Models\Demand\TenderSnapshotItem;
 use App\Models\Ops\Contract;
@@ -347,5 +351,109 @@ it('returns existing runtime when generating plan twice for same snapshot', func
     expect($second->id)->toBe($first->id)
         ->and(Contract::query()->where('tender_snapshot_id', $snapshot->id)->count())->toBe(1)
         ->and(Order::query()->where('tender_snapshot_id', $snapshot->id)->count())->toBe(1);
+});
+
+it('creates order and lines from locked snapshot via command service', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-ORDER-CMD-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item K',
+        'uom' => 'Bo',
+        'quantity_awarded' => 7,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $result = app(CreateOrderFromSnapshotCommandService::class)->handle($snapshot->fresh('items'), $actor->id);
+    $order = Order::query()->findOrFail($result->orderId);
+
+    expect($order->state)->toBe('AwardTender')
+        ->and($order->items()->count())->toBe(1)
+        ->and($result->orderItemsCount)->toBe(1);
+
+    $audit = AuditLog::query()
+        ->where('entity_type', 'TenderSnapshot')
+        ->where('entity_id', $snapshot->id)
+        ->where('action', 'AwardTenderCommand')
+        ->first();
+    expect($audit)->not->toBeNull();
+    expect(SalesTouchpoint::query()->where('order_id', $order->id)->count())->toBe(1);
+});
+
+it('rejects create order command when snapshot is unlocked', function () {
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-ORDER-CMD-002',
+    ]);
+
+    expect(fn () => app(CreateOrderFromSnapshotCommandService::class)->handle($snapshot->fresh('items')))
+        ->toThrow(\RuntimeException::class);
+});
+
+it('blocks direct state updates outside transition services', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-BYPASS-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item M',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $order = Order::query()->findOrFail($contract->order_id);
+
+    $order->state = 'ContractClosed';
+    expect(fn () => $order->save())->toThrow(\RuntimeException::class);
+});
+
+it('raises pricing deviation warning on confirm contract when line price diverges from price list', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-PRICE-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item L',
+        'uom' => 'Cai',
+        'quantity_awarded' => 2,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    $priceList = PriceList::query()->create([
+        'name' => 'Tender Base Price',
+        'channel' => 'Tender',
+    ]);
+    $priceItem = PriceListItem::query()->create([
+        'price_list_id' => $priceList->id,
+        'product_name' => 'Item L',
+        'unit_price' => 100,
+        'min_qty' => 1,
+        'currency' => 'VND',
+    ]);
+
+    $order = Order::query()->findOrFail($contract->order_id);
+    $orderItem = $order->items()->firstOrFail();
+    $orderItem->update([
+        'price_list_item_id' => $priceItem->id,
+        'unit_price' => 130,
+    ]);
+
+    $result = app(ConfirmContractCommandService::class)->handle($order->id, $actor->id);
+    expect($result->warningRaised)->toBeTrue()
+        ->and(collect($result->warnings)->contains(fn (string $warning): bool => str_contains($warning, 'Price deviation line')))->toBeTrue();
 });
 

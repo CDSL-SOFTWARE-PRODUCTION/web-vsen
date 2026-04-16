@@ -18,6 +18,7 @@ class OrderTransitionService
 
     public function transition(Order $order, string $command, ?int $actorUserId = null): OrderTransitionResult
     {
+        $order->loadMissing(['items.priceListItem', 'contracts.documents', 'contracts.issues']);
         $fromState = $order->state;
         $toState = $this->resolveNextState($command, $fromState);
         $contract = $order->contracts()->first();
@@ -25,7 +26,7 @@ class OrderTransitionService
             throw new RuntimeException('Order transition requires runtime contract projection.');
         }
 
-        $warnings = $this->buildWarnings($command, $contract);
+        $warnings = $this->buildWarnings($command, $contract, $order);
         $result = new OrderTransitionResult(
             orderId: $order->id,
             command: $command,
@@ -74,7 +75,7 @@ class OrderTransitionService
     /**
      * @return list<string>
      */
-    private function buildWarnings(string $command, Contract $contract): array
+    private function buildWarnings(string $command, Contract $contract, Order $order): array
     {
         $warnings = [];
         if ($command === 'ConfirmContract' && $contract->tender_snapshot_id === null) {
@@ -85,6 +86,26 @@ class OrderTransitionService
             $missingDocs = $contract->documents()->where('status', 'missing')->count();
             if ($missingDocs > 0) {
                 $warnings[] = "Missing documents: {$missingDocs}.";
+            }
+        }
+
+        if ($command === 'ConfirmContract') {
+            $thresholdPercent = 10.0;
+            foreach ($order->items as $item) {
+                if ($item->priceListItem === null || $item->unit_price === null) {
+                    continue;
+                }
+
+                $priceListValue = (float) $item->priceListItem->unit_price;
+                if ($priceListValue <= 0) {
+                    continue;
+                }
+
+                $actualValue = (float) $item->unit_price;
+                $deviationPercent = abs($actualValue - $priceListValue) / $priceListValue * 100;
+                if ($deviationPercent > $thresholdPercent) {
+                    $warnings[] = "Price deviation line {$item->line_no}: {$deviationPercent}% over allowed threshold.";
+                }
             }
         }
 

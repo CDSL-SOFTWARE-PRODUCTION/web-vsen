@@ -17,6 +17,8 @@ class OrderItem extends Model
         'uom',
         'quantity',
         'status',
+        'price_list_item_id',
+        'unit_price',
     ];
 
     protected function casts(): array
@@ -25,12 +27,19 @@ class OrderItem extends Model
             'order_id' => 'integer',
             'line_no' => 'integer',
             'quantity' => 'decimal:3',
+            'price_list_item_id' => 'integer',
+            'unit_price' => 'decimal:2',
         ];
     }
 
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function priceListItem(): BelongsTo
+    {
+        return $this->belongsTo(PriceListItem::class);
     }
 }
 
