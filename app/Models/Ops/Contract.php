@@ -2,8 +2,11 @@
 
 namespace App\Models\Ops;
 
+use App\Models\Demand\Order;
+use App\Models\Demand\TenderSnapshot;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Contract extends Model
@@ -13,6 +16,7 @@ class Contract extends Model
     protected $fillable = [
         'order_id',
         'tender_snapshot_ref',
+        'tender_snapshot_id',
         'contract_code',
         'name',
         'customer_name',
@@ -31,6 +35,7 @@ class Contract extends Model
     {
         return [
             'order_id' => 'integer',
+            'tender_snapshot_id' => 'integer',
             'start_date' => 'date',
             'end_date' => 'date',
             'next_delivery_due_date' => 'date',
@@ -62,5 +67,15 @@ class Contract extends Model
     public function cashPlanEvents(): HasMany
     {
         return $this->hasMany(CashPlanEvent::class);
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function tenderSnapshot(): BelongsTo
+    {
+        return $this->belongsTo(TenderSnapshot::class);
     }
 }

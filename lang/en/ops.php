@@ -82,6 +82,10 @@ return [
             'mark_ready' => 'Mark ready',
         ],
     ],
+    'gates' => [
+        'payment_ready' => 'Milestone marked as payment-ready.',
+        'warn_marked_ready' => 'Milestone marked ready with warning override.',
+    ],
     'document' => [
         'group' => [
             'source' => 'Source docs',

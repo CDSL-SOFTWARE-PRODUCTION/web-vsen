@@ -82,6 +82,10 @@ return [
             'mark_ready' => 'Danh dau san sang',
         ],
     ],
+    'gates' => [
+        'payment_ready' => 'Da danh dau moc san sang thanh toan.',
+        'warn_marked_ready' => 'Danh dau san sang voi canh bao override.',
+    ],
     'document' => [
         'group' => [
             'source' => 'Chung tu nguon',

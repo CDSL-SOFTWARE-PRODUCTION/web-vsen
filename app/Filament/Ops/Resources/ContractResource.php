@@ -2,6 +2,8 @@
 
 namespace App\Filament\Ops\Resources;
 
+use App\Domain\Audit\AuditLogService;
+use App\Domain\Execution\GateEvaluator;
 use App\Filament\Ops\Clusters\Demand;
 use App\Filament\Ops\Resources\ContractResource\Pages;
 use App\Filament\Ops\Resources\ContractResource\RelationManagers\ItemsRelationManager;
@@ -9,6 +11,7 @@ use App\Models\Ops\Contract;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -131,6 +134,63 @@ class ContractResource extends Resource
                         ->whereDate('next_delivery_due_date', '<', now()->toDateString())),
             ])
             ->actions([
+                Tables\Actions\Action::make('preActivateGate')
+                    ->label('Pre-activate gate')
+                    ->color('warning')
+                    ->action(function (Contract $record): void {
+                        $result = app(GateEvaluator::class)->evaluatePreActivate($record);
+                        app(AuditLogService::class)->log(
+                            auth()->id(),
+                            'Contract',
+                            $record->id,
+                            'GateCheckPreActivate',
+                            $result
+                        );
+
+                        Notification::make()
+                            ->title($result['hasWarnings'] ? 'Gate warnings found' : 'Gate check passed')
+                            ->body(implode("\n", $result['warnings']) ?: 'No warning.')
+                            ->color($result['hasWarnings'] ? 'warning' : 'success')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('preDeliveryGate')
+                    ->label('Pre-delivery gate')
+                    ->color('warning')
+                    ->action(function (Contract $record): void {
+                        $result = app(GateEvaluator::class)->evaluatePreDelivery($record);
+                        app(AuditLogService::class)->log(
+                            auth()->id(),
+                            'Contract',
+                            $record->id,
+                            'GateCheckPreDelivery',
+                            $result
+                        );
+
+                        Notification::make()
+                            ->title($result['hasWarnings'] ? 'Gate warnings found' : 'Gate check passed')
+                            ->body(implode("\n", $result['warnings']) ?: 'No warning.')
+                            ->color($result['hasWarnings'] ? 'warning' : 'success')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('prePaymentGate')
+                    ->label('Pre-payment gate')
+                    ->color('warning')
+                    ->action(function (Contract $record): void {
+                        $result = app(GateEvaluator::class)->evaluatePrePayment($record);
+                        app(AuditLogService::class)->log(
+                            auth()->id(),
+                            'Contract',
+                            $record->id,
+                            'GateCheckPrePayment',
+                            $result
+                        );
+
+                        Notification::make()
+                            ->title($result['hasWarnings'] ? 'Gate warnings found' : 'Gate check passed')
+                            ->body(implode("\n", $result['warnings']) ?: 'No warning.')
+                            ->color($result['hasWarnings'] ? 'warning' : 'success')
+                            ->send();
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])

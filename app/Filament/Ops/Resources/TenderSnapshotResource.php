@@ -55,6 +55,9 @@ class TenderSnapshotResource extends Resource
                         Forms\Components\TextInput::make('snapshot_hash')
                             ->disabled()
                             ->dehydrated(false),
+                        Forms\Components\TextInput::make('snapshot_version')
+                            ->disabled()
+                            ->dehydrated(false),
                     ])
                     ->columns(2),
             ]);

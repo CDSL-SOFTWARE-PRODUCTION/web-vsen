@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Resources;
 
+use App\Domain\Audit\AuditLogService;
 use App\Filament\Ops\Clusters\Finance;
 use App\Filament\Ops\Resources\PaymentMilestoneResource\Pages;
 use App\Models\Ops\Contract;
@@ -9,6 +10,7 @@ use App\Models\Ops\PaymentMilestone;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -104,10 +106,26 @@ class PaymentMilestoneResource extends Resource
                     ->label(__('ops.payment_milestone.actions.mark_ready'))
                     ->color('success')
                     ->visible(fn (PaymentMilestone $record): bool => !$record->payment_ready)
-                    ->action(fn (PaymentMilestone $record): bool => $record->update([
-                        'payment_ready' => true,
-                        'checklist_status' => 'complete',
-                    ])),
+                    ->action(function (PaymentMilestone $record): void {
+                        $hasWarning = $record->checklist_status !== 'complete';
+                        $record->update([
+                            'payment_ready' => true,
+                            'checklist_status' => 'complete',
+                        ]);
+
+                        app(AuditLogService::class)->log(
+                            auth()->id(),
+                            'PaymentMilestone',
+                            $record->id,
+                            'MarkPaymentReady',
+                            ['warn_override' => $hasWarning]
+                        );
+
+                        Notification::make()
+                            ->title($hasWarning ? __('ops.gates.warn_marked_ready') : __('ops.gates.payment_ready'))
+                            ->color($hasWarning ? 'warning' : 'success')
+                            ->send();
+                    }),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

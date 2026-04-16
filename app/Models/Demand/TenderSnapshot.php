@@ -3,6 +3,7 @@
 namespace App\Models\Demand;
 
 use App\Models\User;
+use App\Models\Ops\Contract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,12 +22,14 @@ class TenderSnapshot extends Model
         'locked_at',
         'locked_by_user_id',
         'snapshot_hash',
+        'snapshot_version',
     ];
 
     protected function casts(): array
     {
         return [
             'locked_at' => 'datetime',
+            'snapshot_version' => 'integer',
         ];
     }
 
@@ -55,6 +58,11 @@ class TenderSnapshot extends Model
         return $this->hasMany(TenderSnapshotAttachment::class);
     }
 
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(Contract::class);
+    }
+
     public function isLocked(): bool
     {
         return $this->locked_at !== null;
@@ -69,6 +77,7 @@ class TenderSnapshot extends Model
         $this->locked_at = now();
         $this->locked_by_user_id = $actorUserId ?? Auth::id();
         $this->snapshot_hash = $this->computeSnapshotHash();
+        $this->snapshot_version = max(1, (int) $this->snapshot_version);
 
         $this->save();
     }
