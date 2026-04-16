@@ -1,126 +1,170 @@
-# Implementation Roadmap (Đường ray triển khai)
+# Implementation Roadmap (Business OS Build Path)
 
-Mục tiêu của file này: biến `model/*` + `doc/*` thành **backlog có thứ tự** để bạn không “build cả hệ thống cùng lúc”.
+Mục tiêu của file này: biến `model/*` + `doc/*` thành backlog có thứ tự để build được **toàn bộ Business OS**, không chỉ Ops runtime.
 
-Nguyên tắc gốc (ref: `doc/system_architecture.md`)
-- **Event + Constraint = Physics**
-- **Document là Proof** mở cổng state
-- Ưu tiên “máy gợi ý → người Confirm”, không bắt nhập liệu sâu
-
----
-
-## Scope hiện tại (điểm đứng)
-
-Bạn đã có **Ops Runtime** chạy được trên Filament:
-- Tables/Models: `contracts`, `contract_items`, `documents`, `payment_milestones`, `cash_plan_events`, `execution_issues`
-- Control tower: widgets + `ContractRiskService`
-
-MVP 1.5 hợp lý nhất: bổ sung lớp **Tender Snapshot → Generate Execution Plan** để “trúng là chạy được”.
+Nguyên tắc nền (ref: `doc/system_architecture.md`)
+- **Model-first**: sửa `model/*` trước, app theo sau.
+- **Event + Constraint = Physics**: không đi state bằng UI tắt.
+- **Document là Proof**: điều kiện mở cổng state.
+- **Human-in-the-loop**: máy gợi ý, người confirm.
+- **Backward-compatible rollout**: ưu tiên add, không phá flow đang chạy.
 
 ---
 
-## Slice 1 — Tender Snapshot (Immutable)
+## Trạng thái hiện tại
+
+Đã có nền Ops runtime và slice hậu trúng thầu:
+- `TenderSnapshot` + Lock + Generate plan
+- `Contract`, `ContractItem`, `Document`, `PaymentMilestone`, `ExecutionIssue`, `CashPlanEvent`
+- Risk cache/dashboard, gate warn-first, audit trail nền
+
+Khoảng trống để hoàn thành Business OS:
+- Core `Order` state machine chưa là trung tâm tuyệt đối.
+- Demand/Supply/Inventory/Delivery/Finance chưa nối thành một luồng end-to-end.
+- Pricing + Sales touchpoint chưa thành năng lực vận hành chính thức.
+
+---
+
+## North Star: Full Business OS
+
+Done khi đạt đủ 5 điều kiện:
+1. `Order` là aggregate root thật sự theo `model/states.yaml`.
+2. Mọi domain chính chạy được theo luồng dọc: Demand -> Supply -> Inventory -> Delivery -> Cash.
+3. Constraint IDs trong `model/constraints.yaml` có enforcement rõ (hard hoặc warn+audit).
+4. ERD trong `doc/system_architecture.md` và `model/entities.yaml` luôn đồng bộ (audit script pass).
+5. Mỗi domain có test tích hợp tối thiểu cho happy path + failure gates.
+
+---
+
+## Phase A — Stabilize Foundation (đang làm)
 
 ### Mục tiêu
-Tạo được “bản chụp” gói thầu/hợp đồng trúng từ muasamcong (metadata + file đính kèm), và **Lock** để bất biến.
+Chốt nền post-award để làm bệ phóng cho full OS.
 
-### Map sang `model/`
-- **Entity**: `TenderSnapshot` (ref: `model/entities.yaml`)
-- **Event/Command**: `LockTenderSnapshot` (ref: `model/events.yaml`)
-- **Quan hệ**: `Tender → TenderSnapshot` (ref: `model/relations.yaml`)
+### Scope
+- Hoàn thiện `TenderSnapshot` immutable + hash/version.
+- Chuẩn hóa `GenerateExecutionPlan` theo FVTPP.
+- Gate pre-activate / pre-delivery / pre-payment với warn-first + override audit.
+- `AuditLog` vận hành được cho các action trọng yếu.
 
-### UI tối thiểu
-- Form tạo snapshot: `source_notify_no`, `source_plan_no`, danh sách file đính kèm
-- Action **Lock** (sau Lock: không cho sửa nội dung snapshot)
-
-### Acceptance criteria
-- Tạo snapshot từ input thủ công + upload file
-- Lock xong snapshot **read-only**
-- Có `snapshot_hash`/version để biết snapshot đã thay đổi hay chưa (nếu re-import)
+### Deliverables
+- Resource UI ổn định cho Snapshot/Contract/Gate/Audit.
+- Migration an toàn cho `orders`, `order_items`, `audit_logs`, refs cần thiết.
+- Feature tests pass cho luồng Snapshot -> Runtime.
 
 ---
 
-## Slice 2 — Generate Execution Plan (Snapshot → Contract Runtime)
+## Phase B — Core Demand OS (`Order` as Aggregate Root)
 
 ### Mục tiêu
-Sinh runtime vận hành từ snapshot để Ops chạy ngay: `Contract` + `ContractItem` + checklist `Document` + `PaymentMilestone`.
+Đưa toàn bộ nghiệp vụ về trục `Order`/`OrderItem`.
 
-### Map sang `model/`
-- **Event/Command**: `GenerateExecutionPlan` (ref: `model/events.yaml`)
-- **Entity runtime**: `Contract`, `ContractItem` (ref: `model/entities.yaml`)
-- **Quan hệ**: `Order → Contract (1-1)` ở dài hạn; MVP tối thiểu giữ `tender_snapshot_ref` (ref: `model/relations.yaml`)
+### Map sang model
+- Entities: `Order`, `OrderItem`, `Tender`, `TenderItem`, `SalesTouchpoint`, `PriceList`, `PriceListItem`
+- States/events: `SubmitTender`, `AwardTender`, `ConfirmContract`, `StartExecution`, `ConfirmFulfillment`, `CloseContract`, `AbandonTender`
+- Constraints: ưu tiên `C-ORD-*`, các ràng buộc credit/docs liên quan
 
-### UI tối thiểu
-- 1 action “Generate plan” từ snapshot
-- 1 màn hình review: line-items và checklist trước khi Activate
+### Build steps
+1. Dựng state transition service cho `Order` (hard guard cho invalid transitions).
+2. Nối `Tender/TenderItem` -> `Order/OrderItem` bằng command rõ input/output.
+3. Tích hợp pricing (`PriceList/PriceListItem`) vào lúc chốt order lines.
+4. Tích hợp `SalesTouchpoint` để không mất handover context.
+5. Giảm dần nhập trực tiếp `Contract`; `Contract` chỉ còn projection.
 
-### Acceptance criteria
-- Generate tạo đủ:
-  - `contracts` (project runtime)
-  - `contract_items` (line-items)
-  - `documents` (template checklist theo profile)
-  - `payment_milestones` (mốc thu)
-- Ops vào dashboard thấy ngay “đỏ/vàng/xanh” theo cache
+### Acceptance
+- Tạo/chuyển trạng thái order không bypass được constraints chính.
+- Có trace từ `Order` sang `Contract` runtime và ngược lại.
+- Có test cho các chuyển trạng thái hợp lệ/không hợp lệ.
 
 ---
 
-## Slice 3 — 3 Gates vận hành (Physics chạy thật)
+## Phase C — Supply + Inventory OS
 
 ### Mục tiêu
-Chặn đúng “cổng”: chưa đủ hồ sơ thì không cho đi tiếp.
+Nối được nhu cầu mua hàng và tồn kho theo đúng physics.
 
-### Gate 1: Pre-commit / Activate
-- Điều kiện: snapshot lock + items map đủ + checklist seed đủ
+### Map sang model
+- Entities: `SupplyOrder`, `InventoryLot`, `InventoryReservation`, `InventoryLedger`, `StockTransfer`, `StockTransferLine`, `ReturnOrder`, `ReturnLineItem`
+- Constraints: nhóm `C-SUP-*`, `C-INV-*`
 
-### Gate 2: Pre-delivery
-- Điều kiện: `docs_status != missing` và không có issue `DocMissing/Quality` mở
-- Liên hệ model: `C-EXE-003` (hiện warn) → nếu cần “hard gate” thì tạo constraint hard tương đương
+### Build steps
+1. `OrderItem` -> `SupplyOrder` (khi thiếu nguồn hàng).
+2. Nhập kho tạo `InventoryLot` + append `InventoryLedger`.
+3. Reserve theo `InventoryReservation` (lock/release rõ rule).
+4. Điều chuyển kho với `StockTransfer`.
+5. Quy trình return/re-stock/dispose.
 
-### Gate 3: Pre-payment
-- Điều kiện: milestone checklist complete thì mới `payment_ready`
-- Liên hệ model: `C-EXE-004` (hiện warn) → nếu cần “hard gate” thì tạo constraint hard tương đương
-
-### Acceptance criteria
-- Mỗi gate có:
-  - rule rõ ràng
-  - thông báo lỗi rõ ràng
-  - audit log khi override (nếu có)
+### Acceptance
+- Ledger phản ánh đúng IN/OUT/RESERVE.
+- Reserve có timeout/release policy rõ.
+- Có test tình huống thiếu hàng, over-reserve, transfer sai kho.
 
 ---
 
-## Slice 4 — Import Audit Trail (Data lineage)
+## Phase D — Delivery + Cash OS
 
 ### Mục tiêu
-Truy vết “field nào lấy từ đâu”, ai confirm, lúc nào lock.
+Hoàn tất vòng thực thi từ giao hàng đến hóa đơn/thu tiền.
 
-### Map sang `model/`
-- **Entity**: `AuditLog` (ref: `model/entities.yaml`)
+### Map sang model
+- Entities: `Delivery`, `DeliveryRoute`, `Vehicle`, `Invoice`, `Ledger`, `PaymentMilestone`, `Document`
+- Constraints: nhóm `C-DEL-*`, `C-FIN-*`, `C-AR-*`, `C-EXE-*`
 
-### Acceptance criteria
-- Log: lock snapshot, generate plan, update status, upload/validate docs, resolve issues
-- Có thể trace từ Contract runtime ngược về snapshot/file nguồn
+### Build steps
+1. Dispatch delivery từ order/runtime projection.
+2. Enforce proof docs trước milestone/payment readiness.
+3. Issue invoice theo điều kiện giao hàng/chứng từ.
+4. Ghi nhận ledger inflow/outflow/internal transfer.
+5. Cảnh báo overdue/AR aging + cash gap.
+
+### Acceptance
+- Không thể issue invoice khi thiếu điều kiện.
+- Payment readiness đi qua checklist rõ ràng.
+- Dashboard tài chính phản ánh đúng aging/gap.
 
 ---
 
-## Slice 5 — Core `Order` (khi Ops đã ổn định)
+## Phase E — Governance, Intelligence, and Hardening
 
 ### Mục tiêu
-Triển khai đúng state machine `Order` như `model/states.yaml` (SubmitTender → AwardTender → ConfirmContract…).
+Nâng từ MVP vận hành lên hệ thống bền vững.
 
-### Map sang `model/`
-- `Order`, `OrderItem` (entities)
-- events: `SubmitTender`, `AwardTender`, `ConfirmContract`, `StartExecution`, ...
-- constraints: `C-ORD-*`, `C-FIN-*`, ...
+### Scope
+- Chuyển dần warn-first sang hard gate ở constraint critical.
+- Chuẩn hóa command/event log cho audit/replay.
+- Auto doc-model consistency check trong CI.
+- Data migration plan cho legacy rows không đủ refs.
+- Permission matrix theo role/domain (Admin/Sale/Ops/Finance/Warehouse/Procurement).
 
-### Acceptance criteria
-- `Order` là aggregate root đúng nghĩa
-- `Contract` trở thành projection “đúng bài” (1-1 với `Order`)
-- Bắt đầu migrate dần: add `order_id` sang các bảng runtime phụ nếu cần (issues/milestones/docs)
+### Acceptance
+- Các constraint critical có enforcement mode rõ.
+- CI chặn merge nếu `doc/` và `model/` lệch.
+- Có runbook rollback + data backfill cho từng migration lớn.
 
 ---
 
-## “Hôm nay làm gì?” (để khỏi loạn)
+## Dependency graph (thứ tự bắt buộc)
 
-- Nếu bạn đang ở MVP 1.5: **làm Slice 1 → Slice 2 → Slice 3**.
-- Tuyệt đối không nhảy sang Slice 5 khi Slice 2 chưa chạy được “trúng là tạo được runtime”.
+1. Phase A -> B (nền runtime + audit xong mới nâng aggregate root).
+2. Phase B -> C (có demand chuẩn mới tính supply/inventory đúng).
+3. Phase C -> D (delivery/cash phụ thuộc availability + reservation).
+4. Phase D -> E (governance/hard gate sau khi luồng chính ổn định).
+
+---
+
+## Work mode đề xuất (để không loạn)
+
+- Luôn triển khai theo **vertical slice**: UI + command/service + persistence + test.
+- Mỗi PR chỉ 1 capability rõ (ví dụ: `Order state transition`, `Reserve inventory`, `Issue invoice gate`).
+- Không mở domain mới nếu domain trước chưa có test integration pass.
+- Mỗi phase đều phải có checklist “definition of done” trước khi qua phase tiếp theo.
+
+---
+
+## “Hôm nay làm gì?”
+
+Nếu mục tiêu là build full Business OS, thứ tự ưu tiên hiện tại:
+1. Chốt hết phần còn thiếu của **Phase A** (ổn định runtime + audit + UI vận hành).
+2. Bắt đầu **Phase B** từ `Order` state machine chuẩn + projection contract.
+3. Chỉ sang Supply/Inventory khi `Order` đã là nguồn sự thật duy nhất.
 

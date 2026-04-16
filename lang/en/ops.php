@@ -36,11 +36,27 @@ return [
     ],
     'resources' => [
         'contract' => ['navigation' => 'Contracts'],
+        'order' => ['navigation' => 'Orders'],
         'payment_milestone' => ['navigation' => 'Payment milestones'],
         'cash_plan_event' => ['navigation' => 'Cash plan events'],
         'document' => ['navigation' => 'Documents'],
         'execution_issue' => ['navigation' => 'Execution issues'],
+        'audit_log' => ['navigation' => 'Audit logs'],
         'user' => ['navigation' => 'Users'],
+    ],
+    'order' => [
+        'section' => [
+            'order_info' => 'Order info',
+        ],
+        'fields' => [
+            'tender_snapshot' => 'Tender snapshot',
+            'items_count' => 'Items',
+        ],
+    ],
+    'audit_log' => [
+        'fields' => [
+            'actor' => 'Actor',
+        ],
     ],
     'contract' => [
         'section' => [

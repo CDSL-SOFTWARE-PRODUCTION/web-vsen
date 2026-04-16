@@ -598,6 +598,38 @@ erDiagram
         string execution_risk_level "Green Amber Red"
         string status "state machine Order"
     }
+    TenderSnapshot {
+        string id PK
+        string source_system
+        string source_notify_no
+        string source_plan_no
+        timestamp locked_at
+        string locked_by_user_id FK
+        string snapshot_hash
+        int snapshot_version
+    }
+    Contract {
+        string id PK
+        string order_id FK
+        string tender_snapshot_ref
+        string tender_snapshot_id FK
+        string contract_code
+        string name
+        string customer_name
+        string risk_level
+    }
+    ContractItem {
+        string id PK
+        string contract_id FK
+        string order_item_id FK
+        string item_code
+        string name
+        int quantity
+        date delivery_deadline
+        string docs_status
+        string cash_status
+        string line_risk_level
+    }
     OrderItem {
         string id PK
         string order_id FK
@@ -824,6 +856,10 @@ erDiagram
     Product ||--o{ PriceListItem : priced_in
 
     Order ||--|{ OrderItem : contains
+    TenderSnapshot ||--o{ Contract : seeds_runtime
+    Contract ||--|{ ContractItem : runtime_lines
+    Order ||--o{ Contract : projected_runtime
+    OrderItem ||--o{ ContractItem : projected_line
     Order ||--|| Invoice : triggers_invoice
     Order ||--o{ Delivery : deliveries
     Order ||--o{ Document : documents

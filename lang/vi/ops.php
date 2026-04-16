@@ -36,11 +36,27 @@ return [
     ],
     'resources' => [
         'contract' => ['navigation' => 'Hop dong'],
+        'order' => ['navigation' => 'Don hang'],
         'payment_milestone' => ['navigation' => 'Moc thanh toan'],
         'cash_plan_event' => ['navigation' => 'Ke hoach dong tien'],
         'document' => ['navigation' => 'Chung tu'],
         'execution_issue' => ['navigation' => 'Van de thuc thi'],
+        'audit_log' => ['navigation' => 'Nhat ky audit'],
         'user' => ['navigation' => 'Nguoi dung'],
+    ],
+    'order' => [
+        'section' => [
+            'order_info' => 'Thong tin don hang',
+        ],
+        'fields' => [
+            'tender_snapshot' => 'Tender snapshot',
+            'items_count' => 'So hang muc',
+        ],
+    ],
+    'audit_log' => [
+        'fields' => [
+            'actor' => 'Nguoi thao tac',
+        ],
     ],
     'contract' => [
         'section' => [
