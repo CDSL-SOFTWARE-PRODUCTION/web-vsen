@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Admin User',
                 'password' => Hash::make('password'),
+                'role' => 'Admin_PM',
                 'email_verified_at' => now(),
             ]
         );
@@ -29,6 +30,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ProductSeeder::class,
             ArticleSeeder::class,
+            OpsV1Seeder::class,
         ]);
     }
 }

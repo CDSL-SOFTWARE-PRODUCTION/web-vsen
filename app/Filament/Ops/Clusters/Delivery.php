@@ -7,5 +7,9 @@ use Filament\Clusters\Cluster;
 class Delivery extends Cluster
 {
     protected static ?string $navigationIcon = 'heroicon-o-truck';
-    protected static ?string $navigationLabel = 'Delivery & Logistics';
+    
+    public static function getNavigationLabel(): string
+    {
+        return __('ops.clusters.delivery');
+    }
 }

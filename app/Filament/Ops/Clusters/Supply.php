@@ -7,5 +7,9 @@ use Filament\Clusters\Cluster;
 class Supply extends Cluster
 {
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationLabel = 'Supply & Procurement';
+    
+    public static function getNavigationLabel(): string
+    {
+        return __('ops.clusters.supply');
+    }
 }

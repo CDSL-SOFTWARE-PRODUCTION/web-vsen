@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Ops\Widgets\CashGapWidget;
+use App\Filament\Ops\Widgets\ContractsAtRiskWidget;
+use App\Filament\Ops\Widgets\OverdueIssuesWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -10,7 +13,6 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -28,6 +30,8 @@ class OpsPanelProvider extends PanelProvider
             ->path('ops')
             ->login()
             ->profile()
+            ->sidebarCollapsibleOnDesktop()
+            ->sidebarFullyCollapsibleOnDesktop()
             ->colors([
                 'primary' => Color::Indigo,
             ])
@@ -39,8 +43,9 @@ class OpsPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Ops/Widgets'), for: 'App\\Filament\\Ops\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                ContractsAtRiskWidget::class,
+                OverdueIssuesWidget::class,
+                CashGapWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -58,10 +63,10 @@ class OpsPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make('Master Data')
+                NavigationGroup::make(__('ops.nav_groups.master_data'))
                     ->icon('heroicon-o-circle-stack')
                     ->collapsed(),
-                NavigationGroup::make('System')
+                NavigationGroup::make(__('ops.nav_groups.system'))
                     ->icon('heroicon-o-cog-6-tooth')
                     ->collapsed(),
             ])

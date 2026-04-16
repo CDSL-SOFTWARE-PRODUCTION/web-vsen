@@ -5,10 +5,10 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\ProductImage;
-use App\Models\ProductSpec;
+use App\Models\Cms\Category;
+use App\Models\Cms\CmsProduct as Product;
+use App\Models\Cms\ProductImage;
+use App\Models\Cms\ProductSpec;
 
 class ProductSeeder extends Seeder
 {

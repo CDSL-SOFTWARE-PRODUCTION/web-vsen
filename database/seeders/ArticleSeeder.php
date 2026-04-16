@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Article;
+use App\Models\Cms\Article;
 use Illuminate\Support\Str;
 
 class ArticleSeeder extends Seeder

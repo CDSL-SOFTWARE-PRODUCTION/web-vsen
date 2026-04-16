@@ -7,5 +7,9 @@ use Filament\Clusters\Cluster;
 class MasterData extends Cluster
 {
     protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
-    protected static ?string $navigationLabel = 'Master Data';
+
+    public static function getNavigationLabel(): string
+    {
+        return __('ops.clusters.master_data');
+    }
 }

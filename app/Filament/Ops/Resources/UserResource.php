@@ -5,6 +5,7 @@ namespace App\Filament\Ops\Resources;
 use App\Filament\Ops\Resources\UserResource\Pages;
 use App\Filament\Ops\Resources\UserResource\RelationManagers;
 use App\Models\User;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,14 +17,23 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $navigationGroup = 'System';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ops.nav_groups.system');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('ops.resources.user.navigation');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('User Details')
+                Forms\Components\Section::make(__('ops.user.section.user_details'))
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
@@ -41,13 +51,13 @@ class UserResource extends Resource
                             ->maxLength(255)
                             ->autocomplete('new-password'),
                         Forms\Components\Select::make('role')
-                            ->label('Role / Permission Group')
+                            ->label(__('ops.user.role.label'))
                             ->options([
-                                'Admin_PM' => 'Founder / Admin',
-                                'Sale' => 'Sales Team',
-                                'MuaHang' => 'Purchasing',
-                                'Kho' => 'Warehouse',
-                                'KeToan' => 'Accounting',
+                                'Admin_PM' => __('ops.user.role.admin_pm'),
+                                'Sale' => __('ops.user.role.sale'),
+                                'MuaHang' => __('ops.user.role.mua_hang'),
+                                'Kho' => __('ops.user.role.kho'),
+                                'KeToan' => __('ops.user.role.ke_toan'),
                             ])
                             ->required()
                             ->native(false),
@@ -65,6 +75,14 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('role')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => __('ops.user.role.' . match ($state) {
+                        'Admin_PM' => 'admin_pm',
+                        'Sale' => 'sale',
+                        'MuaHang' => 'mua_hang',
+                        'Kho' => 'kho',
+                        'KeToan' => 'ke_toan',
+                        default => 'label',
+                    }))
                     ->color(fn (string $state): string => match ($state) {
                         'Admin_PM' => 'danger',
                         'Sale' => 'warning',
@@ -82,11 +100,11 @@ class UserResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('role')
                     ->options([
-                        'Admin_PM' => 'Founder / Admin',
-                        'Sale' => 'Sales Team',
-                        'MuaHang' => 'Purchasing',
-                        'Kho' => 'Warehouse',
-                        'KeToan' => 'Accounting',
+                        'Admin_PM' => __('ops.user.role.admin_pm'),
+                        'Sale' => __('ops.user.role.sale'),
+                        'MuaHang' => __('ops.user.role.mua_hang'),
+                        'Kho' => __('ops.user.role.kho'),
+                        'KeToan' => __('ops.user.role.ke_toan'),
                     ]),
             ])
             ->actions([
