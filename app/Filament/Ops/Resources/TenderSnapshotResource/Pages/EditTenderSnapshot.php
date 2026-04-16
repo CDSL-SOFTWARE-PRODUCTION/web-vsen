@@ -46,11 +46,14 @@ class EditTenderSnapshot extends EditRecord
                 ->requiresConfirmation()
                 ->visible(fn (): bool => $record->isLocked())
                 ->action(function () use ($record): void {
+                    $existingContractId = $record->contracts()->value('id');
                     $contract = app(GenerateExecutionPlanService::class)->handle($record->id, auth()->id());
 
                     Notification::make()
-                        ->title("Execution plan generated (Contract #{$contract->id})")
-                        ->success()
+                        ->title($existingContractId === null
+                            ? "Execution plan generated (Contract #{$contract->id})"
+                            : "Execution plan already exists (Contract #{$contract->id})")
+                        ->color($existingContractId === null ? 'success' : 'warning')
                         ->send();
                 }),
             Actions\DeleteAction::make()

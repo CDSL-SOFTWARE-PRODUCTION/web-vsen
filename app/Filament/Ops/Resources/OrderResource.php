@@ -3,6 +3,10 @@
 namespace App\Filament\Ops\Resources;
 
 use App\Domain\Demand\ConfirmContractCommandService;
+use App\Domain\Demand\StartExecutionCommandService;
+use App\Domain\Demand\ConfirmFulfillmentCommandService;
+use App\Domain\Demand\CloseContractCommandService;
+use App\Domain\Demand\AbandonTenderCommandService;
 use App\Filament\Ops\Clusters\Demand;
 use App\Filament\Ops\Resources\OrderResource\Pages;
 use App\Filament\Ops\Resources\OrderResource\RelationManagers\ItemsRelationManager;
@@ -55,6 +59,9 @@ class OrderResource extends Resource
                             'AwardTender' => 'AwardTender',
                             'ConfirmContract' => 'ConfirmContract',
                             'StartExecution' => 'StartExecution',
+                            'Fulfilled' => 'Fulfilled',
+                            'ContractClosed' => 'ContractClosed',
+                            'Abandoned' => 'Abandoned',
                         ]),
                     Forms\Components\Select::make('tender_snapshot_id')
                         ->label(__('ops.order.fields.tender_snapshot'))
@@ -79,8 +86,11 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('state')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
+                        'ContractClosed' => 'success',
+                        'Fulfilled' => 'success',
                         'StartExecution' => 'success',
                         'ConfirmContract' => 'info',
+                        'Abandoned' => 'danger',
                         'AwardTender' => 'warning',
                         default => 'gray',
                     }),
@@ -106,6 +116,78 @@ class OrderResource extends Resource
 
                         Notification::make()
                             ->title('Order moved to ConfirmContract')
+                            ->body(
+                                $result->warningRaised
+                                    ? implode("\n", $result->warnings)
+                                    : 'Transition completed without warnings.'
+                            )
+                            ->color($result->warningRaised ? 'warning' : 'success')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('startExecution')
+                    ->label('Start execution')
+                    ->icon('heroicon-o-play')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->visible(fn (Order $record): bool => $record->state === 'ConfirmContract')
+                    ->action(function (Order $record): void {
+                        $result = app(StartExecutionCommandService::class)->handle($record->id, auth()->id());
+                        Notification::make()
+                            ->title('Order moved to StartExecution')
+                            ->body(
+                                $result->warningRaised
+                                    ? implode("\n", $result->warnings)
+                                    : 'Transition completed without warnings.'
+                            )
+                            ->color($result->warningRaised ? 'warning' : 'success')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('confirmFulfillment')
+                    ->label('Confirm fulfillment')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn (Order $record): bool => $record->state === 'StartExecution')
+                    ->action(function (Order $record): void {
+                        $result = app(ConfirmFulfillmentCommandService::class)->handle($record->id, auth()->id());
+                        Notification::make()
+                            ->title('Order moved to Fulfilled')
+                            ->body(
+                                $result->warningRaised
+                                    ? implode("\n", $result->warnings)
+                                    : 'Transition completed without warnings.'
+                            )
+                            ->color($result->warningRaised ? 'warning' : 'success')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('closeContract')
+                    ->label('Close contract')
+                    ->icon('heroicon-o-lock-closed')
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->visible(fn (Order $record): bool => $record->state === 'Fulfilled')
+                    ->action(function (Order $record): void {
+                        $result = app(CloseContractCommandService::class)->handle($record->id, auth()->id());
+                        Notification::make()
+                            ->title('Order moved to ContractClosed')
+                            ->body(
+                                $result->warningRaised
+                                    ? implode("\n", $result->warnings)
+                                    : 'Transition completed without warnings.'
+                            )
+                            ->color($result->warningRaised ? 'warning' : 'success')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('abandonTender')
+                    ->label('Abandon tender')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn (Order $record): bool => $record->state === 'SubmitTender')
+                    ->action(function (Order $record): void {
+                        $result = app(AbandonTenderCommandService::class)->handle($record->id, auth()->id());
+                        Notification::make()
+                            ->title('Order moved to Abandoned')
                             ->body(
                                 $result->warningRaised
                                     ? implode("\n", $result->warnings)

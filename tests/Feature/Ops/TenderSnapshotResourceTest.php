@@ -1,6 +1,9 @@
 <?php
 
 use App\Filament\Ops\Resources\TenderSnapshotResource;
+use App\Domain\Execution\GenerateExecutionPlanService;
+use App\Models\Ops\Contract;
+use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
 use App\Models\Demand\TenderSnapshotAttachment;
 use App\Models\Demand\TenderSnapshotItem;
@@ -110,5 +113,31 @@ it('prevents attachment mutation after lock', function () {
     $attachment->label = 'Ban ve updated';
 
     expect(fn () => $attachment->save())->toThrow(RuntimeException::class);
+});
+
+it('keeps generate execution plan idempotent for locked snapshot', function () {
+    $admin = User::factory()->create(['role' => 'Admin_PM']);
+    actingAs($admin);
+
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-RESOURCE-IDEMP-001',
+    ]);
+
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Vat tu C',
+        'uom' => 'Cai',
+        'quantity_awarded' => 2,
+    ]);
+    $snapshot->lock($admin->id);
+
+    $first = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $admin->id);
+    $second = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $admin->id);
+
+    expect($second->id)->toBe($first->id)
+        ->and(Contract::query()->where('tender_snapshot_id', $snapshot->id)->count())->toBe(1)
+        ->and(Order::query()->where('tender_snapshot_id', $snapshot->id)->count())->toBe(1);
 });
 

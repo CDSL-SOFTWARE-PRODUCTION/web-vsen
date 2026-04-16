@@ -54,7 +54,10 @@ class Order extends Model
             'SubmitTender' => ['AwardTender'],
             'AwardTender' => ['ConfirmContract'],
             'ConfirmContract' => ['StartExecution'],
-            'StartExecution' => [],
+            'StartExecution' => ['Fulfilled'],
+            'Fulfilled' => ['ContractClosed'],
+            'ContractClosed' => [],
+            'Abandoned' => [],
         ];
 
         $currentState = $this->state;

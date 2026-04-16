@@ -1,7 +1,10 @@
 <?php
 
 use App\Domain\Audit\AuditLogService;
+use App\Domain\Demand\CloseContractCommandService;
+use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
+use App\Domain\Demand\StartExecutionCommandService;
 use App\Domain\Execution\GateEvaluator;
 use App\Domain\Execution\GateOverrideService;
 use App\Domain\Execution\GenerateExecutionPlanService;
@@ -293,5 +296,56 @@ it('confirms contract with warnings and syncs contract projection counters', fun
         ->and($runtimeContract->risk_level)->toBe('Amber')
         ->and($runtimeContract->missing_docs_count)->toBeGreaterThan(0)
         ->and($runtimeContract->open_issues_count)->toBeGreaterThan(0);
+});
+
+it('runs full transition commands matrix for valid and invalid states', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-FLOW-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item I',
+        'uom' => 'Cai',
+        'quantity_awarded' => 2,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $orderId = (int) $contract->order_id;
+
+    app(ConfirmContractCommandService::class)->handle($orderId, $actor->id);
+    app(StartExecutionCommandService::class)->handle($orderId, $actor->id);
+    app(ConfirmFulfillmentCommandService::class)->handle($orderId, $actor->id);
+    app(CloseContractCommandService::class)->handle($orderId, $actor->id);
+
+    expect(Order::query()->findOrFail($orderId)->state)->toBe('ContractClosed');
+    expect(fn () => app(StartExecutionCommandService::class)->handle($orderId, $actor->id))
+        ->toThrow(\RuntimeException::class);
+});
+
+it('returns existing runtime when generating plan twice for same snapshot', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-IDEMP-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item J',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+
+    $first = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $second = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    expect($second->id)->toBe($first->id)
+        ->and(Contract::query()->where('tender_snapshot_id', $snapshot->id)->count())->toBe(1)
+        ->and(Order::query()->where('tender_snapshot_id', $snapshot->id)->count())->toBe(1);
 });
 

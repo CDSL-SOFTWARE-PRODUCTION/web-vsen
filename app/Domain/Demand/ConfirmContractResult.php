@@ -2,37 +2,17 @@
 
 namespace App\Domain\Demand;
 
-final class ConfirmContractResult
+final class ConfirmContractResult extends OrderTransitionResult
 {
-    /**
-     * @param list<string> $warnings
-     */
-    public function __construct(
-        public readonly int $orderId,
-        public readonly string $fromState,
-        public readonly string $toState,
-        public readonly bool $warningRaised,
-        public readonly array $warnings
-    ) {
-    }
-
-    /**
-     * @return array{
-     *   order_id: int,
-     *   from_state: string,
-     *   to_state: string,
-     *   warning_raised: bool,
-     *   warnings: list<string>
-     * }
-     */
-    public function toArray(): array
+    public static function fromTransitionResult(OrderTransitionResult $result): self
     {
-        return [
-            'order_id' => $this->orderId,
-            'from_state' => $this->fromState,
-            'to_state' => $this->toState,
-            'warning_raised' => $this->warningRaised,
-            'warnings' => $this->warnings,
-        ];
+        return new self(
+            orderId: $result->orderId,
+            command: $result->command,
+            fromState: $result->fromState,
+            toState: $result->toState,
+            warningRaised: $result->warningRaised,
+            warnings: $result->warnings
+        );
     }
 }

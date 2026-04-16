@@ -3,6 +3,7 @@
 namespace App\Domain\Execution;
 
 use App\Domain\Audit\AuditLogService;
+use App\Domain\Demand\OrderContractProjectionUpdater;
 use App\Models\Demand\Order;
 use App\Models\Demand\OrderItem;
 use App\Models\Demand\TenderSnapshot;
@@ -16,7 +17,8 @@ use RuntimeException;
 class GenerateExecutionPlanService
 {
     public function __construct(
-        private readonly AuditLogService $auditLogService
+        private readonly AuditLogService $auditLogService,
+        private readonly OrderContractProjectionUpdater $projectionUpdater
     ) {
     }
 
@@ -28,6 +30,24 @@ class GenerateExecutionPlanService
 
         if (! $snapshot->isLocked()) {
             throw new RuntimeException('Tender snapshot must be locked before generating execution plan.');
+        }
+
+        $existingContract = Contract::query()
+            ->where('tender_snapshot_id', $snapshot->id)
+            ->first();
+        if ($existingContract instanceof Contract) {
+            $this->auditLogService->log(
+                $actorUserId,
+                'TenderSnapshot',
+                $snapshot->id,
+                'GenerateExecutionPlanSkippedExisting',
+                [
+                    'contract_id' => $existingContract->id,
+                    'order_id' => $existingContract->order_id,
+                ]
+            );
+
+            return $existingContract;
         }
 
         /** @var Contract $contract */
@@ -64,6 +84,7 @@ class GenerateExecutionPlanService
 
             $this->seedChecklistDocuments($contract->id);
             $this->seedDefaultMilestone($contract->id);
+            $this->projectionUpdater->syncFromOrder($order, $contract);
 
             $this->auditLogService->log(
                 $actorUserId,
