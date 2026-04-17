@@ -7,6 +7,8 @@
 > Đừng bắt user nhập liệu, hãy để họ "Confirm" gợi ý của máy (Intelligence).
 >
 > **📌 Model Reference:** Toàn bộ State Machine, Constraint, Entity spec được định nghĩa tại `model/`. Tài liệu này chỉ giải thích **tại sao** hệ thống cần vận hành theo cách đó.
+>
+> **Đọc kèm:** Roadmap, ma trận `C-*`, backlog — [`guide.md`](guide.md). Mục lục tài liệu — [`README.md`](README.md).
 
 ---
 

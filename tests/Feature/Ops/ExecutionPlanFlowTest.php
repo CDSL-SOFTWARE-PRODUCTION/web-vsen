@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Audit\AuditLogService;
+use App\Domain\Delivery\DeliveryService;
 use App\Domain\Demand\CloseContractCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Demand\ConfirmFulfillmentCommandService;
@@ -1169,4 +1170,67 @@ it('links delivery to vehicle and route', function () {
 
     expect($delivery->vehicle()->first()->id)->toBe($vehicle->id)
         ->and($delivery->deliveryRoute()->first()->id)->toBe($route->id);
+});
+
+it('blocks mark delivered when GPS is too far from expected C-DEL-002 hard mode', function () {
+    config(['ops.gates.delivery_gps_compliance' => 'hard']);
+    config(['ops.delivery_gps_max_meters' => 100]);
+
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-GPS-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item GPS',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    $delivery = Delivery::query()->create([
+        'order_id' => $contract->order_id,
+        'contract_id' => $contract->id,
+        'status' => 'InTransit',
+        'dispatched_at' => now(),
+        'expected_gps_coordinates' => '10.0,106.0',
+        'gps_coordinates_actual' => null,
+    ]);
+
+    expect(fn () => app(DeliveryService::class)->markDelivered($delivery->id, $actor->id, '10.5,106.0'))
+        ->toThrow(RuntimeException::class);
+});
+
+it('allows mark delivered when GPS is within expected C-DEL-002', function () {
+    config(['ops.gates.delivery_gps_compliance' => 'hard']);
+    config(['ops.delivery_gps_max_meters' => 50000]);
+
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-GPS-002',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item GPS2',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    $delivery = Delivery::query()->create([
+        'order_id' => $contract->order_id,
+        'contract_id' => $contract->id,
+        'status' => 'InTransit',
+        'dispatched_at' => now(),
+        'expected_gps_coordinates' => '10.0,106.0',
+    ]);
+
+    $d = app(DeliveryService::class)->markDelivered($delivery->id, $actor->id, '10.0001,106.0001');
+    expect($d->status)->toBe('Delivered');
 });

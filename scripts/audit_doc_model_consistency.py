@@ -46,7 +46,7 @@ def main() -> int:
     entities = load_yaml_entities()
     constraints = load_yaml_constraints()
     sys_arch = (ROOT / "doc" / "system_architecture.md").read_text(encoding="utf-8")
-    biz = (ROOT / "doc" / "business_workflows.md").read_text(encoding="utf-8")
+    biz = (ROOT / "doc" / "guide.md").read_text(encoding="utf-8")
 
     erd = erd_entity_names(sys_arch)
     in_erd_not_model = sorted(erd - entities)

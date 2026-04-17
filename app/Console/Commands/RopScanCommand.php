@@ -35,6 +35,7 @@ class RopScanCommand extends Command
                     'threshold' => $threshold,
                     'item_name' => $lot->item_name,
                     'warehouse_code' => $lot->warehouse_code,
+                    'suggest_supply_order_draft' => true,
                 ]
             );
         }

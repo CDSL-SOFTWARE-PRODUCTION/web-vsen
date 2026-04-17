@@ -19,6 +19,7 @@ class Partner extends Model
         'credit_limit',
         'outstanding_balance_cached',
         'max_overdue_days_cached',
+        'reserve_ttl_days',
     ];
 
     protected function casts(): array
@@ -27,6 +28,7 @@ class Partner extends Model
             'credit_limit' => 'decimal:2',
             'outstanding_balance_cached' => 'decimal:2',
             'max_overdue_days_cached' => 'integer',
+            'reserve_ttl_days' => 'integer',
         ];
     }
 

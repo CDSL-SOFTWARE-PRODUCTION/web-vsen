@@ -13,7 +13,8 @@ class OrderTransitionService
 {
     public function __construct(
         private readonly AuditLogService $auditLogService,
-        private readonly OrderContractProjectionUpdater $projectionUpdater
+        private readonly OrderContractProjectionUpdater $projectionUpdater,
+        private readonly OrderConstraintChecks $orderConstraintChecks
     ) {}
 
     public function transition(Order $order, string $command, ?int $actorUserId = null): OrderTransitionResult
@@ -26,7 +27,7 @@ class OrderTransitionService
             throw new RuntimeException('Order transition requires runtime contract projection.');
         }
 
-        $warnings = $this->buildWarnings($command, $contract, $order);
+        $warnings = $this->buildWarnings($command, $contract, $order, $fromState);
         $result = new OrderTransitionResult(
             orderId: $order->id,
             command: $command,
@@ -75,9 +76,10 @@ class OrderTransitionService
     /**
      * @return list<string>
      */
-    private function buildWarnings(string $command, Contract $contract, Order $order): array
+    private function buildWarnings(string $command, Contract $contract, Order $order, string $fromState): array
     {
-        $warnings = [];
+        $warnings = $this->orderConstraintChecks->assertAndCollectWarnings($order, $contract, $command, $fromState);
+
         if ($command === 'ConfirmContract' && $contract->tender_snapshot_id === null) {
             throw new RuntimeException('Cannot confirm contract: contract is not linked to tender snapshot proof.');
         }

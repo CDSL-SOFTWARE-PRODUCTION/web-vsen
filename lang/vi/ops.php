@@ -46,6 +46,8 @@ return [
         'delivery' => ['navigation' => 'Chuyen giao hang'],
         'invoice' => ['navigation' => 'Hoa don'],
         'financial_ledger' => ['navigation' => 'So cai dong tien'],
+        'supply_order' => ['navigation' => 'Don mua hang (inbox)'],
+        'canonical_product' => ['navigation' => 'San pham chuan hoa'],
     ],
     'order' => [
         'section' => [
@@ -280,6 +282,18 @@ return [
                 'title' => 'Khoang thieu hut tien mat',
                 'description' => 'Gia tri duong = thieu nguon',
             ],
+            'milestones_14d' => [
+                'title' => 'Tong moc den han 14 ngay',
+                'description' => 'Tong amount_planned trong cua so',
+            ],
+        ],
+        'sale' => [
+            'open_orders' => 'Don dang mo',
+            'open_orders_desc' => 'Chua dong hoac huy',
+        ],
+        'founder' => [
+            'inflow_30d' => 'Inflow ledger 30 ngay',
+            'outflow_30d' => 'Outflow ledger 30 ngay',
         ],
         'ar' => [
             'migration_pending' => 'Chay php artisan migrate de cap nhat schema',

@@ -3,7 +3,7 @@
 namespace App\Support\Ops;
 
 /**
- * Role helpers for Filament Ops panel — see doc/ops_matrices.md (section 1).
+ * Role helpers for Filament Ops panel — see doc/guide.md (Ma trận Ops §1).
  */
 final class FilamentAccess
 {

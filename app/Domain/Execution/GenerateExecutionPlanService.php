@@ -107,6 +107,12 @@ class GenerateExecutionPlanService
     {
         $documentTemplates = [
             ['group' => 'source', 'type' => 'Tender Snapshot'],
+            ['group' => 'tender', 'type' => 'DOC_HSMT'],
+            ['group' => 'tender', 'type' => 'DOC_HSDT'],
+            ['group' => 'tender', 'type' => 'BL_DU_THAU'],
+            ['group' => 'contract', 'type' => 'HD_KY'],
+            ['group' => 'closing', 'type' => 'DOC_BB_THANH_LY'],
+            ['group' => 'closing', 'type' => 'DOC_CV_HOAN_TRA_BL'],
             ['group' => 'quality_legal', 'type' => 'CO-CQ'],
             ['group' => 'delivery_install', 'type' => 'Delivery Record'],
             ['group' => 'acceptance_payment', 'type' => 'Acceptance Minute'],

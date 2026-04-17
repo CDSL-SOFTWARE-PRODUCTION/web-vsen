@@ -72,6 +72,12 @@ class DeliveryResource extends Resource
                         'Delivered' => 'Delivered',
                     ])
                     ->default('Dispatched'),
+                Forms\Components\TextInput::make('expected_gps_coordinates')
+                    ->label('Expected GPS (lat,lng)')
+                    ->maxLength(64),
+                Forms\Components\TextInput::make('gps_coordinates_actual')
+                    ->label('Actual GPS proof (lat,lng)')
+                    ->maxLength(120),
             ])->columns(2);
     }
 

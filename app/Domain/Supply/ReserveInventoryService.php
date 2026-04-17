@@ -4,6 +4,7 @@ namespace App\Domain\Supply;
 
 use App\Domain\Audit\AuditLogService;
 use App\Models\Demand\OrderItem;
+use App\Models\Ops\Partner;
 use App\Models\Supply\InventoryLedger;
 use App\Models\Supply\InventoryLot;
 use App\Models\Supply\InventoryReservation;
@@ -18,7 +19,7 @@ class ReserveInventoryService
 
     public function reserve(int $orderItemId, int $inventoryLotId, ?float $requestedQty = null, ?int $actorUserId = null): ReserveInventoryResult
     {
-        $orderItem = OrderItem::query()->findOrFail($orderItemId);
+        $orderItem = OrderItem::query()->with(['order.contracts'])->findOrFail($orderItemId);
         $lot = InventoryLot::query()->findOrFail($inventoryLotId);
 
         $qty = $requestedQty ?? (float) $orderItem->quantity;
@@ -30,6 +31,14 @@ class ReserveInventoryService
         }
 
         $ttlDays = max(1, (int) config('ops.reserve_ttl_days', 30));
+        $order = $orderItem->order;
+        $contract = $order?->contracts->first();
+        if ($contract !== null && $contract->customer_partner_id !== null) {
+            $partner = Partner::query()->find($contract->customer_partner_id);
+            if ($partner !== null && $partner->reserve_ttl_days !== null) {
+                $ttlDays = max(1, (int) $partner->reserve_ttl_days);
+            }
+        }
         $expiresAt = now()->addDays($ttlDays);
 
         $reservation = DB::transaction(function () use ($orderItem, $lot, $qty, $expiresAt): InventoryReservation {
@@ -62,12 +71,19 @@ class ReserveInventoryService
             reservationId: $reservation->id,
             reservedQty: $qty
         );
+        $priorityKey = $order !== null ? (string) ($order->fulfillment_priority ?? 'contract') : 'contract';
+        $priorityScore = (int) config('ops.reserve_priority.'.$priorityKey, config('ops.reserve_priority.contract', 20));
+
         $this->auditLogService->log(
             actorUserId: $actorUserId,
             entityType: 'InventoryReservation',
             entityId: $reservation->id,
             action: 'ReserveInventory',
-            context: $result->toArray()
+            context: array_merge($result->toArray(), [
+                'reserve_ttl_days' => $ttlDays,
+                'fulfillment_priority' => $priorityKey,
+                'reserve_priority_score' => $priorityScore,
+            ])
         );
 
         return $result;

@@ -3,6 +3,7 @@
 namespace App\Models\Demand;
 
 use App\Models\Concerns\ScopedByLegalEntity;
+use App\Models\LegalEntity;
 use App\Models\Ops\Contract;
 use App\Models\Ops\Delivery;
 use App\Models\Supply\SupplyOrder;
@@ -27,6 +28,7 @@ class Order extends Model
         'awarded_at',
         'confirmed_at',
         'execution_started_at',
+        'fulfillment_priority',
     ];
 
     protected function casts(): array
@@ -37,7 +39,13 @@ class Order extends Model
             'awarded_at' => 'datetime',
             'confirmed_at' => 'datetime',
             'execution_started_at' => 'datetime',
+            'fulfillment_priority' => 'string',
         ];
+    }
+
+    public function legalEntity(): BelongsTo
+    {
+        return $this->belongsTo(LegalEntity::class);
     }
 
     public function snapshot(): BelongsTo

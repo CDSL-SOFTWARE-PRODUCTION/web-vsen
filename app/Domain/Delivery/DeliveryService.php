@@ -5,6 +5,7 @@ namespace App\Domain\Delivery;
 use App\Domain\Audit\AuditLogService;
 use App\Models\Ops\Contract;
 use App\Models\Ops\Delivery;
+use App\Support\GeoDistanceMeters;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -44,24 +45,81 @@ class DeliveryService
         });
     }
 
-    public function markDelivered(int $deliveryId, ?int $actorUserId = null): Delivery
+    public function markDelivered(int $deliveryId, ?int $actorUserId = null, ?string $gpsCoordinatesActual = null): Delivery
     {
-        return DB::transaction(function () use ($deliveryId, $actorUserId): Delivery {
+        return DB::transaction(function () use ($deliveryId, $actorUserId, $gpsCoordinatesActual): Delivery {
             $delivery = Delivery::query()->findOrFail($deliveryId);
-            $delivery->update([
+
+            $updates = [
                 'status' => 'Delivered',
                 'delivered_at' => now(),
-            ]);
+            ];
+            if ($gpsCoordinatesActual !== null && $gpsCoordinatesActual !== '') {
+                $updates['gps_coordinates_actual'] = $gpsCoordinatesActual;
+            }
+            $delivery->update($updates);
+            $delivery = $delivery->fresh();
+
+            $this->assertGpsCompliance($delivery);
 
             $this->auditLogService->log(
                 $actorUserId,
                 'Delivery',
                 $delivery->id,
                 'MarkDelivered',
-                ['contract_id' => $delivery->contract_id]
+                [
+                    'contract_id' => $delivery->contract_id,
+                    'gps_coordinates_actual' => $delivery->gps_coordinates_actual,
+                    'expected_gps_coordinates' => $delivery->expected_gps_coordinates,
+                ]
             );
 
-            return $delivery->fresh();
+            return $delivery;
         });
+    }
+
+    /**
+     * C-DEL-002: proof GPS vs expected station.
+     */
+    private function assertGpsCompliance(Delivery $delivery): void
+    {
+        $mode = (string) config('ops.gates.delivery_gps_compliance', 'warn');
+        if ($mode === 'off') {
+            return;
+        }
+
+        $expected = $delivery->expected_gps_coordinates;
+        $actual = $delivery->gps_coordinates_actual;
+        if ($expected === null || $expected === '' || $actual === null || $actual === '') {
+            return;
+        }
+
+        $meters = GeoDistanceMeters::betweenStrings($expected, $actual);
+        if ($meters === null) {
+            return;
+        }
+
+        $max = (float) config('ops.delivery_gps_max_meters', 500);
+        if ($meters <= $max) {
+            return;
+        }
+
+        $msg = 'C-DEL-002: GPS proof is '.round($meters, 1).' m from expected (max '.$max.' m).';
+        if ($mode === 'hard') {
+            throw new RuntimeException($msg);
+        }
+
+        $this->auditLogService->log(
+            null,
+            'Delivery',
+            $delivery->id,
+            'DeliveryGpsComplianceWarn',
+            [
+                'constraint' => 'C-DEL-002',
+                'distance_meters' => $meters,
+                'max_meters' => $max,
+                'message' => $msg,
+            ]
+        );
     }
 }

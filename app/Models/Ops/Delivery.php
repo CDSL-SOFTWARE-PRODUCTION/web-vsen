@@ -17,6 +17,7 @@ class Delivery extends Model
         'route_type',
         'tracking_code',
         'gps_coordinates_actual',
+        'expected_gps_coordinates',
         'status',
         'dispatched_at',
         'delivered_at',

@@ -46,6 +46,8 @@ return [
         'delivery' => ['navigation' => 'Deliveries'],
         'invoice' => ['navigation' => 'Invoices'],
         'financial_ledger' => ['navigation' => 'Financial ledger'],
+        'supply_order' => ['navigation' => 'Supply orders (inbox)'],
+        'canonical_product' => ['navigation' => 'Canonical products'],
     ],
     'order' => [
         'section' => [
@@ -295,6 +297,18 @@ return [
                 'title' => 'Cash gap',
                 'description' => 'Positive value means funding shortfall',
             ],
+            'milestones_14d' => [
+                'title' => 'Milestone amounts due 14d',
+                'description' => 'Sum of amount_planned for milestones in window',
+            ],
+        ],
+        'sale' => [
+            'open_orders' => 'Open orders',
+            'open_orders_desc' => 'Not closed or abandoned',
+        ],
+        'founder' => [
+            'inflow_30d' => 'Ledger inflow 30d',
+            'outflow_30d' => 'Ledger outflow 30d',
         ],
         'milestones' => [
             'blocked_7d' => [

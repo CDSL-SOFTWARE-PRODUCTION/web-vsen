@@ -9,6 +9,7 @@ class CanonicalProduct extends Model
     protected $fillable = [
         'sku',
         'raw_name',
+        'abc_class',
         'spec_json',
     ];
 

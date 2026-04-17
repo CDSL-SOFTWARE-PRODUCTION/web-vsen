@@ -97,6 +97,7 @@ jobs:
             tests/Unit \
             tests/Feature/Cms \
             tests/Feature/Ops \
+            tests/Feature/Api \
             tests/Feature/Auth/AuthAndRoleTest.php \
             tests/Feature/Auth/AuthenticationTest.php \
             tests/Feature/ProfileTest.php
