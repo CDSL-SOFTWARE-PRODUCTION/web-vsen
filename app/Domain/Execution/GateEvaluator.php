@@ -42,6 +42,15 @@ class GateEvaluator
     {
         $warnings = [];
 
+        $inFlightDeliveries = $contract->deliveries()
+            ->whereIn('status', ['Dispatched', 'InTransit', 'OutForDelivery'])
+            ->get();
+        foreach ($inFlightDeliveries as $delivery) {
+            if ($delivery->vehicle_id === null && $delivery->delivery_route_id === null) {
+                $warnings[] = 'C-DEL-001 readiness: delivery '.$delivery->id.' has no vehicle or route.';
+            }
+        }
+
         $missingDocs = $contract->documents()
             ->where('status', 'missing')
             ->count();

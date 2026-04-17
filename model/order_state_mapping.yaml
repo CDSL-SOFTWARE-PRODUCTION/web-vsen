@@ -1,0 +1,26 @@
+# Order: runtime DB state (commands as state labels) ↔ canonical labels in model/states.yaml
+# Runtime values are persisted on orders.state — do not rename without migration + backfill.
+# See app/Domain/Demand/OrderState.php for programmatic mapping.
+
+mapping:
+  - runtime: SubmitTender
+    canonical: BidSubmitted
+    note: Initial submission / awaiting award (YAML initial Draft maps to pre-create; app defaults to SubmitTender on create)
+
+  - runtime: AwardTender
+    canonical: WonWaiting
+
+  - runtime: ConfirmContract
+    canonical: ContractSigned
+
+  - runtime: StartExecution
+    canonical: InExecution
+
+  - runtime: Fulfilled
+    canonical: Fulfilled
+
+  - runtime: ContractClosed
+    canonical: ContractClosed
+
+  - runtime: Abandoned
+    canonical: Abandoned

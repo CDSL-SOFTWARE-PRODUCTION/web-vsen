@@ -58,6 +58,10 @@ return [
             'state_helper' => 'Read-only. Use table actions (Confirm contract, etc.) — state changes go through command services.',
         ],
     ],
+    'sales_touchpoint' => [
+        'navigation' => 'Sales touchpoints',
+        'partner' => 'Customer / partner',
+    ],
     'audit_log' => [
         'fields' => [
             'actor' => 'Actor',

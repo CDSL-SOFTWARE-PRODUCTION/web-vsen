@@ -58,6 +58,10 @@ return [
             'state_helper' => 'Chi doc. Dung nut tren bang (Confirm contract, ...) — doi state qua lenh/command, khong sua tay.',
         ],
     ],
+    'sales_touchpoint' => [
+        'navigation' => 'Cham soc / tiep xuc ban hang',
+        'partner' => 'Khach / doi tac',
+    ],
     'audit_log' => [
         'fields' => [
             'actor' => 'Nguoi thao tac',

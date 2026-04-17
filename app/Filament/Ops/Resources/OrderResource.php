@@ -10,9 +10,9 @@ use App\Domain\Demand\StartExecutionCommandService;
 use App\Filament\Ops\Clusters\Demand;
 use App\Filament\Ops\Resources\OrderResource\Pages;
 use App\Filament\Ops\Resources\OrderResource\RelationManagers\ItemsRelationManager;
+use App\Filament\Ops\Resources\OrderResource\RelationManagers\SalesTouchpointsRelationManager;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
-use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -20,6 +20,7 @@ use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Gate;
 
 class OrderResource extends Resource
 {
@@ -40,7 +41,7 @@ class OrderResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
+        return Gate::allows('viewAny', Order::class);
     }
 
     public static function form(Form $form): Form
@@ -212,6 +213,7 @@ class OrderResource extends Resource
     {
         return [
             ItemsRelationManager::class,
+            SalesTouchpointsRelationManager::class,
         ];
     }
 

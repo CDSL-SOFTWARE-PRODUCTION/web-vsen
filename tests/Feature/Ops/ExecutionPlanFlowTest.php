@@ -5,6 +5,7 @@ use App\Domain\Demand\CloseContractCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\CreateOrderFromSnapshotCommandService;
+use App\Domain\Demand\OrderState;
 use App\Domain\Demand\StartExecutionCommandService;
 use App\Domain\Execution\GateEvaluator;
 use App\Domain\Execution\GateOverrideService;
@@ -12,6 +13,7 @@ use App\Domain\Execution\GenerateExecutionPlanService;
 use App\Domain\Finance\CancelAndReissueInvoiceService;
 use App\Domain\Finance\IssueInvoiceService;
 use App\Domain\Finance\MilestoneAgingService;
+use App\Domain\Knowledge\UpsertCanonicalProductService;
 use App\Domain\Supply\GenerateSupplyOrderFromOrderService;
 use App\Domain\Supply\ProcessReturnOrderService;
 use App\Domain\Supply\ReceiveSupplyOrderService;
@@ -26,12 +28,14 @@ use App\Models\Demand\TenderSnapshotItem;
 use App\Models\LegalEntity;
 use App\Models\Ops\Contract;
 use App\Models\Ops\Delivery;
+use App\Models\Ops\DeliveryRoute;
 use App\Models\Ops\Document;
 use App\Models\Ops\ExecutionIssue;
 use App\Models\Ops\FinancialLedgerEntry;
 use App\Models\Ops\Invoice;
 use App\Models\Ops\Partner;
 use App\Models\Ops\PaymentMilestone;
+use App\Models\Ops\Vehicle;
 use App\Models\Supply\InventoryLedger;
 use App\Models\Supply\InventoryLot;
 use App\Models\Supply\InventoryReservation;
@@ -42,6 +46,7 @@ use App\Models\Supply\SupplyOrder;
 use App\Models\System\AuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 
 use function Pest\Laravel\actingAs;
 
@@ -481,7 +486,7 @@ it('raises pricing deviation warning on confirm contract when line price diverge
 
     $result = app(ConfirmContractCommandService::class)->handle($order->id, $actor->id);
     expect($result->warningRaised)->toBeTrue()
-        ->and(collect($result->warnings)->contains(fn (string $warning): bool => str_contains($warning, 'Price deviation line')))->toBeTrue();
+        ->and(collect($result->warnings)->contains(fn (string $warning): bool => str_contains($warning, 'C-PR-001')))->toBeTrue();
 });
 
 it('creates supply order lines for shortage items only', function () {
@@ -619,7 +624,8 @@ it('reserves inventory, prevents over reserve, and supports release flow', funct
 
     expect((float) $lot->available_qty)->toBe(2.0)
         ->and((float) $reservation->reserved_qty)->toBe(3.0)
-        ->and((float) $reserveLedger->qty_change)->toBe(-3.0);
+        ->and((float) $reserveLedger->qty_change)->toBe(-3.0)
+        ->and($reservation->expires_at)->not->toBeNull();
 
     expect(fn () => $service->reserve($orderItem->id, $lot->id, 3, $actor->id))
         ->toThrow(RuntimeException::class);
@@ -1039,4 +1045,128 @@ it('voids and replaces invoice via CancelAndReissue C-FIN-002', function () {
         ->and($invoice->replaced_by_invoice_id)->toBe($replacement->id)
         ->and($replacement->status)->toBe('Issued')
         ->and((float) $replacement->total_amount)->toBe(900_000.0);
+});
+
+it('maps order runtime states to canonical names', function () {
+    expect(OrderState::runtimeToCanonical('SubmitTender'))->toBe('BidSubmitted')
+        ->and(OrderState::canonicalToRuntime('ContractSigned'))->toBe('ConfirmContract');
+});
+
+it('releases expired reservations via releaseExpired', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-RES-TTL-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item TTL',
+        'uom' => 'Cai',
+        'quantity_awarded' => 2,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $order = Order::query()->findOrFail((int) $contract->order_id);
+    $orderItem = $order->items()->firstOrFail();
+    $lot = InventoryLot::query()->create([
+        'item_name' => 'Item TTL',
+        'available_qty' => 5,
+    ]);
+    $service = app(ReserveInventoryService::class);
+    $reserved = $service->reserve($orderItem->id, $lot->id, 2, $actor->id);
+    $reservation = InventoryReservation::query()->findOrFail($reserved->reservationId);
+    $reservation->update(['expires_at' => now()->subHour()]);
+
+    $releasedCount = $service->releaseExpired(null);
+    expect($releasedCount)->toBe(1);
+    $reservation->refresh();
+    expect($reservation->status)->toBe('Released');
+});
+
+it('runs ROP scan and writes audit rows for low stock lots', function () {
+    $lot = InventoryLot::query()->create([
+        'item_name' => 'Item ROP',
+        'warehouse_code' => 'WH-R',
+        'available_qty' => 3,
+    ]);
+    $before = AuditLog::query()->where('action', 'RopScanWarn')->where('entity_id', $lot->id)->count();
+    Artisan::call('ops:rop-scan');
+    $after = AuditLog::query()->where('action', 'RopScanWarn')->where('entity_id', $lot->id)->count();
+    expect($after)->toBe($before + 1);
+});
+
+it('upserts canonical product rows', function () {
+    $row = app(UpsertCanonicalProductService::class)->handle('SKU-K-1', 'Raw glove', ['sterile' => true]);
+    expect($row->sku)->toBe('SKU-K-1')
+        ->and($row->raw_name)->toBe('Raw glove')
+        ->and($row->spec_json)->toBe(['sterile' => true]);
+});
+
+it('warns pre-delivery when in-transit delivery has no vehicle or route', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-PRE-DEL-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item PD',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    Delivery::query()->create([
+        'order_id' => $contract->order_id,
+        'contract_id' => $contract->id,
+        'status' => 'InTransit',
+        'dispatched_at' => now(),
+        'vehicle_id' => null,
+        'delivery_route_id' => null,
+    ]);
+
+    $result = app(GateEvaluator::class)->evaluatePreDelivery($contract);
+    expect($result['hasWarnings'])->toBeTrue()
+        ->and(collect($result['warnings'])->contains(fn (string $w): bool => str_contains($w, 'C-DEL-001')))->toBeTrue();
+});
+
+it('links delivery to vehicle and route', function () {
+    $vehicle = Vehicle::query()->create([
+        'code' => 'V-TEST-1',
+        'plate_number' => '51A-1',
+    ]);
+    $route = DeliveryRoute::query()->create([
+        'name' => 'Route A',
+        'vehicle_id' => $vehicle->id,
+        'route_type' => 'Direct',
+    ]);
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-VR-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item VR',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    $delivery = Delivery::query()->create([
+        'order_id' => $contract->order_id,
+        'contract_id' => $contract->id,
+        'vehicle_id' => $vehicle->id,
+        'delivery_route_id' => $route->id,
+        'status' => 'InTransit',
+        'dispatched_at' => now(),
+    ]);
+
+    expect($delivery->vehicle()->first()->id)->toBe($vehicle->id)
+        ->and($delivery->deliveryRoute()->first()->id)->toBe($route->id);
 });

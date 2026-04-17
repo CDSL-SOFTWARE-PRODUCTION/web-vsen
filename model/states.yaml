@@ -14,6 +14,8 @@ state_machines:
 
   # -----------------------------------------------------------
   # ORDER (Demand & Contract Lifecycle)
+  # Runtime DB uses command-style state strings (SubmitTender, …); map ↔ canonical
+  # names here via model/order_state_mapping.yaml and App\Domain\Demand\OrderState.
   # -----------------------------------------------------------
   - entity: Order
     initial: Draft

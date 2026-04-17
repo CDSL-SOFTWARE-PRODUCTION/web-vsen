@@ -10,3 +10,9 @@ Artisan::command('inspire', function () {
 
 Schedule::command('ops:recompute-contract-risk')
     ->hourly();
+
+Schedule::command('inventory:release-expired-reservations')
+    ->daily();
+
+Schedule::command('ops:rop-scan')
+    ->dailyAt('01:15');

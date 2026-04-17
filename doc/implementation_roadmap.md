@@ -15,6 +15,11 @@ Nguyên tắc nền (ref: `doc/system_architecture.md`)
 - **File roadmap này** là **đường build có phase**: “đủ” được đo theo **North Star (5 điều kiện)** và **definition of done từng phase** (A → E), không yêu cầu khớp 100% blueprint trước khi Phase D/E ổn định.
 - Khi cần hỏi “đã đủ chưa?”, ưu tiên: (1) phase hiện tại trong bảng dưới, (2) khối **North Star**, (3) tích hợp ngoài / Intelligence nằm trong [`doc/backlog/post_mvp_integrations.md`](backlog/post_mvp_integrations.md) sau MVP Ops.
 
+### Ưu tiên build hiện tại (logic doanh nghiệp trước)
+
+- **Trọng tâm:** `Order` / constraint / gate / ledger / projection **nhất quán** với `model/*` và test tích hợp — đây là nền bắt buộc trước khi mở rộng UX hay Intelligence.
+- **Hoãn chủ động:** tích hợp **MISA**, **webhook ngân hàng / VA**, và các adapter bên ngoài khác — giữ **port + null adapter** trong code để dev không phụ thuộc vendor; không ưu tiên triển khai production cho các kênh này cho đến khi nội bộ đã “chặt”. Chi tiết hoãn xem [`doc/backlog/post_mvp_integrations.md`](backlog/post_mvp_integrations.md).
+
 ---
 
 ## Trạng thái hiện tại
@@ -39,6 +44,49 @@ Done khi đạt đủ 5 điều kiện:
 3. Constraint IDs trong `model/constraints.yaml` có enforcement rõ (hard hoặc warn+audit).
 4. ERD trong `doc/system_architecture.md` và `model/entities.yaml` luôn đồng bộ (audit script pass).
 5. Mỗi domain có test tích hợp tối thiểu cho happy path + failure gates.
+
+---
+
+## Bảng đối chiếu blueprint vs codebase
+
+Hai tài liệu [`system_architecture.md`](system_architecture.md) và [`business_workflows.md`](business_workflows.md) là **North Star / UX target** — không phải trạng thái “đã ship 100%”. Bảng dưới ước lượng **mức đã gắn với code** tại thời điểm cập nhật roadmap.
+
+**Chú thích cột Trạng thái**
+
+| Ký hiệu | Ý nghĩa |
+| --- | --- |
+| **Đủ** | Có phần lõi trong app (domain + persistence + thường có test Ops) — đủ vận hành MVP/Filament. |
+| **Một phần** | Có slice hoặc gate/warn; thiếu journey UI đầy đủ hoặc tính năng phụ trong doc. |
+| **Chưa** | Chủ yếu còn trên paper / backlog (xem [`post_mvp_integrations.md`](backlog/post_mvp_integrations.md) nếu liên quan tích hợp ngoài). |
+
+### `doc/system_architecture.md` — các khối kiến trúc
+
+| Khối / mục (tham chiếu doc) | Trạng thái | Ghi chú ngắn |
+| --- | --- | --- |
+| §0 Knowledge (Canonical Product, Tender Intelligence) | **Một phần** | Bảng `canonical_products` + upsert; chưa LLM/vector/normalize file như doc. |
+| §1 Demand & Contract (`Order`, snapshot, state) | **Đủ** | Snapshot lock, plan, transition command, map runtime ↔ canonical (`model/order_state_mapping.yaml`). |
+| §2 Inventory (`InventoryLot`, reserve, priority…) | **Một phần** | Nhận kho, reserve + TTL, transfer, return; chưa “priority engine” đầy đủ như mô tả. |
+| §3 Delivery (thực địa, proof, GPS…) | **Một phần** | `Delivery`, vehicle/route, gate pre-delivery; chưa app tài xế / GPS cứng `C-DEL-002`. |
+| §4 Cashflow (Invoice, ledger, MISA, VA) | **Một phần** | Issue invoice, ledger, milestone, aging; **MISA/VA** hoãn — port + null adapter. |
+| §4b Post-award (Contract runtime, milestone, issue, price, touchpoint) | **Đủ** / **Một phần** | Projection + `SalesTouchpoint`; cash plan / gap vốn có thể mỏng hơn doc. |
+| §5 Engineering core (Command → Constraint → Audit) | **Đủ** | `GateEvaluator`, audit, policy; EventBus đầy đủ như doc là mục tiêu dài hạn. |
+| Planning / Logistics / ROP (`ops:rop-scan`, ABC…) | **Một phần** | Scan ngưỡng + audit; chưa ABC/Product class đầy đủ trong model app. |
+| Tích hợp ngoài (MISA, webhook ngân hàng) | **Chưa** (hoãn) | Theo [`post_mvp_integrations.md`](backlog/post_mvp_integrations.md). |
+
+### `doc/business_workflows.md` — hành trình & ma trận
+
+| Mục trong doc | Trạng thái | Ghi chú ngắn |
+| --- | --- | --- |
+| Ma trận quyền (Sale / MuaHang / Kho / KeToan / Admin) | **Một phần** | [`ops_matrices.md`](ops_matrices.md) + Filament + `LegalEntity` scope; chưa tách app riêng từng vai. |
+| Hành trình E2E (4 section journey) | **Một phần** | Luồng dọc **Demand → … → Cash** có test tích hợp; chưa UI journey riêng từng bộ phận. |
+| Sale: Catalog / Builder / Document Vault | **Chưa** | Thay bằng Order / Contract / Snapshot trong Ops. |
+| Mua hàng: Request Inbox / Sourcing PO | **Một phần** | Supply order từ thiếu hàng + Filament; chưa inbox/workflow đầy đủ. |
+| Kho: Inbound quét barcode / App POD | **Một phần** | Nhập nhận qua domain; chưa app mobile POD như doc. |
+| Kế toán: Billing đỏ / Payable list / Credit note đầy đủ | **Một phần** | Xuất HĐ + milestone + aging; payable/credit note mở rộng theo nhu cầu. |
+| Founder: Sankey / Inter-company transfer | **Chưa** | Dashboard tiền mặt như mô tả chưa có. |
+| Bảng edge cases + `C-*` | **Một phần** | Chi tiết enforce: [`ops_matrices.md`](ops_matrices.md) (mục 2); không phải mọi dòng edge case đã có code. |
+
+**Kết luận ngắn:** Blueprint và journey **đã định hướng** và **đã khớp một phần lớn** với Phase A–E trong repo; **chưa** đồng nghĩa mọi màn hình và tích hợp trong hai file đã sẵn sàng vận hành production đầy đủ.
 
 ---
 
@@ -146,13 +194,13 @@ Nâng từ MVP vận hành lên hệ thống bền vững.
 - Audit command đã có; replay schema — tùy roadmap sau.
 - `scripts/audit_doc_model_consistency.py` trong CI.
 - Runbook migration lớn — `doc/runbooks/`.
-- Permission matrix Filament theo role.
+- Ma trận quyền + constraint — [`doc/ops_matrices.md`](ops_matrices.md).
 
 ### Trạng thái (đã có)
 - **Gates:** `config/ops.php` — `confirm_fulfillment`, `invoice_payment_milestone` (`IssueInvoiceService` + audit khi `warn`).
 - **CI:** `.github/workflows/ci.yml` — audit + `tests/Feature/Ops` (và gói stable khác).
 - **Runbook:** `doc/runbooks/migration_large_changes.md` + checklist backfill / env gate.
-- **Ma trận quyền:** `doc/ops_permission_matrix.md`, `App\Support\Ops\FilamentAccess` + `canViewAny` trên resource Ops.
+- **Ma trận:** [`doc/ops_matrices.md`](ops_matrices.md), `App\Support\Ops\FilamentAccess` + policy / `canViewAny` trên resource Ops.
 
 ### Acceptance
 - Enforcement mode rõ cho gate chọn lọc — **có** (env + `config/ops.php`).
@@ -186,7 +234,8 @@ Nâng từ MVP vận hành lên hệ thống bền vững.
 ## “Hôm nay làm gì?”
 
 Thứ tự ưu tiên hiện tại (sau khi A–E đã có phần tối thiểu trong repo):
-1. Đồng bộ `model/states.yaml` với runtime `Order` khi ổn định tên state.
-2. Tích hợp ngoài / Intelligence — xem `doc/backlog/post_mvp_integrations.md`.
-3. Mở rộng Policy matrix hoặc gate thêm nếu nghiệp vụ yêu cầu.
+1. Đồng bộ `model/states.yaml` với runtime `Order` và ma trận ràng buộc `C-*` (enforce + test) — **logic nội bộ nhất quán trước**.
+2. Hoàn thiện gate / ledger / luồng dọc theo North Star (reserve TTL, delivery proof, v.v.) khi còn gap.
+3. Mở rộng Policy matrix Filament hoặc hard gate thêm nếu nghiệp vụ yêu cầu.
+4. **Sau** khi (1)–(3) ổn: Intelligence / tích hợp ngoài — chỉ theo `doc/backlog/post_mvp_integrations.md` (MISA, VA, … không blocking).
 

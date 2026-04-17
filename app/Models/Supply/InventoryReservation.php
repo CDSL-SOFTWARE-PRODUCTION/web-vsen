@@ -17,6 +17,7 @@ class InventoryReservation extends Model
         'reserved_qty',
         'status',
         'reserved_at',
+        'expires_at',
         'released_at',
     ];
 
@@ -27,6 +28,7 @@ class InventoryReservation extends Model
             'order_item_id' => 'integer',
             'reserved_qty' => 'decimal:3',
             'reserved_at' => 'datetime',
+            'expires_at' => 'datetime',
             'released_at' => 'datetime',
         ];
     }

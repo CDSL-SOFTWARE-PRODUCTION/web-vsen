@@ -108,7 +108,7 @@ class OrderTransitionService
         }
 
         if ($command === 'ConfirmContract') {
-            $thresholdPercent = 10.0;
+            $thresholdPercent = (float) config('ops.price_list_deviation_warn_percent', 10);
             foreach ($order->items as $item) {
                 if ($item->priceListItem === null || $item->unit_price === null) {
                     continue;
@@ -122,7 +122,8 @@ class OrderTransitionService
                 $actualValue = (float) $item->unit_price;
                 $deviationPercent = abs($actualValue - $priceListValue) / $priceListValue * 100;
                 if ($deviationPercent > $thresholdPercent) {
-                    $warnings[] = "Price deviation line {$item->line_no}: {$deviationPercent}% over allowed threshold.";
+                    $warnings[] = 'C-PR-001: Price deviation line '.$item->line_no.': '
+                        .round($deviationPercent, 2).'% over threshold '.$thresholdPercent.'%.';
                 }
             }
         }

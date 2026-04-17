@@ -3,6 +3,7 @@
 - Prefers Filament-first, modular MVP implementation for this project before expanding architecture.
 - Prefers backward-compatible schema changes (additive migrations) when implementing large roadmap slices rather than destructive cutovers.
 - Prefers warn-first operational gates with auditable overrides before promoting hard blocks on critical constraints.
+- De-prioritizes MISA, bank/VA webhooks, and other external integrations until internal domain logic (states, constraints, gates, ledger) is consistent; keeps ports/null adapters without production vendor work as the default focus.
 
 ## Learned Workspace Facts
 - The repository is an active git workspace at `web-vsen` with ongoing product/database and ops-related implementation work.

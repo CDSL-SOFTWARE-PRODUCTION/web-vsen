@@ -35,3 +35,9 @@
 - `OPS_GATE_INVOICE_PAYMENT_MILESTONE` — `warn` \| `hard` (xuất HĐ: checklist milestone; chứng từ giao hàng vẫn bắt buộc).
 
 Xem [`config/ops.php`](../config/ops.php).
+
+## Order state: runtime vs canonical
+
+- Cột `orders.state` lưu **runtime** (`SubmitTender`, `AwardTender`, …) — đồng bộ với transition service.
+- Tên **canonical** trong `model/states.yaml` (`BidSubmitted`, `ContractSigned`, …) dùng cho tài liệu; bảng ánh xạ: [`model/order_state_mapping.yaml`](../model/order_state_mapping.yaml), [`app/Domain/Demand/OrderState.php`](../../app/Domain/Demand/OrderState.php).
+- Nếu sau này đổi chuỗi trong DB: migration backfill + cập nhật `Order::transitionTo` và mapping.

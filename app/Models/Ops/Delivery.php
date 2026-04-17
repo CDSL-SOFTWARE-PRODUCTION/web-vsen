@@ -13,6 +13,7 @@ class Delivery extends Model
         'contract_id',
         'source_warehouse_code',
         'vehicle_id',
+        'delivery_route_id',
         'route_type',
         'tracking_code',
         'gps_coordinates_actual',
@@ -27,6 +28,7 @@ class Delivery extends Model
             'order_id' => 'integer',
             'contract_id' => 'integer',
             'vehicle_id' => 'integer',
+            'delivery_route_id' => 'integer',
             'dispatched_at' => 'datetime',
             'delivered_at' => 'datetime',
         ];
@@ -40,5 +42,15 @@ class Delivery extends Model
     public function contract(): BelongsTo
     {
         return $this->belongsTo(Contract::class);
+    }
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
+    }
+
+    public function deliveryRoute(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryRoute::class);
     }
 }

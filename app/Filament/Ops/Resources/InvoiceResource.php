@@ -6,7 +6,6 @@ use App\Filament\Ops\Clusters\Finance;
 use App\Filament\Ops\Resources\InvoiceResource\Pages;
 use App\Models\Ops\Contract;
 use App\Models\Ops\Invoice;
-use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
@@ -14,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 
 class InvoiceResource extends Resource
 {
@@ -32,7 +32,7 @@ class InvoiceResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return FilamentAccess::allowRoles(FilamentAccess::ROLES_FINANCE);
+        return Gate::allows('viewAny', Invoice::class);
     }
 
     public static function form(Form $form): Form
