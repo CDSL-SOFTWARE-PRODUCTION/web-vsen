@@ -32,5 +32,9 @@ class DatabaseSeeder extends Seeder
             ArticleSeeder::class,
             OpsV1Seeder::class,
         ]);
+
+        if (filter_var(env('OPS_SEED_DEMO_TENDER', false), FILTER_VALIDATE_BOOL)) {
+            $this->call(OpsHueMilkAwardedDemoSeeder::class);
+        }
     }
 }

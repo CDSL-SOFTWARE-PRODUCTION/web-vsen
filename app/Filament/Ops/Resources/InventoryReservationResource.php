@@ -53,9 +53,14 @@ class InventoryReservationResource extends Resource
                         ->orderBy('warehouse_code')
                         ->orderBy('item_name')
                         ->get()
-                        ->mapWithKeys(fn (InventoryLot $lot): array => [
-                            $lot->id => $lot->warehouse_code.' · '.$lot->item_name.' (#'.$lot->id.')',
-                        ])
+                        ->mapWithKeys(function (InventoryLot $lot): array {
+                            $lotPart = $lot->lot_code ? ' · '.$lot->lot_code : '';
+                            $exp = $lot->expiry_date ? ' · HSD '.$lot->expiry_date->format('d/m/Y') : '';
+
+                            return [
+                                $lot->id => $lot->warehouse_code.' · '.$lot->item_name.$lotPart.$exp.' (#'.$lot->id.')',
+                            ];
+                        })
                         ->all())
                     ->searchable()
                     ->preload()

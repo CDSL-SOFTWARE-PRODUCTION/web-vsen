@@ -24,6 +24,7 @@ class ProductAliasesRelationManager extends RelationManager
             Forms\Components\TextInput::make('alias_name')
                 ->required()
                 ->maxLength(512)
+                ->label(__('ops.resources.product_alias.alias_name'))
                 ->columnSpanFull(),
         ]);
     }
@@ -32,7 +33,10 @@ class ProductAliasesRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('alias_name')->searchable()->wrap(),
+                Tables\Columns\TextColumn::make('alias_name')
+                    ->label(__('ops.resources.product_alias.alias_name'))
+                    ->searchable()
+                    ->wrap(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),

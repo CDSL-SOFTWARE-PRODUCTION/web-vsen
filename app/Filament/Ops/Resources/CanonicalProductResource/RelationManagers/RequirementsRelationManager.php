@@ -26,13 +26,19 @@ class RequirementsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('code')->searchable(),
-                Tables\Columns\TextColumn::make('type')->badge(),
-                Tables\Columns\TextColumn::make('name')->limit(40),
+                Tables\Columns\TextColumn::make('code')
+                    ->label(__('ops.resources.requirement.code'))
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('type')
+                    ->label(__('ops.resources.requirement.type'))
+                    ->badge(),
+                Tables\Columns\TextColumn::make('name')
+                    ->label(__('ops.resources.requirement.name'))
+                    ->limit(40),
             ])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
-                    ->preloadRecordSelectOptions(),
+                    ->preloadRecordSelect(),
             ])
             ->actions([
                 Tables\Actions\DetachAction::make(),

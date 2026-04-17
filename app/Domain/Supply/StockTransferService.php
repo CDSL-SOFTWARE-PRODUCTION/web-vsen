@@ -13,8 +13,7 @@ class StockTransferService
 {
     public function __construct(
         private readonly AuditLogService $auditLogService
-    ) {
-    }
+    ) {}
 
     public function ship(string $itemName, string $sourceWarehouseCode, string $destWarehouseCode, float $quantity, ?int $actorUserId = null): StockTransferResult
     {
@@ -24,16 +23,6 @@ class StockTransferService
         if ($sourceWarehouseCode === $destWarehouseCode) {
             throw new RuntimeException('Source and destination warehouses must be different.');
         }
-        // #region agent log
-        @file_get_contents('http://127.0.0.1:7271/ingest/c3f87a09-8801-4c97-9286-e3072a8d15fd', false, stream_context_create([
-            'http' => [
-                'method' => 'POST',
-                'header' => "Content-Type: application/json\r\nX-Debug-Session-Id: dd6099\r\n",
-                'content' => json_encode(['sessionId' => 'dd6099', 'runId' => 'phaseAtoC', 'hypothesisId' => 'H6', 'location' => 'StockTransferService.php:ship:entry', 'message' => 'Stock transfer ship requested', 'data' => ['item_name' => $itemName, 'source_warehouse_code' => $sourceWarehouseCode, 'dest_warehouse_code' => $destWarehouseCode, 'quantity' => $quantity], 'timestamp' => round(microtime(true) * 1000)]),
-                'timeout' => 1,
-            ],
-        ]));
-        // #endregion
 
         $transfer = DB::transaction(function () use ($itemName, $sourceWarehouseCode, $destWarehouseCode, $quantity): StockTransfer {
             $sourceLot = InventoryLot::query()
@@ -59,7 +48,7 @@ class StockTransferService
             ]);
 
             return StockTransfer::query()->create([
-                'transfer_code' => 'TR-' . now()->format('YmdHis') . '-' . random_int(100, 999),
+                'transfer_code' => 'TR-'.now()->format('YmdHis').'-'.random_int(100, 999),
                 'item_name' => $itemName,
                 'source_warehouse_code' => $sourceWarehouseCode,
                 'dest_warehouse_code' => $destWarehouseCode,

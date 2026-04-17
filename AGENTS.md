@@ -1,6 +1,8 @@
 ## Learned User Preferences
 - Prefers a minimal solo-developer GitHub workflow focused on development and testing, without automated deploy steps in shared CI.
+- Prefers complete Vietnamese (with diacritics) for Ops Filament screens via project i18n keys; avoids hardcoded user-facing strings and mixed partial English/Vietnamese on the same screen.
 - Prefers Filament-first, modular MVP implementation for this project before expanding architecture.
+- Prefers incremental delivery and local optimization over global refactors or attempting to hold the entire Business OS in working memory at once; ships one narrow vertical slice at a time to limit overbloat.
 - Prefers backward-compatible schema changes (additive migrations) when implementing large roadmap slices rather than destructive cutovers.
 - Prefers warn-first operational gates with auditable overrides before promoting hard blocks on critical constraints.
 - De-prioritizes MISA, bank/VA webhooks, and other external integrations until internal domain logic (states, constraints, gates, ledger) is consistent; keeps ports/null adapters without production vendor work as the default focus.
@@ -8,6 +10,7 @@
 ## Learned Workspace Facts
 - The repository is an active git workspace at `web-vsen` with ongoing product/database and ops-related implementation work.
 - Parent agent transcripts for this workspace are persisted under the Cursor project transcript store and should be processed incrementally.
+- TBMT-shaped demo payloads for Ops are stored as JSON under `database/fixtures/tender_snapshots/` and can be loaded via optional Laravel seeders; flags such as `OPS_SEED_DEMO_TENDER` and `OPS_SEED_HUE_MILK_FULL` (see `.env.example`) gate demo tender seeding—there is no in-app Muasamcong scraper/API for this workflow.
 - Current Ops direction includes standardizing public procurement tender documents into immutable Tender Snapshot data before mapping to execution runtime entities.
 - Product delivery follows a phased Business OS roadmap (`doc/guide.md`, `model/*`): foundation, core demand (`Order`), supply/inventory, delivery/cash, governance.
 - Ops runtime `Contract`/`ContractItem` are treated as execution projections tied to demand snapshots and `Order`, not as a parallel legal-contract source versus Muasamcong.

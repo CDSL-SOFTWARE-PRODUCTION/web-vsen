@@ -1,0 +1,46 @@
+/**
+ * Ops Filament panel: dashboard density + dark “command center” feel (matches Ops mockups).
+ */
+
+html.dark .fi-main-ctn {
+    background-color: rgb(9 9 11);
+}
+
+html.dark .fi-sidebar {
+    background-color: rgb(24 24 27);
+    border-color: rgb(39 39 42);
+}
+
+html.dark .fi-topbar {
+    background-color: rgb(24 24 27 / 0.85);
+    border-color: rgb(39 39 42);
+}
+
+/* Dashboard widget grid: slightly tighter than default gap-6 */
+html.dark .fi-wi {
+    gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+    html.dark .fi-wi {
+        gap: 1.25rem;
+    }
+}
+
+/* Stats overview: less vertical gap between title and cards */
+html.dark .fi-wi-stats-overview {
+    gap: 0.75rem;
+}
+
+html.dark .fi-wi-stats-overview-stats-ctn {
+    gap: 0.75rem;
+}
+
+/* Stat tiles: clearer separation on near-black canvas */
+html.dark .fi-wi-stats-overview-stat {
+    background-color: rgb(24 24 27);
+    box-shadow: none;
+    border: 1px solid rgb(39 39 42);
+}
+
+/* Chart/table widgets use Filament Section internally; avoid double borders here. */

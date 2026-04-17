@@ -2,6 +2,7 @@
 
 namespace App\Models\Ops;
 
+use App\Models\Knowledge\CanonicalProduct;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ class ContractItem extends Model
     protected $fillable = [
         'contract_id',
         'partner_id',
+        'canonical_product_id',
         'item_code',
         'name',
         'spec',
@@ -30,6 +32,7 @@ class ContractItem extends Model
     protected function casts(): array
     {
         return [
+            'canonical_product_id' => 'integer',
             'delivery_deadline' => 'date',
             'is_critical' => 'bool',
         ];
@@ -43,6 +46,11 @@ class ContractItem extends Model
     public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
+    }
+
+    public function canonicalProduct(): BelongsTo
+    {
+        return $this->belongsTo(CanonicalProduct::class);
     }
 
     public function issues(): HasMany

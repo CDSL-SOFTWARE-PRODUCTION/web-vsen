@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "title": "Mua sữa chi trả phụ cấp độc hại bằng hiện vật Quý I và Quý II năm 2025",
+    "source_system": "muasamcong",
+    "source_notify_no": "IB2600147617",
+    "source_plan_no": "PL2600083847",
+    "package_name": "Mua sữa chi trả phụ cấp độc hại bằng hiện vật Quý I và Quý II năm 2025",
+    "investor": "Trường Đại học Y - Dược, Đại học Huế",
+    "funding": "Nguồn thu hợp pháp của Trường Đại học Y - Dược, Đại học Huế dành để chi thường xuyên",
+    "location_package": "Phường Thuận Hóa, Thành phố Huế",
+    "ceiling_price_vnd": 319438400,
+    "bid_step_vnd": 400000,
+    "execution_months": 3
+  },
+  "items": [
+    {
+      "line_no": 1,
+      "name": "Sữa tươi tiệt trùng ít đường",
+      "uom": "Lốc",
+      "quantity_awarded": 8600,
+      "tender_item_ref": "Không bắt buộc",
+      "brand": "TH true MILK",
+      "manufacturer": "Công ty Cổ phần Chuỗi Thực phẩm TH",
+      "origin_country": "Việt Nam",
+      "manufacture_year": 2026,
+      "spec_committed_raw": "Quy cách đóng gói: lốc 4 hộp; Dung tích: 180 ml/ hộp. Thành phần dinh dưỡng trong 100ml: Năng lượng: 72,7 kcal; Chất đạm:2,9g; Carbonhydrat: 7,4g; Đường tổng số: 7,3g; Chất béo: 3,5g; Natri: 35mg; Canxi: 100mg; Các vitamin và khoáng chất có sẵn trong sữa tươi",
+      "project_site": "Trường Đại học Y - Dược, Đại học Huế (06 Ngô Quyền, phường Thuận Hóa, thành phố Huế)",
+      "delivery_earliest_rule": "01 ngày kể từ ngày chủ đầu tư yêu cầu giao hàng",
+      "delivery_latest_rule": "07 ngày kể từ ngày chủ đầu tư yêu cầu giao hàng",
+      "other_requirements_raw": "Có hạn sử dụng tối thiểu 6 tháng kể từ ngày giao hàng"
+    }
+  ]
+}

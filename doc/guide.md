@@ -259,7 +259,7 @@ Hoàn tất vòng thực thi từ giao hàng đến hóa đơn/thu tiền.
 ### Acceptance (**đã có test + widget; mở rộng tiếp theo nhu cầu nghiệp vụ**)
 - Không thể issue invoice khi thiếu điều kiện — **có** (`IssueInvoiceService` + `FulfillmentReadiness`; `tests/Feature/Ops/ExecutionPlanFlowTest.php`: reject khi thiếu giao/chứng từ; reject khi giao chưa `Delivered`).
 - Payment readiness đi qua checklist rõ ràng — **có** (`GateEvaluator::evaluatePrePayment`, checklist milestone; cùng file test: gate pre-payment + milestone).
-- Dashboard tài chính phản ánh đúng aging/gap — **có** (`AccountsReceivableAgingWidget`, `MilestoneAgingService`; test refresh `days_overdue_cached`).
+- Dashboard tài chính phản ánh đúng aging/gap — **có** (`OpsDebtAndLedgerKpiWidget` gom AR + ledger, `MilestoneAgingService`; test refresh `days_overdue_cached`).
 
 ### Gap tiếp (không chặn Phase D)
 - `DeliveryRoute` / `Vehicle` đầy đủ như ERD: tùy slice logistics sau.

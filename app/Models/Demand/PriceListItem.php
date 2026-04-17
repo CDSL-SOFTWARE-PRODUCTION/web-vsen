@@ -2,6 +2,7 @@
 
 namespace App\Models\Demand;
 
+use App\Models\Knowledge\CanonicalProduct;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,7 @@ class PriceListItem extends Model
 
     protected $fillable = [
         'price_list_id',
+        'canonical_product_id',
         'product_name',
         'unit_price',
         'min_qty',
@@ -23,6 +25,7 @@ class PriceListItem extends Model
     {
         return [
             'price_list_id' => 'integer',
+            'canonical_product_id' => 'integer',
             'unit_price' => 'decimal:2',
             'min_qty' => 'integer',
         ];
@@ -31,6 +34,11 @@ class PriceListItem extends Model
     public function priceList(): BelongsTo
     {
         return $this->belongsTo(PriceList::class);
+    }
+
+    public function canonicalProduct(): BelongsTo
+    {
+        return $this->belongsTo(CanonicalProduct::class);
     }
 
     public function orderItems(): HasMany

@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class RopLowStockTableWidget extends TableWidget
 {
-    protected static ?int $sort = 6;
+    protected static ?int $sort = 80;
 
     protected int|string|array $columnSpan = 'full';
 
@@ -28,7 +28,7 @@ class RopLowStockTableWidget extends TableWidget
 
     protected function getTableHeading(): ?string
     {
-        return __('ops.widgets.rop.table_title');
+        return __('ops.dashboard.sections.inventory').' — '.__('ops.widgets.rop.table_title');
     }
 
     protected function getTableQuery(): ?Builder
