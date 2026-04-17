@@ -72,6 +72,7 @@ return [
             'warehouse' => 'Warehouse',
         ],
         'inventory_reservation' => [
+            'navigation' => 'Inventory reservations',
             'title' => 'Reservations',
             'order_item' => 'Order line',
         ],
@@ -80,6 +81,25 @@ return [
         ],
         'stock_transfer' => [
             'navigation' => 'Stock transfers',
+        ],
+        'return_order' => [
+            'navigation' => 'Return orders (RMA)',
+            'lines' => 'Lines',
+            'lines_title' => 'Return lines',
+            'condition_good' => 'Good (restock)',
+            'condition_defective' => 'Defective',
+        ],
+        'requirement' => [
+            'navigation' => 'Certification requirements',
+            'code' => 'Code',
+            'plural_short' => 'Certifications',
+        ],
+        'product_alias' => [
+            'title' => 'Aliases (matching)',
+        ],
+        'tender_line_requirement' => [
+            'navigation' => 'Tender line ↔ certification',
+            'snapshot_line' => 'Tender snapshot line',
         ],
     ],
     'order' => [

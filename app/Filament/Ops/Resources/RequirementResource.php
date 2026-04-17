@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Filament\Ops\Resources;
+
+use App\Filament\Ops\Clusters\MasterData;
+use App\Filament\Ops\Resources\RequirementResource\Pages;
+use App\Models\Knowledge\Requirement;
+use App\Support\Ops\FilamentAccess;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class RequirementResource extends Resource
+{
+    protected static ?string $model = Requirement::class;
+
+    protected static ?string $cluster = MasterData::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-check-badge';
+
+    protected static ?int $navigationSort = 14;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('ops.resources.requirement.navigation');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\TextInput::make('code')
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(64)
+                    ->label(__('ops.resources.requirement.code')),
+                Forms\Components\Select::make('type')
+                    ->required()
+                    ->options([
+                        'ISO_13485' => 'ISO 13485',
+                        'CE' => 'CE',
+                        'FSC' => 'FSC',
+                        'Catalog' => 'Catalog',
+                    ]),
+                Forms\Components\TextInput::make('name')->maxLength(255),
+                Forms\Components\Textarea::make('description')->rows(2)->columnSpanFull(),
+            ])
+            ->columns(2);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->defaultSort('code')
+            ->columns([
+                Tables\Columns\TextColumn::make('code')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('type')->badge(),
+                Tables\Columns\TextColumn::make('name')->limit(40),
+                Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('type')->options([
+                    'ISO_13485' => 'ISO 13485',
+                    'CE' => 'CE',
+                    'FSC' => 'FSC',
+                    'Catalog' => 'Catalog',
+                ]),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListRequirements::route('/'),
+            'create' => Pages\CreateRequirement::route('/create'),
+            'edit' => Pages\EditRequirement::route('/{record}/edit'),
+        ];
+    }
+}

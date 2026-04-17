@@ -4,6 +4,8 @@ namespace App\Filament\Ops\Resources;
 
 use App\Filament\Ops\Clusters\MasterData;
 use App\Filament\Ops\Resources\CanonicalProductResource\Pages;
+use App\Filament\Ops\Resources\CanonicalProductResource\RelationManagers\ProductAliasesRelationManager;
+use App\Filament\Ops\Resources\CanonicalProductResource\RelationManagers\RequirementsRelationManager;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
@@ -55,13 +57,26 @@ class CanonicalProductResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('abc_class')->options(['A' => 'A', 'B' => 'B', 'C' => 'C']),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            ProductAliasesRelationManager::class,
+            RequirementsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageCanonicalProducts::route('/'),
+            'index' => Pages\ListCanonicalProducts::route('/'),
+            'create' => Pages\CreateCanonicalProduct::route('/create'),
+            'edit' => Pages\EditCanonicalProduct::route('/{record}/edit'),
         ];
     }
 }

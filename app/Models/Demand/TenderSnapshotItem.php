@@ -2,9 +2,11 @@
 
 namespace App\Models\Demand;
 
+use App\Models\Knowledge\Requirement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use RuntimeException;
 
 class TenderSnapshotItem extends Model
@@ -57,5 +59,10 @@ class TenderSnapshotItem extends Model
     {
         return $this->belongsTo(TenderSnapshot::class, 'tender_snapshot_id');
     }
-}
 
+    public function requirements(): BelongsToMany
+    {
+        return $this->belongsToMany(Requirement::class, 'tender_snapshot_item_requirement')
+            ->withTimestamps();
+    }
+}

@@ -72,6 +72,7 @@ return [
             'warehouse' => 'Kho',
         ],
         'inventory_reservation' => [
+            'navigation' => 'Giu ton (tat ca)',
             'title' => 'Giu ton',
             'order_item' => 'Dong don hang',
         ],
@@ -80,6 +81,25 @@ return [
         ],
         'stock_transfer' => [
             'navigation' => 'Dieu chuyen kho',
+        ],
+        'return_order' => [
+            'navigation' => 'Tra hang (RMA)',
+            'lines' => 'Dong',
+            'lines_title' => 'Chi tiet tra',
+            'condition_good' => 'Tot (nhap lai)',
+            'condition_defective' => 'Loi',
+        ],
+        'requirement' => [
+            'navigation' => 'Yeu cau chung nhan',
+            'code' => 'Ma',
+            'plural_short' => 'Chung chi',
+        ],
+        'product_alias' => [
+            'title' => 'Ten goi thay the (match)',
+        ],
+        'tender_line_requirement' => [
+            'navigation' => 'Dong thau <-> chung chi',
+            'snapshot_line' => 'Dong tender snapshot',
         ],
     ],
     'order' => [
