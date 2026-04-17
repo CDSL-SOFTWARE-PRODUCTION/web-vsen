@@ -5,6 +5,7 @@ namespace App\Filament\Ops\Resources;
 use App\Filament\Ops\Clusters\Demand;
 use App\Filament\Ops\Resources\AuditLogResource\Pages;
 use App\Models\System\AuditLog;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
@@ -38,6 +39,11 @@ class AuditLogResource extends Resource
         return Schema::hasTable('audit_logs');
     }
 
+    public static function canViewAny(): bool
+    {
+        return static::canAccess() && FilamentAccess::allowRoles(FilamentAccess::ROLES_ADMIN_ONLY);
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([]);
@@ -61,7 +67,24 @@ class AuditLogResource extends Resource
                     ->searchable()
                     ->limit(40),
                 Tables\Columns\TextColumn::make('context')
-                    ->formatStateUsing(fn (?array $state): string => $state ? json_encode($state, JSON_UNESCAPED_UNICODE) ?: '{}' : '{}')
+                    ->formatStateUsing(function (mixed $state): string {
+                        if ($state === null || $state === '') {
+                            return '{}';
+                        }
+                        if (is_array($state)) {
+                            return json_encode($state, JSON_UNESCAPED_UNICODE) ?: '{}';
+                        }
+                        if (is_string($state)) {
+                            $decoded = json_decode($state, true);
+                            if (is_array($decoded)) {
+                                return json_encode($decoded, JSON_UNESCAPED_UNICODE) ?: '{}';
+                            }
+
+                            return $state;
+                        }
+
+                        return '{}';
+                    })
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -95,4 +118,3 @@ class AuditLogResource extends Resource
         return parent::getEloquentQuery();
     }
 }
-

@@ -88,11 +88,15 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
+      - name: Doc and model consistency audit
+        run: python3 scripts/audit_doc_model_consistency.py
+
       - name: Run stable test pack
         run: |
           php artisan test \
             tests/Unit \
             tests/Feature/Cms \
+            tests/Feature/Ops \
             tests/Feature/Auth/AuthAndRoleTest.php \
             tests/Feature/Auth/AuthenticationTest.php \
             tests/Feature/ProfileTest.php

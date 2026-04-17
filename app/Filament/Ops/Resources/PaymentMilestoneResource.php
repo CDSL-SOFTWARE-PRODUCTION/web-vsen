@@ -7,10 +7,11 @@ use App\Filament\Ops\Clusters\Finance;
 use App\Filament\Ops\Resources\PaymentMilestoneResource\Pages;
 use App\Models\Ops\Contract;
 use App\Models\Ops\PaymentMilestone;
-use Filament\Pages\SubNavigationPosition;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -19,6 +20,7 @@ use Filament\Tables\Table;
 class PaymentMilestoneResource extends Resource
 {
     protected static ?string $model = PaymentMilestone::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Finance::class;
@@ -28,6 +30,11 @@ class PaymentMilestoneResource extends Resource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.payment_milestone.navigation');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_DEMAND_EXTENDED);
     }
 
     public static function form(Form $form): Form
@@ -78,7 +85,7 @@ class PaymentMilestoneResource extends Resource
                     ->summarize(Sum::make()->money('VND', locale: 'vi')),
                 Tables\Columns\TextColumn::make('checklist_status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.payment_milestone.checklist.' . $state))
+                    ->formatStateUsing(fn (string $state): string => __('ops.payment_milestone.checklist.'.$state))
                     ->color(fn (string $state): string => match ($state) {
                         'complete' => 'success',
                         'partial' => 'warning',
@@ -86,6 +93,9 @@ class PaymentMilestoneResource extends Resource
                     }),
                 Tables\Columns\IconColumn::make('payment_ready')
                     ->boolean(),
+                Tables\Columns\TextColumn::make('days_overdue_cached')
+                    ->label(__('ops.payment_milestone.columns.days_overdue'))
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('checklist_status')
@@ -105,7 +115,7 @@ class PaymentMilestoneResource extends Resource
                 Tables\Actions\Action::make('markReady')
                     ->label(__('ops.payment_milestone.actions.mark_ready'))
                     ->color('success')
-                    ->visible(fn (PaymentMilestone $record): bool => !$record->payment_ready)
+                    ->visible(fn (PaymentMilestone $record): bool => ! $record->payment_ready)
                     ->action(function (PaymentMilestone $record): void {
                         $hasWarning = $record->checklist_status !== 'complete';
                         $record->update([

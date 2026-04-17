@@ -2,13 +2,16 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Ops\Widgets\AccountsReceivableAgingWidget;
 use App\Filament\Ops\Widgets\CashGapWidget;
 use App\Filament\Ops\Widgets\ContractsAtRiskWidget;
 use App\Filament\Ops\Widgets\OverdueIssuesWidget;
+use App\Http\Middleware\SetLocale;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -18,8 +21,8 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Navigation\NavigationGroup;
 
 class OpsPanelProvider extends PanelProvider
 {
@@ -46,12 +49,13 @@ class OpsPanelProvider extends PanelProvider
                 ContractsAtRiskWidget::class,
                 OverdueIssuesWidget::class,
                 CashGapWidget::class,
+                AccountsReceivableAgingWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
-                \App\Http\Middleware\SetLocale::class,
+                SetLocale::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
@@ -72,7 +76,7 @@ class OpsPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::user-menu.before',
-                fn (): string => \Illuminate\Support\Facades\Blade::render('
+                fn (): string => Blade::render('
                     <div class="flex items-center gap-x-3 mr-3">
                         <a href="{{ route(\'language.switch\', [\'locale\' => \'vi\']) }}" class="text-sm font-medium {{ app()->getLocale() === \'vi\' ? \'text-primary-600 underline\' : \'text-gray-500\' }}">
                             VI

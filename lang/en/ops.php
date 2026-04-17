@@ -43,6 +43,9 @@ return [
         'execution_issue' => ['navigation' => 'Execution issues'],
         'audit_log' => ['navigation' => 'Audit logs'],
         'user' => ['navigation' => 'Users'],
+        'delivery' => ['navigation' => 'Deliveries'],
+        'invoice' => ['navigation' => 'Invoices'],
+        'financial_ledger' => ['navigation' => 'Financial ledger'],
     ],
     'order' => [
         'section' => [
@@ -51,6 +54,8 @@ return [
         'fields' => [
             'tender_snapshot' => 'Tender snapshot',
             'items_count' => 'Items',
+            'state' => 'State',
+            'state_helper' => 'Read-only. Use table actions (Confirm contract, etc.) — state changes go through command services.',
         ],
     ],
     'audit_log' => [
@@ -86,6 +91,9 @@ return [
         ],
     ],
     'payment_milestone' => [
+        'columns' => [
+            'days_overdue' => 'Days overdue (cached)',
+        ],
         'checklist' => [
             'pending' => 'Pending',
             'partial' => 'Partial',
@@ -166,6 +174,7 @@ return [
         ],
     ],
     'user' => [
+        'legal_entity' => 'Legal entity',
         'section' => [
             'user_details' => 'User details',
         ],
@@ -177,6 +186,9 @@ return [
             'kho' => 'Warehouse',
             'ke_toan' => 'Accounting',
         ],
+    ],
+    'order_items' => [
+        'unit_price' => 'Unit price (channel)',
     ],
     'contract_items' => [
         'title' => 'Contract items',
@@ -195,6 +207,26 @@ return [
         ],
         'actions' => [
             'mark_red' => 'Mark red',
+        ],
+    ],
+    'delivery' => [
+        'actions' => [
+            'mark_delivered' => 'Mark delivered',
+        ],
+    ],
+    'invoice' => [
+        'columns' => [
+            'days_overdue' => 'Days overdue',
+            'code' => 'Invoice code',
+        ],
+        'actions' => [
+            'cancel_reissue' => 'Cancel and reissue (C-FIN-002)',
+        ],
+        'fields' => [
+            'new_total' => 'New total amount (VND)',
+        ],
+        'notifications' => [
+            'reissued' => 'Invoice voided and replacement created.',
         ],
     ],
     'issue_updates' => [
@@ -229,6 +261,21 @@ return [
             'open' => [
                 'title' => 'All open issues',
                 'description' => 'Open + In progress + Pending approval',
+            ],
+        ],
+        'ar' => [
+            'migration_pending' => 'Run php artisan migrate to update schema',
+            'overdue_milestones' => [
+                'title' => 'Overdue milestones',
+                'description' => 'Milestones past due date with incomplete checklist',
+            ],
+            'overdue_amount' => [
+                'title' => 'Overdue milestone amount',
+                'description' => 'Sum of amount_planned for overdue milestones',
+            ],
+            'ledger_inflow' => [
+                'title' => 'Total inflow (ledger)',
+                'description' => 'Inflow rows in financial_ledger_entries',
             ],
         ],
         'cash' => [

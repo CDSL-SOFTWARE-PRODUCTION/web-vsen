@@ -6,6 +6,19 @@ use App\Models\Ops\Contract;
 
 class GateEvaluator
 {
+    public function evaluateConfirmFulfillmentReadiness(Contract $contract): array
+    {
+        $warnings = [];
+        if (! FulfillmentReadiness::hasDeliveredShipment($contract)) {
+            $warnings[] = 'No delivery in Delivered status.';
+        }
+        if (! FulfillmentReadiness::hasAcceptanceMinuteNotMissing($contract)) {
+            $warnings[] = 'Acceptance Minute document is still missing.';
+        }
+
+        return $this->result($warnings);
+    }
+
     public function evaluatePreActivate(Contract $contract): array
     {
         $warnings = [];
@@ -69,4 +82,3 @@ class GateEvaluator
         ];
     }
 }
-

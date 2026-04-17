@@ -16,7 +16,19 @@ class Partner extends Model
         'segment',
         'lead_time_days',
         'reliability_note',
+        'credit_limit',
+        'outstanding_balance_cached',
+        'max_overdue_days_cached',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'credit_limit' => 'decimal:2',
+            'outstanding_balance_cached' => 'decimal:2',
+            'max_overdue_days_cached' => 'integer',
+        ];
+    }
 
     public function contractItems(): HasMany
     {

@@ -9,10 +9,11 @@ use App\Filament\Ops\Clusters\Demand;
 use App\Filament\Ops\Resources\ContractResource\Pages;
 use App\Filament\Ops\Resources\ContractResource\RelationManagers\ItemsRelationManager;
 use App\Models\Ops\Contract;
-use Filament\Pages\SubNavigationPosition;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 class ContractResource extends Resource
 {
     protected static ?string $model = Contract::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Demand::class;
@@ -33,6 +35,11 @@ class ContractResource extends Resource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.contract.navigation');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
     }
 
     public static function form(Form $form): Form
@@ -114,7 +121,7 @@ class ContractResource extends Resource
                     ->summarize(Sum::make()->money('VND', locale: 'vi')),
                 Tables\Columns\TextColumn::make('risk_level')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.common.risk.' . strtolower($state)))
+                    ->formatStateUsing(fn (string $state): string => __('ops.common.risk.'.strtolower($state)))
                     ->color(fn (string $state): string => match ($state) {
                         'Red' => 'danger',
                         'Amber' => 'warning',

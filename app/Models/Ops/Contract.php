@@ -19,6 +19,7 @@ class Contract extends Model
         'tender_snapshot_id',
         'contract_code',
         'name',
+        'customer_partner_id',
         'customer_name',
         'start_date',
         'end_date',
@@ -35,6 +36,7 @@ class Contract extends Model
     {
         return [
             'order_id' => 'integer',
+            'customer_partner_id' => 'integer',
             'tender_snapshot_id' => 'integer',
             'start_date' => 'date',
             'end_date' => 'date',
@@ -69,9 +71,29 @@ class Contract extends Model
         return $this->hasMany(CashPlanEvent::class);
     }
 
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(Delivery::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function financialLedgerEntries(): HasMany
+    {
+        return $this->hasMany(FinancialLedgerEntry::class);
+    }
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function customerPartner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class, 'customer_partner_id');
     }
 
     public function tenderSnapshot(): BelongsTo

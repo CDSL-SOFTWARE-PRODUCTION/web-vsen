@@ -7,9 +7,10 @@ use App\Filament\Ops\Resources\CashPlanEventResource\Pages;
 use App\Models\Ops\CashPlanEvent;
 use App\Models\Ops\Contract;
 use App\Models\Ops\Partner;
-use Filament\Pages\SubNavigationPosition;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -18,6 +19,7 @@ use Filament\Tables\Table;
 class CashPlanEventResource extends Resource
 {
     protected static ?string $model = CashPlanEvent::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Finance::class;
@@ -27,6 +29,11 @@ class CashPlanEventResource extends Resource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.cash_plan_event.navigation');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_DEMAND_EXTENDED);
     }
 
     public static function form(Form $form): Form
@@ -79,7 +86,7 @@ class CashPlanEventResource extends Resource
                     ->summarize(Sum::make()->money('VND', locale: 'vi')),
                 Tables\Columns\TextColumn::make('purpose')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.cash_plan_event.purpose.' . match ($state) {
+                    ->formatStateUsing(fn (string $state): string => __('ops.cash_plan_event.purpose.'.match ($state) {
                         'PaySupplier' => 'pay_supplier',
                         'Customs' => 'customs',
                         'Logistics' => 'logistics',

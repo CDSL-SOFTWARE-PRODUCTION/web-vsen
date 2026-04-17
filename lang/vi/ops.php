@@ -43,6 +43,9 @@ return [
         'execution_issue' => ['navigation' => 'Van de thuc thi'],
         'audit_log' => ['navigation' => 'Nhat ky audit'],
         'user' => ['navigation' => 'Nguoi dung'],
+        'delivery' => ['navigation' => 'Chuyen giao hang'],
+        'invoice' => ['navigation' => 'Hoa don'],
+        'financial_ledger' => ['navigation' => 'So cai dong tien'],
     ],
     'order' => [
         'section' => [
@@ -51,6 +54,8 @@ return [
         'fields' => [
             'tender_snapshot' => 'Tender snapshot',
             'items_count' => 'So hang muc',
+            'state' => 'Trang thai',
+            'state_helper' => 'Chi doc. Dung nut tren bang (Confirm contract, ...) — doi state qua lenh/command, khong sua tay.',
         ],
     ],
     'audit_log' => [
@@ -86,6 +91,9 @@ return [
         ],
     ],
     'payment_milestone' => [
+        'columns' => [
+            'days_overdue' => 'Ngay tre (cache)',
+        ],
         'checklist' => [
             'pending' => 'Cho xu ly',
             'partial' => 'Mot phan',
@@ -166,6 +174,7 @@ return [
         ],
     ],
     'user' => [
+        'legal_entity' => 'Phap nhan',
         'section' => [
             'user_details' => 'Thong tin nguoi dung',
         ],
@@ -177,6 +186,9 @@ return [
             'kho' => 'Kho',
             'ke_toan' => 'Ke toan',
         ],
+    ],
+    'order_items' => [
+        'unit_price' => 'Don gia (kenh)',
     ],
     'contract_items' => [
         'title' => 'Hang muc hop dong',
@@ -195,6 +207,26 @@ return [
         ],
         'actions' => [
             'mark_red' => 'Danh dau do',
+        ],
+    ],
+    'delivery' => [
+        'actions' => [
+            'mark_delivered' => 'Danh dau da giao',
+        ],
+    ],
+    'invoice' => [
+        'columns' => [
+            'days_overdue' => 'Ngay tre',
+            'code' => 'Ma hoa don',
+        ],
+        'actions' => [
+            'cancel_reissue' => 'Huy va xuat lai (C-FIN-002)',
+        ],
+        'fields' => [
+            'new_total' => 'Tong tien moi (VND)',
+        ],
+        'notifications' => [
+            'reissued' => 'Da huy hoa don va tao ban thay the.',
         ],
     ],
     'issue_updates' => [
@@ -243,6 +275,21 @@ return [
             'gap' => [
                 'title' => 'Khoang thieu hut tien mat',
                 'description' => 'Gia tri duong = thieu nguon',
+            ],
+        ],
+        'ar' => [
+            'migration_pending' => 'Chay php artisan migrate de cap nhat schema',
+            'overdue_milestones' => [
+                'title' => 'Moc tre han',
+                'description' => 'So moc chua hoan tat checklist sau ngay den han',
+            ],
+            'overdue_amount' => [
+                'title' => 'Tong tien moc tre',
+                'description' => 'Tong amount_planned cua moc tre (uoc tinh)',
+            ],
+            'ledger_inflow' => [
+                'title' => 'Tong Inflow (ledger)',
+                'description' => 'Ghi nhan Inflow trong financial_ledger_entries',
             ],
         ],
         'milestones' => [

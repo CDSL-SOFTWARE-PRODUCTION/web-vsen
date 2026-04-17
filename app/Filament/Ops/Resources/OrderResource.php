@@ -2,16 +2,17 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Domain\Demand\ConfirmContractCommandService;
-use App\Domain\Demand\StartExecutionCommandService;
-use App\Domain\Demand\ConfirmFulfillmentCommandService;
-use App\Domain\Demand\CloseContractCommandService;
 use App\Domain\Demand\AbandonTenderCommandService;
+use App\Domain\Demand\CloseContractCommandService;
+use App\Domain\Demand\ConfirmContractCommandService;
+use App\Domain\Demand\ConfirmFulfillmentCommandService;
+use App\Domain\Demand\StartExecutionCommandService;
 use App\Filament\Ops\Clusters\Demand;
 use App\Filament\Ops\Resources\OrderResource\Pages;
 use App\Filament\Ops\Resources\OrderResource\RelationManagers\ItemsRelationManager;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -37,6 +38,11 @@ class OrderResource extends Resource
         return __('ops.resources.order.navigation');
     }
 
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -50,8 +56,9 @@ class OrderResource extends Resource
                         ->required()
                         ->maxLength(255),
                     Forms\Components\Select::make('state')
-                        ->required()
-                        ->helperText('State transitions are controlled via command actions.')
+                        ->label(__('ops.order.fields.state'))
+                        ->visibleOn('edit')
+                        ->helperText(__('ops.order.fields.state_helper'))
                         ->disabled()
                         ->dehydrated(false)
                         ->options([
@@ -218,4 +225,3 @@ class OrderResource extends Resource
         ];
     }
 }
-

@@ -6,10 +6,9 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuoteRequestController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\Webhooks\BankVirtualAccountWebhookController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/solutions', [PageController::class, 'solutions'])->name('solutions.index');
@@ -26,8 +25,10 @@ Route::get('/products/{id}', [ProductController::class, 'show'])->name('products
 Route::get('/insights/news', [ArticleController::class, 'index'])->name('news.index');
 Route::get('/insights/news/{slug}', [ArticleController::class, 'show'])->name('news.show');
 
-
 Route::post('/quote-request', [QuoteRequestController::class, 'store'])->name('quote.store');
+
+Route::post('/webhooks/bank-virtual-account', BankVirtualAccountWebhookController::class)
+    ->name('webhooks.bank.virtual_account');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -43,6 +44,7 @@ Route::get('/language/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'vi'])) {
         session()->put('locale', $locale);
     }
+
     return redirect()->back();
 })->name('language.switch');
 

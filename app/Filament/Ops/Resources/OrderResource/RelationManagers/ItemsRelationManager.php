@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Resources\OrderResource\RelationManagers;
 
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -31,6 +32,10 @@ class ItemsRelationManager extends RelationManager
             Forms\Components\TextInput::make('status')
                 ->required()
                 ->maxLength(40),
+            Forms\Components\TextInput::make('unit_price')
+                ->label(__('ops.order_items.unit_price'))
+                ->numeric()
+                ->visible(fn (): bool => FilamentAccess::allowRoles(['Admin_PM', 'Sale', 'KeToan'])),
         ]);
     }
 
@@ -49,6 +54,10 @@ class ItemsRelationManager extends RelationManager
                     ->numeric(decimalPlaces: 3),
                 Tables\Columns\TextColumn::make('status')
                     ->badge(),
+                Tables\Columns\TextColumn::make('unit_price')
+                    ->label(__('ops.order_items.unit_price'))
+                    ->money('VND', locale: 'vi')
+                    ->visible(fn (): bool => FilamentAccess::allowRoles(['Admin_PM', 'Sale', 'KeToan'])),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
@@ -59,4 +68,3 @@ class ItemsRelationManager extends RelationManager
             ]);
     }
 }
-

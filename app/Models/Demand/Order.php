@@ -2,7 +2,9 @@
 
 namespace App\Models\Demand;
 
+use App\Models\Concerns\ScopedByLegalEntity;
 use App\Models\Ops\Contract;
+use App\Models\Ops\Delivery;
 use App\Models\Supply\SupplyOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,10 +15,12 @@ use RuntimeException;
 class Order extends Model
 {
     use HasFactory;
+    use ScopedByLegalEntity;
 
     private bool $allowStateMutation = false;
 
     protected $fillable = [
+        'legal_entity_id',
         'order_code',
         'name',
         'tender_snapshot_id',
@@ -28,6 +32,7 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            'legal_entity_id' => 'integer',
             'tender_snapshot_id' => 'integer',
             'awarded_at' => 'datetime',
             'confirmed_at' => 'datetime',
@@ -58,6 +63,11 @@ class Order extends Model
     public function supplyOrders(): HasMany
     {
         return $this->hasMany(SupplyOrder::class);
+    }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(Delivery::class);
     }
 
     public function transitionTo(string $nextState): void
@@ -100,6 +110,12 @@ class Order extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (Order $order): void {
+            if ($order->state === null || $order->state === '') {
+                $order->state = 'SubmitTender';
+            }
+        });
+
         static::updating(function (Order $order): void {
             if ($order->isDirty('state') && ! $order->allowStateMutation) {
                 throw new RuntimeException('Order state updates must go through command transition services.');
@@ -107,4 +123,3 @@ class Order extends Model
         });
     }
 }
-

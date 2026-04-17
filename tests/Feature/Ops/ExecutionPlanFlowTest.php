@@ -2,39 +2,54 @@
 
 use App\Domain\Audit\AuditLogService;
 use App\Domain\Demand\CloseContractCommandService;
-use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
+use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\CreateOrderFromSnapshotCommandService;
 use App\Domain\Demand\StartExecutionCommandService;
-use App\Domain\Supply\GenerateSupplyOrderFromOrderService;
-use App\Domain\Supply\ReceiveSupplyOrderService;
-use App\Domain\Supply\ReserveInventoryService;
-use App\Domain\Supply\StockTransferService;
-use App\Domain\Supply\ProcessReturnOrderService;
 use App\Domain\Execution\GateEvaluator;
 use App\Domain\Execution\GateOverrideService;
 use App\Domain\Execution\GenerateExecutionPlanService;
+use App\Domain\Finance\CancelAndReissueInvoiceService;
+use App\Domain\Finance\IssueInvoiceService;
+use App\Domain\Finance\MilestoneAgingService;
+use App\Domain\Supply\GenerateSupplyOrderFromOrderService;
+use App\Domain\Supply\ProcessReturnOrderService;
+use App\Domain\Supply\ReceiveSupplyOrderService;
+use App\Domain\Supply\ReserveInventoryService;
+use App\Domain\Supply\StockTransferService;
 use App\Models\Demand\Order;
 use App\Models\Demand\PriceList;
 use App\Models\Demand\PriceListItem;
 use App\Models\Demand\SalesTouchpoint;
 use App\Models\Demand\TenderSnapshot;
 use App\Models\Demand\TenderSnapshotItem;
+use App\Models\LegalEntity;
 use App\Models\Ops\Contract;
+use App\Models\Ops\Delivery;
+use App\Models\Ops\Document;
 use App\Models\Ops\ExecutionIssue;
+use App\Models\Ops\FinancialLedgerEntry;
+use App\Models\Ops\Invoice;
+use App\Models\Ops\Partner;
 use App\Models\Ops\PaymentMilestone;
+use App\Models\Supply\InventoryLedger;
+use App\Models\Supply\InventoryLot;
+use App\Models\Supply\InventoryReservation;
+use App\Models\Supply\ReturnLineItem;
+use App\Models\Supply\ReturnOrder;
+use App\Models\Supply\StockTransfer;
+use App\Models\Supply\SupplyOrder;
 use App\Models\System\AuditLog;
 use App\Models\User;
-use App\Models\Supply\InventoryLot;
-use App\Models\Supply\InventoryLedger;
-use App\Models\Supply\InventoryReservation;
-use App\Models\Supply\SupplyOrder;
-use App\Models\Supply\StockTransfer;
-use App\Models\Supply\ReturnOrder;
-use App\Models\Supply\ReturnLineItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use function Pest\Laravel\actingAs;
+
 uses(RefreshDatabase::class);
+
+beforeEach(function (): void {
+    config(['ops.gates.confirm_fulfillment' => 'warn']);
+});
 
 it('generates execution runtime from locked snapshot with order linkage', function () {
     $actor = User::factory()->create(['role' => 'Admin_PM']);
@@ -216,7 +231,7 @@ it('rejects gate override when there are no warnings', function () {
     $service = app(GateOverrideService::class);
 
     expect(fn () => $service->override($contract->fresh(), 'prePayment', 'Force payment gate.'))
-        ->toThrow(\InvalidArgumentException::class);
+        ->toThrow(InvalidArgumentException::class);
 });
 
 it('confirms contract through command service and writes order audit trail', function () {
@@ -276,7 +291,7 @@ it('rejects confirm contract command when order is not in award state', function
     $order->transitionTo('ConfirmContract');
 
     expect(fn () => app(ConfirmContractCommandService::class)->handle($order->id, $actor->id))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 });
 
 it('confirms contract with warnings and syncs contract projection counters', function () {
@@ -339,7 +354,7 @@ it('runs full transition commands matrix for valid and invalid states', function
 
     expect(Order::query()->findOrFail($orderId)->state)->toBe('ContractClosed');
     expect(fn () => app(StartExecutionCommandService::class)->handle($orderId, $actor->id))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 });
 
 it('returns existing runtime when generating plan twice for same snapshot', function () {
@@ -403,7 +418,7 @@ it('rejects create order command when snapshot is unlocked', function () {
     ]);
 
     expect(fn () => app(CreateOrderFromSnapshotCommandService::class)->handle($snapshot->fresh('items')))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 });
 
 it('blocks direct state updates outside transition services', function () {
@@ -425,7 +440,7 @@ it('blocks direct state updates outside transition services', function () {
     $order = Order::query()->findOrFail($contract->order_id);
 
     $order->state = 'ContractClosed';
-    expect(fn () => $order->save())->toThrow(\RuntimeException::class);
+    expect(fn () => $order->save())->toThrow(RuntimeException::class);
 });
 
 it('raises pricing deviation warning on confirm contract when line price diverges from price list', function () {
@@ -607,7 +622,7 @@ it('reserves inventory, prevents over reserve, and supports release flow', funct
         ->and((float) $reserveLedger->qty_change)->toBe(-3.0);
 
     expect(fn () => $service->reserve($orderItem->id, $lot->id, 3, $actor->id))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 
     $service->release($reservation->id, $actor->id);
     $lot->refresh();
@@ -667,7 +682,7 @@ it('ships and receives stock transfer between warehouses with ledger updates', f
 it('blocks stock transfer when source warehouse has no matching lot', function () {
     $service = app(StockTransferService::class);
     expect(fn () => $service->ship('Item T', 'WH-EMPTY', 'WH-B', 1))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 });
 
 it('processes return order for restock and dispose paths', function () {
@@ -718,3 +733,310 @@ it('processes return order for restock and dispose paths', function () {
         ->and((float) $disposeLedger->qty_change)->toBe(-2.0);
 });
 
+it('rejects issue invoice when delivery or acceptance proof is missing', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-INV-FAIL-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item INV',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    expect(fn () => app(IssueInvoiceService::class)->handle((int) $contract->id, 1_000_000.0, $actor->id))
+        ->toThrow(RuntimeException::class);
+});
+
+it('rejects issue invoice when payment milestone gate is hard and checklist incomplete', function () {
+    config(['ops.gates.invoice_payment_milestone' => 'hard']);
+
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-INV-MILE-HARD-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item INV-MH',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    Delivery::query()->create([
+        'order_id' => $contract->order_id,
+        'contract_id' => $contract->id,
+        'status' => 'Delivered',
+        'delivered_at' => now(),
+    ]);
+
+    Document::query()
+        ->where('contract_id', $contract->id)
+        ->where('document_type', 'Acceptance Minute')
+        ->update(['status' => 'uploaded']);
+
+    expect(fn () => app(IssueInvoiceService::class)->handle((int) $contract->id, 1_000_000.0, $actor->id))
+        ->toThrow(RuntimeException::class);
+});
+
+it('rejects issue invoice when shipment exists but is not Delivered', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-INV-NOT-DEL-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item INV-ND',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    Delivery::query()->create([
+        'order_id' => $contract->order_id,
+        'contract_id' => $contract->id,
+        'status' => 'InTransit',
+        'dispatched_at' => now(),
+    ]);
+
+    Document::query()
+        ->where('contract_id', $contract->id)
+        ->where('document_type', 'Acceptance Minute')
+        ->update(['status' => 'uploaded']);
+
+    expect(fn () => app(IssueInvoiceService::class)->handle((int) $contract->id, 1_000_000.0, $actor->id))
+        ->toThrow(RuntimeException::class);
+});
+
+it('issues invoice and ledger inflow when delivery is delivered and acceptance minute is present', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-INV-OK-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item INV2',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    Delivery::query()->create([
+        'order_id' => $contract->order_id,
+        'contract_id' => $contract->id,
+        'status' => 'Delivered',
+        'delivered_at' => now(),
+    ]);
+
+    Document::query()
+        ->where('contract_id', $contract->id)
+        ->where('document_type', 'Acceptance Minute')
+        ->update(['status' => 'uploaded']);
+
+    PaymentMilestone::query()
+        ->where('contract_id', $contract->id)
+        ->update([
+            'checklist_status' => 'complete',
+            'payment_ready' => true,
+        ]);
+
+    $invoice = app(IssueInvoiceService::class)->handle((int) $contract->id, 2_500_000.0, $actor->id);
+
+    expect($invoice)->toBeInstanceOf(Invoice::class)
+        ->and($invoice->status)->toBe('Issued')
+        ->and(FinancialLedgerEntry::query()->where('invoice_id', $invoice->id)->where('type', 'Inflow')->exists())->toBeTrue();
+});
+
+it('surfaces confirm fulfillment readiness warnings when delivery or acceptance is missing', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-FF-READINESS-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item FF',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    $readiness = app(GateEvaluator::class)->evaluateConfirmFulfillmentReadiness($contract->fresh());
+
+    expect($readiness['hasWarnings'])->toBeTrue()
+        ->and(count($readiness['warnings']))->toBeGreaterThan(0);
+});
+
+it('refreshes milestone overdue cache', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-AGING-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item AG',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    $milestone = PaymentMilestone::query()->where('contract_id', $contract->id)->firstOrFail();
+    $milestone->update(['due_date' => now()->subDays(5)->toDateString()]);
+
+    $updated = app(MilestoneAgingService::class)->refreshAllCachedOverdue(now());
+
+    $milestone->refresh();
+    expect($updated)->toBeGreaterThan(0)
+        ->and($milestone->days_overdue_cached)->toBeGreaterThan(0);
+});
+
+it('blocks confirm fulfillment when hard gate enabled and delivery missing', function () {
+    config(['ops.gates.confirm_fulfillment' => 'hard']);
+
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-HARD-FF-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item HARD',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $orderId = (int) $contract->order_id;
+
+    app(ConfirmContractCommandService::class)->handle($orderId, $actor->id);
+    app(StartExecutionCommandService::class)->handle($orderId, $actor->id);
+
+    expect(fn () => app(ConfirmFulfillmentCommandService::class)->handle($orderId, $actor->id))
+        ->toThrow(RuntimeException::class);
+});
+
+it('scopes orders by legal entity for non-admin users', function () {
+    $le1 = LegalEntity::query()->create(['name' => 'Entity One']);
+    $le2 = LegalEntity::query()->create(['name' => 'Entity Two']);
+
+    $user = User::factory()->create([
+        'role' => 'KeToan',
+        'legal_entity_id' => $le2->id,
+    ]);
+
+    $orderOther = Order::query()->withoutGlobalScopes()->create([
+        'legal_entity_id' => $le1->id,
+        'order_code' => 'ORD-SCOPE-A-'.uniqid(),
+        'name' => 'Other LE',
+        'state' => 'AwardTender',
+    ]);
+
+    $orderMine = Order::query()->withoutGlobalScopes()->create([
+        'legal_entity_id' => $le2->id,
+        'order_code' => 'ORD-SCOPE-B-'.uniqid(),
+        'name' => 'My LE',
+        'state' => 'AwardTender',
+    ]);
+
+    actingAs($user);
+
+    $visibleIds = Order::query()->pluck('id')->all();
+
+    expect($visibleIds)->toContain($orderMine->id)
+        ->and($visibleIds)->not->toContain($orderOther->id);
+});
+
+it('blocks confirm contract when customer overdue exceeds threshold C-ORD-005', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-CORD5-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item C5',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+    $orderId = (int) $contract->order_id;
+
+    $customer = Partner::query()->create([
+        'name' => 'Overdue Customer',
+        'type' => 'Customer',
+        'max_overdue_days_cached' => 45,
+    ]);
+    $contract->update(['customer_partner_id' => $customer->id]);
+
+    expect(fn () => app(ConfirmContractCommandService::class)->handle($orderId, $actor->id))
+        ->toThrow(RuntimeException::class);
+});
+
+it('voids and replaces invoice via CancelAndReissue C-FIN-002', function () {
+    $actor = User::factory()->create(['role' => 'Admin_PM']);
+    $snapshot = TenderSnapshot::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'TBMT-REISSUE-001',
+    ]);
+    TenderSnapshotItem::query()->create([
+        'tender_snapshot_id' => $snapshot->id,
+        'line_no' => 1,
+        'name' => 'Item RE',
+        'uom' => 'Cai',
+        'quantity_awarded' => 1,
+    ]);
+    $snapshot->lock($actor->id);
+    $contract = app(GenerateExecutionPlanService::class)->handle($snapshot->id, $actor->id);
+
+    Delivery::query()->create([
+        'order_id' => $contract->order_id,
+        'contract_id' => $contract->id,
+        'status' => 'Delivered',
+        'delivered_at' => now(),
+    ]);
+
+    Document::query()
+        ->where('contract_id', $contract->id)
+        ->where('document_type', 'Acceptance Minute')
+        ->update(['status' => 'uploaded']);
+
+    PaymentMilestone::query()
+        ->where('contract_id', $contract->id)
+        ->update([
+            'checklist_status' => 'complete',
+            'payment_ready' => true,
+        ]);
+
+    $invoice = app(IssueInvoiceService::class)->handle((int) $contract->id, 1_000_000.0, $actor->id);
+
+    $replacement = app(CancelAndReissueInvoiceService::class)->handle((int) $invoice->id, 900_000.0, $actor->id);
+
+    $invoice->refresh();
+
+    expect($invoice->status)->toBe('Voided')
+        ->and($invoice->replaced_by_invoice_id)->toBe($replacement->id)
+        ->and($replacement->status)->toBe('Issued')
+        ->and((float) $replacement->total_amount)->toBe(900_000.0);
+});

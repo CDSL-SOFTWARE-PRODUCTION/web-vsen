@@ -9,6 +9,12 @@ Nguyên tắc nền (ref: `doc/system_architecture.md`)
 - **Human-in-the-loop**: máy gợi ý, người confirm.
 - **Backward-compatible rollout**: ưu tiên add, không phá flow đang chạy.
 
+### Đối chiếu với `doc/system_architecture.md`
+
+- **`system_architecture.md`** mô tả **toàn bộ** Business OS (Knowledge, từng layer, Planning/Logistics, EventBus, MISA, webhook ngân hàng, …). Đó là **North Star / blueprint**, không phải checklist “đã xong” cho mỗi PR.
+- **File roadmap này** là **đường build có phase**: “đủ” được đo theo **North Star (5 điều kiện)** và **definition of done từng phase** (A → E), không yêu cầu khớp 100% blueprint trước khi Phase D/E ổn định.
+- Khi cần hỏi “đã đủ chưa?”, ưu tiên: (1) phase hiện tại trong bảng dưới, (2) khối **North Star**, (3) tích hợp ngoài / Intelligence nằm trong [`doc/backlog/post_mvp_integrations.md`](backlog/post_mvp_integrations.md) sau MVP Ops.
+
 ---
 
 ## Trạng thái hiện tại
@@ -18,10 +24,10 @@ Nguyên tắc nền (ref: `doc/system_architecture.md`)
 - `Contract`, `ContractItem`, `Document`, `PaymentMilestone`, `ExecutionIssue`, `CashPlanEvent`
 - Risk cache/dashboard, gate warn-first, audit trail nền
 
-Khoảng trống để hoàn thành Business OS:
-- Core `Order` state machine chưa là trung tâm tuyệt đối.
-- Demand/Supply/Inventory/Delivery/Finance chưa nối thành một luồng end-to-end.
-- Pricing + Sales touchpoint chưa thành năng lực vận hành chính thức.
+Khoảng trống còn lại (sau Phase A–C trong code):
+- `model/states.yaml` (tên state canonical) có thể lệch chuỗi state runtime (`Order` trong DB) — cần đồng bộ một lần (Phase E / hygiene).
+- CI mặc định: chạy `tests/Feature/Ops` (xem workflow) để khóa regression; chạy `scripts/audit_doc_model_consistency.py` trên PR.
+- Reserve inventory: TTL/cron release (tùy chọn, sau Delivery/Cash ổn định).
 
 ---
 
@@ -36,25 +42,27 @@ Done khi đạt đủ 5 điều kiện:
 
 ---
 
-## Phase A — Stabilize Foundation (đang làm)
+## Phase A — Stabilize Foundation (**đã triển khai trong code**)
 
 ### Mục tiêu
 Chốt nền post-award để làm bệ phóng cho full OS.
 
-### Scope
-- Hoàn thiện `TenderSnapshot` immutable + hash/version.
-- Chuẩn hóa `GenerateExecutionPlan` theo FVTPP.
-- Gate pre-activate / pre-delivery / pre-payment với warn-first + override audit.
-- `AuditLog` vận hành được cho các action trọng yếu.
+### Scope (trạng thái)
+- `TenderSnapshot` immutable + hash/version — **có** (`TenderSnapshot::lock`, hash payload).
+- `GenerateExecutionPlan` — **có** (transaction, contract + items + milestone + audit).
+- Gate pre-activate / pre-delivery / pre-payment warn-first + override audit — **có** (`GateEvaluator`, `GateOverrideService`).
+- `AuditLog` — **có** (`AuditLogService`, Filament).
 
 ### Deliverables
-- Resource UI ổn định cho Snapshot/Contract/Gate/Audit.
-- Migration an toàn cho `orders`, `order_items`, `audit_logs`, refs cần thiết.
-- Feature tests pass cho luồng Snapshot -> Runtime.
+- Resource UI Snapshot/Contract/Audit — **có** (Filament Ops).
+- Feature tests luồng Snapshot → Runtime — **có** (`tests/Feature/Ops/ExecutionPlanFlowTest.php`); CI chạy gói Ops (workflow).
+
+### Gap nhỏ
+- Tiếp tục ưu tiên migration **additive** khi mở rộng schema.
 
 ---
 
-## Phase B — Core Demand OS (`Order` as Aggregate Root)
+## Phase B — Core Demand OS (`Order` as Aggregate Root) (**lõi đã có**)
 
 ### Mục tiêu
 Đưa toàn bộ nghiệp vụ về trục `Order`/`OrderItem`.
@@ -72,13 +80,13 @@ Chốt nền post-award để làm bệ phóng cho full OS.
 5. Giảm dần nhập trực tiếp `Contract`; `Contract` chỉ còn projection.
 
 ### Acceptance
-- Tạo/chuyển trạng thái order không bypass được constraints chính.
-- Có trace từ `Order` sang `Contract` runtime và ngược lại.
-- Có test cho các chuyển trạng thái hợp lệ/không hợp lệ.
+- Tạo/chuyển trạng thái order không bypass được constraints chính — **có** (`Order::transitionTo` + command services).
+- Trace `Order` ↔ `Contract` — **có** (projection + tests).
+- **Note:** tên state trong `model/states.yaml` (Draft, BidSubmitted, …) có thể khác chuỗi runtime (`AwardTender`, `ConfirmContract`, …) — reconcile trong Phase E.
 
 ---
 
-## Phase C — Supply + Inventory OS
+## Phase C — Supply + Inventory OS (**đã có service + test**)
 
 ### Mục tiêu
 Nối được nhu cầu mua hàng và tồn kho theo đúng physics.
@@ -95,13 +103,13 @@ Nối được nhu cầu mua hàng và tồn kho theo đúng physics.
 5. Quy trình return/re-stock/dispose.
 
 ### Acceptance
-- Ledger phản ánh đúng IN/OUT/RESERVE.
-- Reserve có timeout/release policy rõ.
-- Có test tình huống thiếu hàng, over-reserve, transfer sai kho.
+- Ledger IN/OUT/RESERVE — **có** (`InventoryLedger`, services).
+- Reserve release / over-reserve — **có test**; TTL tự động — tùy chọn sau này.
+- Thiếu hàng, transfer — **có test** trong `ExecutionPlanFlowTest`.
 
 ---
 
-## Phase D — Delivery + Cash OS
+## Phase D — Delivery + Cash OS (**đã đạt acceptance tối thiểu trong code**)
 
 ### Mục tiêu
 Hoàn tất vòng thực thi từ giao hàng đến hóa đơn/thu tiền.
@@ -117,29 +125,43 @@ Hoàn tất vòng thực thi từ giao hàng đến hóa đơn/thu tiền.
 4. Ghi nhận ledger inflow/outflow/internal transfer.
 5. Cảnh báo overdue/AR aging + cash gap.
 
-### Acceptance
-- Không thể issue invoice khi thiếu điều kiện.
-- Payment readiness đi qua checklist rõ ràng.
-- Dashboard tài chính phản ánh đúng aging/gap.
+### Acceptance (**đã có test + widget; mở rộng tiếp theo nhu cầu nghiệp vụ**)
+- Không thể issue invoice khi thiếu điều kiện — **có** (`IssueInvoiceService` + `FulfillmentReadiness`; `tests/Feature/Ops/ExecutionPlanFlowTest.php`: reject khi thiếu giao/chứng từ; reject khi giao chưa `Delivered`).
+- Payment readiness đi qua checklist rõ ràng — **có** (`GateEvaluator::evaluatePrePayment`, checklist milestone; cùng file test: gate pre-payment + milestone).
+- Dashboard tài chính phản ánh đúng aging/gap — **có** (`AccountsReceivableAgingWidget`, `MilestoneAgingService`; test refresh `days_overdue_cached`).
+
+### Gap tiếp (không chặn Phase D)
+- `DeliveryRoute` / `Vehicle` đầy đủ như ERD: tùy slice logistics sau.
+- Cash gap theo `CashPlanEvent`: bổ sung khi cần cảnh báo vốn chi tiết hơn widget hiện tại.
 
 ---
 
-## Phase E — Governance, Intelligence, and Hardening
+## Phase E — Governance, Intelligence, and Hardening (**đã đóng phần tối thiểu trong code**)
 
 ### Mục tiêu
 Nâng từ MVP vận hành lên hệ thống bền vững.
 
 ### Scope
-- Chuyển dần warn-first sang hard gate ở constraint critical.
-- Chuẩn hóa command/event log cho audit/replay.
-- Auto doc-model consistency check trong CI.
-- Data migration plan cho legacy rows không đủ refs.
-- Permission matrix theo role/domain (Admin/Sale/Ops/Finance/Warehouse/Procurement).
+- Chuyển dần warn-first sang hard gate ở constraint critical (config + một số gate).
+- Audit command đã có; replay schema — tùy roadmap sau.
+- `scripts/audit_doc_model_consistency.py` trong CI.
+- Runbook migration lớn — `doc/runbooks/`.
+- Permission matrix Filament theo role.
+
+### Trạng thái (đã có)
+- **Gates:** `config/ops.php` — `confirm_fulfillment`, `invoice_payment_milestone` (`IssueInvoiceService` + audit khi `warn`).
+- **CI:** `.github/workflows/ci.yml` — audit + `tests/Feature/Ops` (và gói stable khác).
+- **Runbook:** `doc/runbooks/migration_large_changes.md` + checklist backfill / env gate.
+- **Ma trận quyền:** `doc/ops_permission_matrix.md`, `App\Support\Ops\FilamentAccess` + `canViewAny` trên resource Ops.
 
 ### Acceptance
-- Các constraint critical có enforcement mode rõ.
-- CI chặn merge nếu `doc/` và `model/` lệch.
-- Có runbook rollback + data backfill cho từng migration lớn.
+- Enforcement mode rõ cho gate chọn lọc — **có** (env + `config/ops.php`).
+- CI: doc/model audit + Ops tests — **có**.
+- Runbook có mẫu cho migration/backfill — **có**.
+
+### Gap tiếp (tùy chọn)
+- Hard gate thêm cho các bước `GateEvaluator` khác (pre-delivery UI) nếu cần.
+- Policy class / Laravel Policy thay cho `canViewAny` trên resource — khi số role phức tạp hơn.
 
 ---
 
@@ -163,8 +185,8 @@ Nâng từ MVP vận hành lên hệ thống bền vững.
 
 ## “Hôm nay làm gì?”
 
-Nếu mục tiêu là build full Business OS, thứ tự ưu tiên hiện tại:
-1. Chốt hết phần còn thiếu của **Phase A** (ổn định runtime + audit + UI vận hành).
-2. Bắt đầu **Phase B** từ `Order` state machine chuẩn + projection contract.
-3. Chỉ sang Supply/Inventory khi `Order` đã là nguồn sự thật duy nhất.
+Thứ tự ưu tiên hiện tại (sau khi A–E đã có phần tối thiểu trong repo):
+1. Đồng bộ `model/states.yaml` với runtime `Order` khi ổn định tên state.
+2. Tích hợp ngoài / Intelligence — xem `doc/backlog/post_mvp_integrations.md`.
+3. Mở rộng Policy matrix hoặc gate thêm nếu nghiệp vụ yêu cầu.
 

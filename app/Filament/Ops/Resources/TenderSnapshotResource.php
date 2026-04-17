@@ -7,6 +7,7 @@ use App\Filament\Ops\Resources\TenderSnapshotResource\Pages;
 use App\Filament\Ops\Resources\TenderSnapshotResource\RelationManagers\AttachmentsRelationManager;
 use App\Filament\Ops\Resources\TenderSnapshotResource\RelationManagers\ItemsRelationManager;
 use App\Models\Demand\TenderSnapshot;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
@@ -29,6 +30,11 @@ class TenderSnapshotResource extends Resource
     public static function getNavigationLabel(): string
     {
         return 'Tender Snapshots';
+    }
+
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
     }
 
     public static function form(Form $form): Form
@@ -92,7 +98,7 @@ class TenderSnapshotResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn (TenderSnapshot $record): bool => !$record->isLocked()),
+                    ->visible(fn (TenderSnapshot $record): bool => ! $record->isLocked()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -119,4 +125,3 @@ class TenderSnapshotResource extends Resource
         ];
     }
 }
-

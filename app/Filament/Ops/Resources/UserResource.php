@@ -3,20 +3,19 @@
 namespace App\Filament\Ops\Resources;
 
 use App\Filament\Ops\Resources\UserResource\Pages;
-use App\Filament\Ops\Resources\UserResource\RelationManagers;
 use App\Models\User;
-use Filament\Pages\SubNavigationPosition;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function getNavigationGroup(): ?string
@@ -27,6 +26,11 @@ class UserResource extends Resource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.user.navigation');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_ADMIN_ONLY);
     }
 
     public static function form(Form $form): Form
@@ -61,7 +65,13 @@ class UserResource extends Resource
                             ])
                             ->required()
                             ->native(false),
-                    ])->columns(2)
+                        Forms\Components\Select::make('legal_entity_id')
+                            ->label(__('ops.user.legal_entity'))
+                            ->relationship('legalEntity', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->nullable(),
+                    ])->columns(2),
             ]);
     }
 
@@ -75,7 +85,7 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('role')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.user.role.' . match ($state) {
+                    ->formatStateUsing(fn (string $state): string => __('ops.user.role.'.match ($state) {
                         'Admin_PM' => 'admin_pm',
                         'Sale' => 'sale',
                         'MuaHang' => 'mua_hang',

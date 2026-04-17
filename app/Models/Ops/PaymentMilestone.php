@@ -18,6 +18,7 @@ class PaymentMilestone extends Model
         'amount_planned',
         'checklist_status',
         'payment_ready',
+        'days_overdue_cached',
     ];
 
     protected function casts(): array
@@ -26,6 +27,7 @@ class PaymentMilestone extends Model
             'due_date' => 'date',
             'amount_planned' => 'decimal:2',
             'payment_ready' => 'bool',
+            'days_overdue_cached' => 'integer',
         ];
     }
 

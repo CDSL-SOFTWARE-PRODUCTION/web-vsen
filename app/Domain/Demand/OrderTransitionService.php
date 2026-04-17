@@ -3,6 +3,7 @@
 namespace App\Domain\Demand;
 
 use App\Domain\Audit\AuditLogService;
+use App\Domain\Execution\FulfillmentReadiness;
 use App\Models\Demand\Order;
 use App\Models\Ops\Contract;
 use Illuminate\Support\Facades\DB;
@@ -13,22 +14,11 @@ class OrderTransitionService
     public function __construct(
         private readonly AuditLogService $auditLogService,
         private readonly OrderContractProjectionUpdater $projectionUpdater
-    ) {
-    }
+    ) {}
 
     public function transition(Order $order, string $command, ?int $actorUserId = null): OrderTransitionResult
     {
-        // #region agent log
-        @file_get_contents('http://127.0.0.1:7271/ingest/c3f87a09-8801-4c97-9286-e3072a8d15fd', false, stream_context_create([
-            'http' => [
-                'method' => 'POST',
-                'header' => "Content-Type: application/json\r\nX-Debug-Session-Id: dd6099\r\n",
-                'content' => json_encode(['sessionId' => 'dd6099', 'runId' => 'phaseAtoC', 'hypothesisId' => 'H3', 'location' => 'OrderTransitionService.php:transition:entry', 'message' => 'Order transition requested', 'data' => ['order_id' => $order->id, 'from_state' => $order->state, 'command' => $command], 'timestamp' => round(microtime(true) * 1000)]),
-                'timeout' => 1,
-            ],
-        ]));
-        // #endregion
-        $order->loadMissing(['items.priceListItem', 'contracts.documents', 'contracts.issues']);
+        $order->loadMissing(['items.priceListItem', 'contracts.documents', 'contracts.issues', 'contracts.deliveries']);
         $fromState = $order->state;
         $toState = $this->resolveNextState($command, $fromState);
         $contract = $order->contracts()->first();
@@ -54,7 +44,7 @@ class OrderTransitionService
                 actorUserId: $actorUserId,
                 entityType: 'Order',
                 entityId: $order->id,
-                action: $command . 'Command',
+                action: $command.'Command',
                 context: $result->toArray()
             );
         });
@@ -96,6 +86,24 @@ class OrderTransitionService
             $missingDocs = $contract->documents()->where('status', 'missing')->count();
             if ($missingDocs > 0) {
                 $warnings[] = "Missing documents: {$missingDocs}.";
+            }
+        }
+
+        if ($command === 'ConfirmFulfillment') {
+            $fulfillmentMode = config('ops.gates.confirm_fulfillment', 'warn');
+            if (! FulfillmentReadiness::hasDeliveredShipment($contract)) {
+                $msg = 'No delivery in Delivered status.';
+                if ($fulfillmentMode === 'hard') {
+                    throw new RuntimeException('Cannot confirm fulfillment: '.$msg);
+                }
+                $warnings[] = $msg;
+            }
+            if (! FulfillmentReadiness::hasAcceptanceMinuteNotMissing($contract)) {
+                $msg = 'Acceptance Minute document is still missing.';
+                if ($fulfillmentMode === 'hard') {
+                    throw new RuntimeException('Cannot confirm fulfillment: '.$msg);
+                }
+                $warnings[] = $msg;
             }
         }
 

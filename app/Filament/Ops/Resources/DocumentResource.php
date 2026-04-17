@@ -8,9 +8,10 @@ use App\Models\Ops\Contract;
 use App\Models\Ops\ContractItem;
 use App\Models\Ops\Document;
 use App\Models\Ops\PaymentMilestone;
-use Filament\Pages\SubNavigationPosition;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,6 +19,7 @@ use Filament\Tables\Table;
 class DocumentResource extends Resource
 {
     protected static ?string $model = Document::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Demand::class;
@@ -27,6 +29,11 @@ class DocumentResource extends Resource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.document.navigation');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
     }
 
     public static function form(Form $form): Form
@@ -92,13 +99,13 @@ class DocumentResource extends Resource
                     ->limit(20),
                 Tables\Columns\TextColumn::make('document_group')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.document.group.' . $state)),
+                    ->formatStateUsing(fn (string $state): string => __('ops.document.group.'.$state)),
                 Tables\Columns\TextColumn::make('document_type')
                     ->searchable()
                     ->limit(30),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.document.status.' . $state))
+                    ->formatStateUsing(fn (string $state): string => __('ops.document.status.'.$state))
                     ->color(fn (string $state): string => match ($state) {
                         'missing' => 'danger',
                         'uploaded' => 'warning',

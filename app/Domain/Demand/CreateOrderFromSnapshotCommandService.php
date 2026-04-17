@@ -7,14 +7,15 @@ use App\Models\Demand\Order;
 use App\Models\Demand\OrderItem;
 use App\Models\Demand\SalesTouchpoint;
 use App\Models\Demand\TenderSnapshot;
+use App\Models\LegalEntity;
+use App\Models\User;
 use RuntimeException;
 
 class CreateOrderFromSnapshotCommandService
 {
     public function __construct(
         private readonly AuditLogService $auditLogService
-    ) {
-    }
+    ) {}
 
     public function handle(TenderSnapshot $snapshot, ?int $actorUserId = null): CreateOrderFromSnapshotResult
     {
@@ -25,9 +26,17 @@ class CreateOrderFromSnapshotCommandService
             throw new RuntimeException('Cannot create order: tender snapshot has no awarded items.');
         }
 
+        $legalEntityId = $actorUserId !== null
+            ? User::query()->whereKey($actorUserId)->value('legal_entity_id')
+            : null;
+        if ($legalEntityId === null) {
+            $legalEntityId = LegalEntity::query()->orderBy('id')->value('id');
+        }
+
         $order = new Order([
-            'order_code' => 'ORD-' . $snapshot->id . '-' . now()->format('YmdHis'),
-            'name' => 'Order from ' . $snapshot->source_notify_no,
+            'legal_entity_id' => $legalEntityId,
+            'order_code' => 'ORD-'.$snapshot->id.'-'.now()->format('YmdHis'),
+            'name' => 'Order from '.$snapshot->source_notify_no,
             'tender_snapshot_id' => $snapshot->id,
             'awarded_at' => now(),
         ]);
@@ -56,7 +65,7 @@ class CreateOrderFromSnapshotCommandService
             'order_id' => $order->id,
             'activity_type' => 'Other',
             'occurred_at' => now(),
-            'summary' => 'Order initialized from locked tender snapshot: ' . $snapshot->source_notify_no,
+            'summary' => 'Order initialized from locked tender snapshot: '.$snapshot->source_notify_no,
             'created_by_user_id' => $actorUserId,
         ]);
 

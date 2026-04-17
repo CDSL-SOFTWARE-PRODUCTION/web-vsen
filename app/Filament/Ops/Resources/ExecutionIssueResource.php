@@ -9,10 +9,11 @@ use App\Models\Ops\Contract;
 use App\Models\Ops\ContractItem;
 use App\Models\Ops\ExecutionIssue;
 use App\Models\User;
-use Filament\Pages\SubNavigationPosition;
+use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,6 +21,7 @@ use Filament\Tables\Table;
 class ExecutionIssueResource extends Resource
 {
     protected static ?string $model = ExecutionIssue::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Demand::class;
@@ -29,6 +31,11 @@ class ExecutionIssueResource extends Resource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.execution_issue.navigation');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
     }
 
     public static function form(Form $form): Form
@@ -109,7 +116,7 @@ class ExecutionIssueResource extends Resource
                     ->limit(25),
                 Tables\Columns\TextColumn::make('issue_type')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.execution_issue.type.' . match ($state) {
+                    ->formatStateUsing(fn (string $state): string => __('ops.execution_issue.type.'.match ($state) {
                         'Delay' => 'delay',
                         'DocMissing' => 'doc_missing',
                         'Quality' => 'quality',
@@ -120,7 +127,7 @@ class ExecutionIssueResource extends Resource
                     })),
                 Tables\Columns\TextColumn::make('severity')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.execution_issue.severity.' . strtolower($state)))
+                    ->formatStateUsing(fn (string $state): string => __('ops.execution_issue.severity.'.strtolower($state)))
                     ->color(fn (string $state): string => match ($state) {
                         'Critical' => 'danger',
                         'High' => 'warning',
@@ -134,7 +141,7 @@ class ExecutionIssueResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => __('ops.execution_issue.status.' . match ($state) {
+                    ->formatStateUsing(fn (string $state): string => __('ops.execution_issue.status.'.match ($state) {
                         'Open' => 'open',
                         'InProgress' => 'in_progress',
                         'PendingApproval' => 'pending_approval',
