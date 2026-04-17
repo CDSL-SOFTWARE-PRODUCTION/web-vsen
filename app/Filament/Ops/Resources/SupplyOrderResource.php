@@ -7,6 +7,7 @@ use App\Filament\Ops\Resources\SupplyOrderResource\Pages;
 use App\Models\LegalEntity;
 use App\Models\Supply\SupplyOrder;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\Gate;
 class SupplyOrderResource extends Resource
 {
     protected static ?string $model = SupplyOrder::class;
+
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Supply::class;
 

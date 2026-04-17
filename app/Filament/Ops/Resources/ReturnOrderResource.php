@@ -10,6 +10,7 @@ use App\Models\Supply\ReturnOrder;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,6 +18,8 @@ use Filament\Tables\Table;
 class ReturnOrderResource extends Resource
 {
     protected static ?string $model = ReturnOrder::class;
+
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Inventory::class;
 

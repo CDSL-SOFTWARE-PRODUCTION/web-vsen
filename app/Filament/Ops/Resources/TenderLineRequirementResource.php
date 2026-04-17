@@ -9,6 +9,7 @@ use App\Models\Demand\TenderSnapshotItemRequirement;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
 class TenderLineRequirementResource extends Resource
 {
     protected static ?string $model = TenderSnapshotItemRequirement::class;
+
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $cluster = Demand::class;
 
