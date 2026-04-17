@@ -81,6 +81,9 @@ class TenderSnapshotResource extends Resource
                     ->label('KHLCNT')
                     ->searchable()
                     ->placeholder('-'),
+                Tables\Columns\TextColumn::make('contracts_count')
+                    ->counts('contracts')
+                    ->label(__('ops.tender_snapshot.contracts')),
                 Tables\Columns\TextColumn::make('locked_at')
                     ->dateTime()
                     ->sortable()

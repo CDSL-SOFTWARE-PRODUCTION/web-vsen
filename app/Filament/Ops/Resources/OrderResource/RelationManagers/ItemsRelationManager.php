@@ -35,7 +35,7 @@ class ItemsRelationManager extends RelationManager
             Forms\Components\TextInput::make('unit_price')
                 ->label(__('ops.order_items.unit_price'))
                 ->numeric()
-                ->visible(fn (): bool => FilamentAccess::allowRoles(['Admin_PM', 'Sale', 'KeToan'])),
+                ->visible(fn (): bool => FilamentAccess::canSeeOrderLineUnitPrice()),
         ]);
     }
 
@@ -57,7 +57,7 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('unit_price')
                     ->label(__('ops.order_items.unit_price'))
                     ->money('VND', locale: 'vi')
-                    ->visible(fn (): bool => FilamentAccess::allowRoles(['Admin_PM', 'Sale', 'KeToan'])),
+                    ->visible(fn (): bool => FilamentAccess::canSeeOrderLineUnitPrice()),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),

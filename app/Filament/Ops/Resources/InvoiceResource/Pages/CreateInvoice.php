@@ -11,6 +11,11 @@ class CreateInvoice extends CreateRecord
 {
     protected static string $resource = InvoiceResource::class;
 
+    public function getSubheading(): ?string
+    {
+        return __('ops.invoice.create.subheading');
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
         return app(IssueInvoiceService::class)->handle(

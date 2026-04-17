@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Widgets;
 
+use App\Filament\Ops\Resources\FinancialLedgerEntryResource;
 use App\Models\Ops\FinancialLedgerEntry;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -32,9 +33,11 @@ class FounderLedgerFlowWidget extends StatsOverviewWidget
 
         return [
             Stat::make(__('ops.widgets.founder.inflow_30d'), number_format($inflow, 0, '.', ',').' VND')
-                ->color('success'),
+                ->color('success')
+                ->url(FinancialLedgerEntryResource::getUrl('index', ['activeTab' => 'inflows'])),
             Stat::make(__('ops.widgets.founder.outflow_30d'), number_format($outflow, 0, '.', ',').' VND')
-                ->color('danger'),
+                ->color('danger')
+                ->url(FinancialLedgerEntryResource::getUrl('index', ['activeTab' => 'outflows'])),
         ];
     }
 }

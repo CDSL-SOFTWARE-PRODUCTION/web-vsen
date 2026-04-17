@@ -47,7 +47,40 @@ return [
         'invoice' => ['navigation' => 'Hoa don'],
         'financial_ledger' => ['navigation' => 'So cai dong tien'],
         'supply_order' => ['navigation' => 'Don mua hang (inbox)'],
+        'vehicle' => ['navigation' => 'Xe'],
+        'delivery_route' => ['navigation' => 'Tuyen giao hang'],
         'canonical_product' => ['navigation' => 'San pham chuan hoa'],
+        'partner' => [
+            'navigation' => 'Doi tac',
+            'singular' => 'Doi tac',
+            'type_customer' => 'Khach hang',
+            'type_supplier' => 'Nha cung cap',
+            'lead_time' => 'Thoi gian giao (ngay)',
+            'reserve_ttl_days' => 'TTL giu ton kho (ngay)',
+        ],
+        'legal_entity' => [
+            'navigation' => 'Phap nhan',
+            'tax_code' => 'MST',
+        ],
+        'price_list' => [
+            'navigation' => 'Bang gia',
+            'lines' => 'Dong',
+            'items_title' => 'Dong gia',
+        ],
+        'inventory_lot' => [
+            'navigation' => 'Lo ton kho',
+            'warehouse' => 'Kho',
+        ],
+        'inventory_reservation' => [
+            'title' => 'Giu ton',
+            'order_item' => 'Dong don hang',
+        ],
+        'inventory_ledger' => [
+            'title' => 'But toan kho',
+        ],
+        'stock_transfer' => [
+            'navigation' => 'Dieu chuyen kho',
+        ],
     ],
     'order' => [
         'section' => [
@@ -219,6 +252,10 @@ return [
         'actions' => [
             'mark_delivered' => 'Danh dau da giao',
         ],
+        'fields' => [
+            'vehicle' => 'Xe',
+            'delivery_route' => 'Tuyen giao',
+        ],
     ],
     'invoice' => [
         'columns' => [
@@ -234,6 +271,52 @@ return [
         'notifications' => [
             'reissued' => 'Da huy hoa don va tao ban thay the.',
         ],
+        'create' => [
+            'subheading' => 'Dung IssueInvoiceService (C-FIN-001): can chuyen Delivered, chung tu nghiem thu, va gate moc thanh toan theo config/ops.php.',
+        ],
+    ],
+    'supply_order' => [
+        'tabs' => [
+            'all' => 'Tat ca',
+            'in_progress' => 'Dang xu ly',
+            'draft_open' => 'Nhap / Mo',
+        ],
+        'stats' => [
+            'total' => 'Tong don mua',
+            'total_desc' => 'Supply order trong he thong',
+            'in_progress' => 'Chua nhan du',
+            'in_progress_desc' => 'Loai tru trang thai Received',
+            'draft_open' => 'Nhap + Mo',
+            'draft_open_desc' => 'Thuong can Mua hang xu ly',
+        ],
+        'filters' => [
+            'legal_entity' => 'Phap nhan',
+        ],
+    ],
+    'financial_ledger' => [
+        'columns' => [
+            'counterparty' => 'Doi tac / nguoi nhan / no',
+        ],
+        'tabs' => [
+            'all' => 'Tat ca but toan',
+            'inflows' => 'Thu / inflow',
+            'outflows' => 'Chi / goc phai tra',
+        ],
+        'filters' => [
+            'outflows' => 'So am (chi)',
+            'inflows' => 'So duong (thu)',
+        ],
+    ],
+    'tender_snapshot' => [
+        'contracts' => 'Hop dong thuc thi',
+    ],
+    'vehicle' => [
+        'plate' => 'Bien so',
+        'deliveries' => 'Chuyen giao',
+    ],
+    'delivery_route' => [
+        'vehicle' => 'Xe',
+        'deliveries' => 'Chuyen giao',
     ],
     'issue_updates' => [
         'title' => 'Cap nhat van de',
@@ -294,6 +377,15 @@ return [
         'founder' => [
             'inflow_30d' => 'Inflow ledger 30 ngay',
             'outflow_30d' => 'Outflow ledger 30 ngay',
+        ],
+        'rop' => [
+            'table_title' => 'ROP — lo duoi nguong (C-INV-004)',
+            'model_label' => 'Lo hang',
+            'plural_model_label' => 'Lo hang',
+            'col_item' => 'Hang',
+            'col_wh' => 'Kho',
+            'col_qty' => 'Ton kha dung',
+            'empty' => 'Khong co lo nao duoi nguong ROP cau hinh.',
         ],
         'ar' => [
             'migration_pending' => 'Chay php artisan migrate de cap nhat schema',

@@ -7,6 +7,8 @@ use App\Filament\Ops\Clusters\Delivery as DeliveryCluster;
 use App\Filament\Ops\Resources\DeliveryResource\Pages;
 use App\Models\Ops\Contract;
 use App\Models\Ops\Delivery;
+use App\Models\Ops\DeliveryRoute;
+use App\Models\Ops\Vehicle;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -25,6 +27,8 @@ class DeliveryResource extends Resource
     protected static ?string $cluster = DeliveryCluster::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
+
+    protected static ?int $navigationSort = 3;
 
     public static function getNavigationLabel(): string
     {
@@ -58,6 +62,18 @@ class DeliveryResource extends Resource
                 Forms\Components\Hidden::make('order_id'),
                 Forms\Components\TextInput::make('source_warehouse_code')->maxLength(50),
                 Forms\Components\TextInput::make('tracking_code')->maxLength(100),
+                Forms\Components\Select::make('vehicle_id')
+                    ->label(__('ops.delivery.fields.vehicle'))
+                    ->options(Vehicle::query()->orderBy('code')->pluck('code', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
+                Forms\Components\Select::make('delivery_route_id')
+                    ->label(__('ops.delivery.fields.delivery_route'))
+                    ->options(DeliveryRoute::query()->orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
                 Forms\Components\Select::make('route_type')
                     ->options([
                         'Emergency' => 'Emergency',
@@ -90,6 +106,12 @@ class DeliveryResource extends Resource
                     ->label(__('ops.common.contract'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('vehicle.code')
+                    ->label(__('ops.delivery.fields.vehicle'))
+                    ->placeholder('—'),
+                Tables\Columns\TextColumn::make('deliveryRoute.name')
+                    ->label(__('ops.delivery.fields.delivery_route'))
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('tracking_code')->limit(20),
                 Tables\Columns\TextColumn::make('dispatched_at')->dateTime(),
                 Tables\Columns\TextColumn::make('delivered_at')->dateTime(),

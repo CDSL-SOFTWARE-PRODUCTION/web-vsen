@@ -7,6 +7,7 @@ use App\Filament\Ops\Widgets\CashGapWidget;
 use App\Filament\Ops\Widgets\ContractsAtRiskWidget;
 use App\Filament\Ops\Widgets\FounderLedgerFlowWidget;
 use App\Filament\Ops\Widgets\OverdueIssuesWidget;
+use App\Filament\Ops\Widgets\RopLowStockTableWidget;
 use App\Filament\Ops\Widgets\SalePipelineWidget;
 use App\Http\Middleware\SetLocale;
 use Filament\Http\Middleware\Authenticate;
@@ -54,6 +55,7 @@ class OpsPanelProvider extends PanelProvider
                 CashGapWidget::class,
                 AccountsReceivableAgingWidget::class,
                 FounderLedgerFlowWidget::class,
+                RopLowStockTableWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

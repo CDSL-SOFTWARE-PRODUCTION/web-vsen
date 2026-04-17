@@ -74,7 +74,8 @@ class ContractResource extends Resource
                         Forms\Components\TextInput::make('allocated_budget')
                             ->numeric()
                             ->prefix('VND')
-                            ->default(0),
+                            ->default(0)
+                            ->visible(fn (): bool => FilamentAccess::canSeeContractMoneySummary()),
                         Forms\Components\Select::make('risk_level')
                             ->required()
                             ->options([
@@ -118,7 +119,8 @@ class ContractResource extends Resource
                 Tables\Columns\TextColumn::make('cash_needed_14d')
                     ->money('VND', locale: 'vi')
                     ->sortable()
-                    ->summarize(Sum::make()->money('VND', locale: 'vi')),
+                    ->summarize(Sum::make()->money('VND', locale: 'vi'))
+                    ->visible(fn (): bool => FilamentAccess::canSeeContractMoneySummary()),
                 Tables\Columns\TextColumn::make('risk_level')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => __('ops.common.risk.'.strtolower($state)))

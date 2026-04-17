@@ -5,6 +5,9 @@ namespace App\Models\Ops;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read Partner|null $partner
+ */
 class FinancialLedgerEntry extends Model
 {
     protected $table = 'financial_ledger_entries';
@@ -38,5 +41,10 @@ class FinancialLedgerEntry extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
     }
 }

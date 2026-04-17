@@ -47,7 +47,40 @@ return [
         'invoice' => ['navigation' => 'Invoices'],
         'financial_ledger' => ['navigation' => 'Financial ledger'],
         'supply_order' => ['navigation' => 'Supply orders (inbox)'],
+        'vehicle' => ['navigation' => 'Vehicles'],
+        'delivery_route' => ['navigation' => 'Delivery routes'],
         'canonical_product' => ['navigation' => 'Canonical products'],
+        'partner' => [
+            'navigation' => 'Partners',
+            'singular' => 'Partner',
+            'type_customer' => 'Customer',
+            'type_supplier' => 'Supplier',
+            'lead_time' => 'Lead time (days)',
+            'reserve_ttl_days' => 'Reservation TTL (days)',
+        ],
+        'legal_entity' => [
+            'navigation' => 'Legal entities',
+            'tax_code' => 'Tax ID',
+        ],
+        'price_list' => [
+            'navigation' => 'Price lists',
+            'lines' => 'Lines',
+            'items_title' => 'Price lines',
+        ],
+        'inventory_lot' => [
+            'navigation' => 'Inventory lots',
+            'warehouse' => 'Warehouse',
+        ],
+        'inventory_reservation' => [
+            'title' => 'Reservations',
+            'order_item' => 'Order line',
+        ],
+        'inventory_ledger' => [
+            'title' => 'Ledger entries',
+        ],
+        'stock_transfer' => [
+            'navigation' => 'Stock transfers',
+        ],
     ],
     'order' => [
         'section' => [
@@ -219,6 +252,10 @@ return [
         'actions' => [
             'mark_delivered' => 'Mark delivered',
         ],
+        'fields' => [
+            'vehicle' => 'Vehicle',
+            'delivery_route' => 'Delivery route',
+        ],
     ],
     'invoice' => [
         'columns' => [
@@ -234,6 +271,52 @@ return [
         'notifications' => [
             'reissued' => 'Invoice voided and replacement created.',
         ],
+        'create' => [
+            'subheading' => 'Uses IssueInvoiceService (C-FIN-001): requires Delivered shipment, acceptance document, and payment-milestone gate per config/ops.php.',
+        ],
+    ],
+    'supply_order' => [
+        'tabs' => [
+            'all' => 'All',
+            'in_progress' => 'In progress',
+            'draft_open' => 'Draft / Open',
+        ],
+        'stats' => [
+            'total' => 'All POs',
+            'total_desc' => 'Supply orders in system',
+            'in_progress' => 'Not received',
+            'in_progress_desc' => 'Excludes status Received',
+            'draft_open' => 'Draft + Open',
+            'draft_open_desc' => 'Likely need purchasing action',
+        ],
+        'filters' => [
+            'legal_entity' => 'Legal entity',
+        ],
+    ],
+    'financial_ledger' => [
+        'columns' => [
+            'counterparty' => 'Counterparty / partner',
+        ],
+        'tabs' => [
+            'all' => 'All entries',
+            'inflows' => 'Inflows',
+            'outflows' => 'Outflows / payables angle',
+        ],
+        'filters' => [
+            'outflows' => 'Negative amounts',
+            'inflows' => 'Positive amounts',
+        ],
+    ],
+    'tender_snapshot' => [
+        'contracts' => 'Execution contracts',
+    ],
+    'vehicle' => [
+        'plate' => 'Plate',
+        'deliveries' => 'Deliveries',
+    ],
+    'delivery_route' => [
+        'vehicle' => 'Vehicle',
+        'deliveries' => 'Deliveries',
     ],
     'issue_updates' => [
         'title' => 'Issue updates',
@@ -309,6 +392,15 @@ return [
         'founder' => [
             'inflow_30d' => 'Ledger inflow 30d',
             'outflow_30d' => 'Ledger outflow 30d',
+        ],
+        'rop' => [
+            'table_title' => 'ROP — lots below threshold (C-INV-004)',
+            'model_label' => 'Lot',
+            'plural_model_label' => 'Lots',
+            'col_item' => 'Item',
+            'col_wh' => 'Warehouse',
+            'col_qty' => 'Available qty',
+            'empty' => 'No lots below configured ROP threshold.',
         ],
         'milestones' => [
             'blocked_7d' => [

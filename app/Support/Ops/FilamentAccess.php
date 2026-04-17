@@ -22,6 +22,12 @@ final class FilamentAccess
     /** @var list<string> */
     public const ROLES_ADMIN_ONLY = ['Admin_PM'];
 
+    /** Unit selling price on order lines — doc/guide.md Ma trận Ops (Kho/MuaHang mù giá kênh bán). */
+    public const ROLES_ORDER_LINE_UNIT_PRICE = ['Admin_PM', 'Sale', 'KeToan'];
+
+    /** Contract budget / cash-needed style columns — hide from Kho (no commercial money). */
+    public const ROLES_CONTRACT_MONEY_SUMMARY = ['Admin_PM', 'Sale', 'MuaHang', 'KeToan'];
+
     /**
      * @param  list<string>  $roles
      */
@@ -30,5 +36,16 @@ final class FilamentAccess
         $user = auth()->user();
 
         return $user !== null && in_array($user->role, $roles, true);
+    }
+
+    public static function canSeeOrderLineUnitPrice(): bool
+    {
+        return self::allowRoles(self::ROLES_ORDER_LINE_UNIT_PRICE);
+    }
+
+    /** Allocated budget, cash gap style aggregates on Contract list/form. */
+    public static function canSeeContractMoneySummary(): bool
+    {
+        return self::allowRoles(self::ROLES_CONTRACT_MONEY_SUMMARY);
     }
 }
