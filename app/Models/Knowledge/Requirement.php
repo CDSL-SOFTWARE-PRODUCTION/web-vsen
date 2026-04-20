@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Requirement extends Model
 {
+    /** @var list<string> Requirement types attachable at SKU level in compliance matrix */
+    public const SKU_ATTACHABLE_TYPES = ['ISO_13485', 'CE', 'FSC', 'Catalog'];
+
     protected $fillable = [
         'code',
         'type',

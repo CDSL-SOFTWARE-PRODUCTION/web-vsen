@@ -49,21 +49,26 @@ class RequirementResource extends OpsResource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('code')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(64)
-                    ->label(__('ops.resources.requirement.code')),
-                Forms\Components\Select::make('type')
-                    ->required()
-                    ->options([
-                        'ISO_13485' => 'ISO 13485',
-                        'CE' => 'CE',
-                        'FSC' => 'FSC',
-                        'Catalog' => 'Catalog',
-                    ]),
-                Forms\Components\TextInput::make('name')->maxLength(255),
-                Forms\Components\Textarea::make('description')->rows(2)->columnSpanFull(),
+                Forms\Components\Section::make(__('ops.resources.requirement.navigation'))
+                    ->description(__('ops.resources.requirement.master_rule_helper'))
+                    ->schema([
+                        Forms\Components\TextInput::make('code')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(64)
+                            ->label(__('ops.resources.requirement.code')),
+                        Forms\Components\Select::make('type')
+                            ->required()
+                            ->options([
+                                'ISO_13485' => 'ISO 13485',
+                                'CE' => 'CE',
+                                'FSC' => 'FSC',
+                                'Catalog' => 'Catalog',
+                            ]),
+                        Forms\Components\TextInput::make('name')->maxLength(255),
+                        Forms\Components\Textarea::make('description')->rows(2)->columnSpanFull(),
+                    ])
+                    ->columns(2),
             ])
             ->columns(2);
     }

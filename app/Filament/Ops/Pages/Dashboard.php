@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Pages;
 
+use App\Filament\Ops\Widgets\BidIntelligenceKpiWidget;
 use App\Filament\Ops\Widgets\LedgerInflowOutflowChartWidget;
 use App\Filament\Ops\Widgets\OpsDebtAndLedgerKpiWidget;
 use App\Filament\Ops\Widgets\OpsDemandAndSupplyKpiWidget;
@@ -53,6 +54,7 @@ class Dashboard extends BaseDashboard
             OpsDemandAndSupplyKpiWidget::class,
             OpsMilestonesAndLiquidityKpiWidget::class,
             OpsDebtAndLedgerKpiWidget::class,
+            BidIntelligenceKpiWidget::class,
             RopLowStockTableWidget::class,
         ];
     }

@@ -15,6 +15,7 @@ class CanonicalProduct extends Model
         'raw_name',
         'abc_class',
         'medical_device_declaration_id',
+        'product_family_id',
         'spec_json',
         'image_urls',
     ];
@@ -50,6 +51,11 @@ class CanonicalProduct extends Model
     public function medicalDeviceDeclaration(): BelongsTo
     {
         return $this->belongsTo(MedicalDeviceDeclaration::class);
+    }
+
+    public function productFamily(): BelongsTo
+    {
+        return $this->belongsTo(ProductFamily::class);
     }
 
     public function aliases(): HasMany

@@ -12,6 +12,7 @@ use App\Filament\Ops\Resources\CanonicalProductResource\RelationManagers\Require
 use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Knowledge\MedicalDeviceDeclaration;
+use App\Models\Knowledge\ProductFamily;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -70,7 +71,7 @@ class CanonicalProductResource extends OpsResource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('medicalDeviceDeclaration');
+        return parent::getEloquentQuery()->with(['medicalDeviceDeclaration', 'productFamily']);
     }
 
     public static function form(Form $form): Form
@@ -87,6 +88,7 @@ class CanonicalProductResource extends OpsResource
                                 ->schema([
                                     Forms\Components\TextInput::make('sku')
                                         ->required()
+                                        ->unique(ignoreRecord: true)
                                         ->maxLength(64)
                                         ->label(__('ops.resources.canonical_product.fields.sku')),
                                     Forms\Components\TextInput::make('raw_name')
@@ -118,6 +120,19 @@ class CanonicalProductResource extends OpsResource
                                 ->searchable()
                                 ->preload()
                                 ->nullable()
+                                ->columnSpanFull(),
+                            Forms\Components\Select::make('product_family_id')
+                                ->label(__('ops.resources.canonical_product.fields.product_family'))
+                                ->relationship(
+                                    'productFamily',
+                                    'name',
+                                    fn ($query) => $query->orderBy('name')
+                                )
+                                ->searchable()
+                                ->preload()
+                                ->nullable()
+                                ->hintIcon('heroicon-o-information-circle')
+                                ->hintIconTooltip(__('ops.resources.canonical_product.product_family_tooltip'))
                                 ->columnSpanFull(),
                         ]),
                     Forms\Components\Tabs\Tab::make(__('ops.resources.canonical_product.tab_facets'))
@@ -245,6 +260,11 @@ class CanonicalProductResource extends OpsResource
                     ->label(__('ops.resources.canonical_product.fields.medical_device_declaration'))
                     ->placeholder('—')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('productFamily.name')
+                    ->label(__('ops.resources.canonical_product.fields.product_family'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('abc_class')
                     ->label(__('ops.resources.canonical_product.fields.abc_class'))
                     ->badge(),
@@ -253,6 +273,9 @@ class CanonicalProductResource extends OpsResource
                 Tables\Filters\SelectFilter::make('abc_class')
                     ->label(__('ops.resources.canonical_product.filters.abc_class'))
                     ->options(['A' => 'A', 'B' => 'B', 'C' => 'C']),
+                Tables\Filters\SelectFilter::make('product_family_id')
+                    ->label(__('ops.resources.canonical_product.fields.product_family'))
+                    ->relationship('productFamily', 'name'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -292,6 +315,38 @@ class CanonicalProductResource extends OpsResource
                             ->success()
                             ->send();
                     }),
+                BulkAction::make('assignProductFamily')
+                    ->label(__('ops.resources.canonical_product.bulk_assign_family'))
+                    ->icon('heroicon-o-squares-2x2')
+                    ->form([
+                        Forms\Components\Select::make('product_family_id')
+                            ->label(__('ops.resources.canonical_product.fields.product_family'))
+                            ->relationship(
+                                'productFamily',
+                                'name',
+                                fn ($query) => $query->orderBy('name')
+                            )
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                    ])
+                    ->deselectRecordsAfterCompletion()
+                    ->action(function (Collection $records, array $data): void {
+                        $id = $data['product_family_id'] ?? null;
+                        if ($id === null || $id === '') {
+                            return;
+                        }
+                        $familyId = (int) $id;
+                        $records->each(fn (CanonicalProduct $product) => $product->update([
+                            'product_family_id' => $familyId,
+                        ]));
+                        Notification::make()
+                            ->title(__('ops.resources.canonical_product.bulk_assign_family_success', [
+                                'count' => $records->count(),
+                            ]))
+                            ->success()
+                            ->send();
+                    }),
             ]);
     }
 
@@ -299,9 +354,14 @@ class CanonicalProductResource extends OpsResource
     {
         return [
             RelationGroup::make(
-                __('ops.resources.canonical_product.relation_group_catalog'),
+                __('ops.resources.canonical_product.relation_group_aliases'),
                 [
                     ProductAliasesRelationManager::class,
+                ],
+            ),
+            RelationGroup::make(
+                __('ops.resources.canonical_product.relation_group_compliance'),
+                [
                     RequirementsRelationManager::class,
                     ProductDocumentsRelationManager::class,
                 ],

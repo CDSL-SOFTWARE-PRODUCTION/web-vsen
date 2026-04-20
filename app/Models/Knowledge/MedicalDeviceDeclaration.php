@@ -39,4 +39,14 @@ class MedicalDeviceDeclaration extends Model
     {
         return $this->hasMany(CanonicalProduct::class);
     }
+
+    public function productFamilies(): HasMany
+    {
+        return $this->hasMany(ProductFamily::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(MedicalDeviceDeclarationDocument::class);
+    }
 }

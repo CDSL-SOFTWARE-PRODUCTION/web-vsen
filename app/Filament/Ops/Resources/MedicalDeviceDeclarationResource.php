@@ -5,6 +5,7 @@ namespace App\Filament\Ops\Resources;
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\MedicalDeviceDeclarationResource\Pages;
 use App\Filament\Ops\Resources\MedicalDeviceDeclarationResource\RelationManagers\CanonicalProductsRelationManager;
+use App\Filament\Ops\Resources\MedicalDeviceDeclarationResource\RelationManagers\DocumentsRelationManager;
 use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Knowledge\MedicalDeviceDeclaration;
 use App\Support\Ops\FilamentAccess;
@@ -180,6 +181,7 @@ class MedicalDeviceDeclarationResource extends OpsResource
     {
         return [
             CanonicalProductsRelationManager::class,
+            DocumentsRelationManager::class,
         ];
     }
 

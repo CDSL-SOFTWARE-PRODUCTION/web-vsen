@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\CanonicalProductResource\RelationManagers;
 
+use App\Support\Knowledge\MedicalDeviceDocumentType;
 use App\Support\Knowledge\MedicalDeviceDossierClass;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -23,17 +23,19 @@ class ProductDocumentsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('document_type')
+            Forms\Components\Select::make('document_type')
                 ->required()
-                ->maxLength(100)
-                ->label(__('ops.resources.canonical_product_documents.document_type')),
-            Forms\Components\Select::make('document_group')
-                ->required()
-                ->label(__('ops.resources.canonical_product_documents.device_class'))
-                ->options(MedicalDeviceDossierClass::optionsForSelect())
-                ->helperText(__('ops.resources.canonical_product_documents.device_class_helper'))
+                ->options(MedicalDeviceDocumentType::skuLevelOptions())
                 ->native(false)
-                ->live(),
+                ->searchable()
+                ->label(__('ops.resources.canonical_product_documents.document_type'))
+                ->hintIcon('heroicon-o-information-circle')
+                ->hintIconTooltip(__('ops.resources.canonical_product_documents.document_type_helper')),
+            Forms\Components\Placeholder::make('device_class_reference')
+                ->label(__('ops.resources.canonical_product_documents.device_class_reference'))
+                ->content($this->resolveDeviceClassLabel())
+                ->hintIcon('heroicon-o-information-circle')
+                ->hintIconTooltip(__('ops.resources.canonical_product_documents.device_class_reference_helper')),
             Forms\Components\Select::make('status')
                 ->required()
                 ->options([
@@ -44,8 +46,9 @@ class ProductDocumentsRelationManager extends RelationManager
                 ->label(__('ops.common.status')),
             Forms\Components\DatePicker::make('expiry_date')
                 ->label(__('ops.resources.canonical_product_documents.expiry_date'))
-                ->helperText(function (Get $get): ?string {
-                    $class = $get('document_group');
+                ->hintIcon('heroicon-o-information-circle')
+                ->hintIconTooltip(function (): ?string {
+                    $class = $this->resolveDeviceClass();
                     if (MedicalDeviceDossierClass::isPermanent($class)) {
                         return __('ops.resources.canonical_product_documents.expiry_helper_ab');
                     }
@@ -69,12 +72,15 @@ class ProductDocumentsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading(__('ops.resources.canonical_product_documents.empty_heading'))
+            ->emptyStateDescription(__('ops.resources.canonical_product_documents.empty_description'))
             ->columns([
                 Tables\Columns\TextColumn::make('document_type')
                     ->label(__('ops.resources.canonical_product_documents.document_type'))
+                    ->formatStateUsing(fn (string $state): string => MedicalDeviceDocumentType::skuLevelOptions()[$state] ?? $state)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('document_group')
-                    ->label(__('ops.resources.canonical_product_documents.device_class'))
+                    ->label(__('ops.resources.canonical_product_documents.device_class_reference'))
                     ->formatStateUsing(fn (?string $state): string => MedicalDeviceDossierClass::optionsForSelect()[$state] ?? (string) $state)
                     ->badge()
                     ->toggleable(),
@@ -93,7 +99,9 @@ class ProductDocumentsRelationManager extends RelationManager
                     ->date('d/m/Y'),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->label(__('ops.resources.canonical_product_documents.actions.create'))
+                    ->modalHeading(__('ops.resources.canonical_product_documents.actions.create')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -104,5 +112,24 @@ class ProductDocumentsRelationManager extends RelationManager
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    private function resolveDeviceClass(): ?string
+    {
+        /** @var Model $owner */
+        $owner = $this->getOwnerRecord();
+        $declaration = $owner->medicalDeviceDeclaration;
+        if ($declaration === null) {
+            return null;
+        }
+
+        return $declaration->device_risk_class;
+    }
+
+    private function resolveDeviceClassLabel(): string
+    {
+        $class = $this->resolveDeviceClass();
+
+        return MedicalDeviceDossierClass::optionsForSelect()[$class] ?? '—';
     }
 }

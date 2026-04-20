@@ -6,6 +6,7 @@ use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Filament\Ops\Resources\TenderSnapshotResource\Pages;
 use App\Filament\Ops\Resources\TenderSnapshotResource\RelationManagers\AttachmentsRelationManager;
+use App\Filament\Ops\Resources\TenderSnapshotResource\RelationManagers\BidOpeningSessionsRelationManager;
 use App\Filament\Ops\Resources\TenderSnapshotResource\RelationManagers\ItemsRelationManager;
 use App\Models\Demand\TenderSnapshot;
 use App\Support\Ops\FilamentAccess;
@@ -47,6 +48,7 @@ class TenderSnapshotResource extends OpsResource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('ops.tender_snapshot.section_snapshot'))
+                    ->description(__('ops.tender_snapshot.section_snapshot_helper'))
                     ->schema([
                         Forms\Components\TextInput::make('source_system')
                             ->required()
@@ -60,13 +62,19 @@ class TenderSnapshotResource extends OpsResource
                             ->label(__('ops.tender_snapshot.fields.plan_no'))
                             ->nullable()
                             ->maxLength(255),
+                        Forms\Components\Placeholder::make('bbmt_bulk_columns')
+                            ->label(__('ops.tender_snapshot.fields.bbmt_bulk_columns_label'))
+                            ->content(__('ops.tender_snapshot.fields.bbmt_bulk_columns')),
                         Forms\Components\DateTimePicker::make('locked_at')
+                            ->label(__('ops.tender_snapshot.fields.locked_at'))
                             ->disabled()
                             ->dehydrated(false),
                         Forms\Components\TextInput::make('snapshot_hash')
+                            ->label(__('ops.tender_snapshot.fields.snapshot_hash'))
                             ->disabled()
                             ->dehydrated(false),
                         Forms\Components\TextInput::make('snapshot_version')
+                            ->label(__('ops.tender_snapshot.fields.snapshot_version'))
                             ->disabled()
                             ->dehydrated(false),
                     ])
@@ -120,6 +128,7 @@ class TenderSnapshotResource extends OpsResource
         return [
             ItemsRelationManager::class,
             AttachmentsRelationManager::class,
+            BidOpeningSessionsRelationManager::class,
         ];
     }
 

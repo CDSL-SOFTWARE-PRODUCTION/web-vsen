@@ -1,25 +1,18 @@
 <?php
 
-namespace App\Filament\Ops\Resources\MedicalDeviceDeclarationResource\RelationManagers;
+namespace App\Filament\Ops\Resources\ProductFamilyResource\RelationManagers;
 
 use App\Filament\Ops\Resources\CanonicalProductResource;
-use App\Models\Knowledge\ProductFamily;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class CanonicalProductsRelationManager extends RelationManager
 {
     protected static string $relationship = 'canonicalProducts';
-
-    public static function getTitle(Model $ownerRecord, string $pageClass): string
-    {
-        return __('ops.resources.medical_device_declaration.relation_canonical_products');
-    }
 
     public function form(Form $form): Form
     {
@@ -42,20 +35,6 @@ class CanonicalProductsRelationManager extends RelationManager
                         'C' => 'C',
                     ])
                     ->nullable(),
-                Forms\Components\Select::make('product_family_id')
-                    ->label(__('ops.resources.canonical_product.fields.product_family'))
-                    ->options(function (): array {
-                        $declarationId = $this->getOwnerRecord()->getKey();
-
-                        return ProductFamily::query()
-                            ->where('medical_device_declaration_id', $declarationId)
-                            ->orderBy('name')
-                            ->pluck('name', 'id')
-                            ->all();
-                    })
-                    ->searchable()
-                    ->preload()
-                    ->nullable(),
             ])
             ->columns(2);
     }
@@ -66,26 +45,19 @@ class CanonicalProductsRelationManager extends RelationManager
             ->recordTitleAttribute('sku')
             ->columns([
                 Tables\Columns\TextColumn::make('sku')->searchable(),
-                Tables\Columns\TextColumn::make('raw_name')->limit(50),
+                Tables\Columns\TextColumn::make('raw_name')->limit(40),
                 Tables\Columns\TextColumn::make('abc_class')
                     ->label(__('ops.resources.canonical_product.fields.abc_class'))
                     ->badge(),
-                Tables\Columns\TextColumn::make('productFamily.name')
-                    ->label(__('ops.resources.canonical_product.fields.product_family'))
-                    ->placeholder('—'),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->label(__('ops.resources.medical_device_declaration.relation_create_sku')),
+                Tables\Actions\CreateAction::make(),
                 Tables\Actions\AssociateAction::make()
-                    ->label(__('ops.resources.medical_device_declaration.relation_associate_sku'))
-                    ->recordSelectOptionsQuery(fn (Builder $query): Builder => $query
-                        ->whereNull('medical_device_declaration_id')),
+                    ->recordSelectOptionsQuery(fn (Builder $query): Builder => $query->whereNull('product_family_id')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DissociateAction::make()
-                    ->label(__('ops.resources.medical_device_declaration.relation_dissociate_sku')),
+                Tables\Actions\DissociateAction::make(),
                 Tables\Actions\Action::make('open_full_edit')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->label(__('ops.resources.medical_device_declaration.relation_open_full_edit'))
@@ -94,8 +66,7 @@ class CanonicalProductsRelationManager extends RelationManager
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DissociateBulkAction::make()
-                        ->label(__('ops.resources.medical_device_declaration.relation_dissociate_bulk')),
+                    Tables\Actions\DissociateBulkAction::make(),
                 ]),
             ]);
     }

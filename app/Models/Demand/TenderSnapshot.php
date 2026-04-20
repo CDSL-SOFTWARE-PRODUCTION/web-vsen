@@ -63,6 +63,16 @@ class TenderSnapshot extends Model
         return $this->hasMany(Contract::class);
     }
 
+    public function bidOpeningSessions(): HasMany
+    {
+        return $this->hasMany(BidOpeningSession::class);
+    }
+
+    public function awardOutcomes(): HasMany
+    {
+        return $this->hasMany(AwardOutcome::class);
+    }
+
     public function isLocked(): bool
     {
         return $this->locked_at !== null;

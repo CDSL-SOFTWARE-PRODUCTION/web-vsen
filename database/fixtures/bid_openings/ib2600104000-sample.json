@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "tbmt": "IB2600104000",
+    "source_plan_no": "PL2600XXXXXX",
+    "opened_at": "2026-04-20 10:39:00",
+    "source": "https://muasamcong.mpi.gov.vn/"
+  },
+  "lines": [
+    {
+      "source_row_no": 1,
+      "lot_code": "PP2600114932",
+      "item_name": "Bông lót bó bột 10x365cm",
+      "bidder_tax_id": "vn0101587962",
+      "bidder_name": "CÔNG TY CỔ PHẦN THƯƠNG MẠI DƯỢC VẬT TƯ Y TẾ HÀ NỘI",
+      "bid_price_vnd": 13000000,
+      "discount_rate": 0,
+      "bid_price_after_discount": 13000000,
+      "delivery_commitment": "Trong vòng 5 ngày",
+      "currency": "VND"
+    }
+  ]
+}
