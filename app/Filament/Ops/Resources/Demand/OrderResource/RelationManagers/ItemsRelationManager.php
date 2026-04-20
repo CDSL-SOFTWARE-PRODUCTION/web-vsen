@@ -2,13 +2,14 @@
 
 namespace App\Filament\Ops\Resources\Demand\OrderResource\RelationManagers;
 
-use App\Models\Knowledge\CanonicalProduct;
+use App\Filament\Ops\Support\CanonicalProductSelect;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -70,42 +71,7 @@ class ItemsRelationManager extends RelationManager
                 ])
                 ->default('pending')
                 ->required(),
-            Forms\Components\Select::make('canonical_product_id')
-                ->label(__('ops.order_items.canonical_product'))
-                ->searchable()
-                ->searchDebounce(400)
-                ->getSearchResultsUsing(function (string $search): array {
-                    $query = CanonicalProduct::query()
-                        ->orderBy('raw_name')
-                        ->orderBy('sku')
-                        ->limit(50)
-                        ->get(['id', 'raw_name', 'sku', 'spec_json']);
-
-                    $term = trim($search);
-                    if ($term !== '') {
-                        $query = CanonicalProduct::query()
-                            ->where('raw_name', 'like', '%'.$term.'%')
-                            ->orWhere('sku', 'like', '%'.$term.'%')
-                            ->orderBy('raw_name')
-                            ->orderBy('sku')
-                            ->limit(50)
-                            ->get(['id', 'raw_name', 'sku', 'spec_json']);
-                    }
-
-                    return $query
-                        ->mapWithKeys(fn (CanonicalProduct $product): array => [$product->id => self::canonicalProductLabel($product)])
-                        ->all();
-                })
-                ->getOptionLabelUsing(function ($value): ?string {
-                    if (! is_numeric($value)) {
-                        return null;
-                    }
-
-                    $product = CanonicalProduct::query()->find((int) $value, ['id', 'raw_name', 'sku', 'spec_json']);
-
-                    return $product instanceof CanonicalProduct ? self::canonicalProductLabel($product) : null;
-                })
-                ->helperText(__('ops.order_items.canonical_product_helper'))
+            CanonicalProductSelect::make()
                 ->required(),
             Forms\Components\TextInput::make('unit_price')
                 ->label(__('ops.order_items.unit_price'))
@@ -199,64 +165,8 @@ class ItemsRelationManager extends RelationManager
             ]);
     }
 
-    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('ops.order_items.title');
-    }
-
-    private static function canonicalProductLabel(CanonicalProduct $product): string
-    {
-        $sku = trim((string) $product->sku);
-        $rawName = trim((string) $product->raw_name);
-        $sizeHint = self::canonicalProductSizeHint($product);
-        $nameWithSize = $sizeHint !== '' ? "{$rawName} ({$sizeHint})" : $rawName;
-
-        if ($nameWithSize !== '' && $sku !== '') {
-            return "{$nameWithSize} — {$sku}";
-        }
-
-        return $nameWithSize !== '' ? $nameWithSize : $sku;
-    }
-
-    private static function canonicalProductSizeHint(CanonicalProduct $product): string
-    {
-        $spec = $product->spec_json;
-        if (! is_array($spec) || $spec === []) {
-            return '';
-        }
-
-        $matched = [];
-        foreach ($spec as $key => $value) {
-            if (! is_scalar($value)) {
-                continue;
-            }
-
-            $keyText = mb_strtolower(trim((string) $key), 'UTF-8');
-            $valueText = trim((string) $value);
-            if ($valueText === '') {
-                continue;
-            }
-
-            if (
-                str_contains($keyText, 'size')
-                || str_contains($keyText, 'kich')
-                || str_contains($keyText, 'kích')
-                || str_contains($keyText, 'quy')
-                || str_contains($keyText, 'dimension')
-                || str_contains($keyText, 'length')
-                || str_contains($keyText, 'width')
-                || str_contains($keyText, 'height')
-                || str_contains($keyText, 'chieu')
-                || str_contains($keyText, 'chiều')
-            ) {
-                $matched[] = $valueText;
-            }
-        }
-
-        if ($matched === []) {
-            return '';
-        }
-
-        return implode(' · ', array_slice(array_values(array_unique($matched)), 0, 2));
     }
 }

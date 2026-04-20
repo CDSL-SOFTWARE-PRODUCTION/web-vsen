@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Resources\Demand\ContractResource\RelationManagers;
 
+use App\Filament\Ops\Support\CanonicalProductSelect;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Knowledge\CanonicalProductDocument;
 use App\Models\Ops\ContractItem;
@@ -106,11 +107,7 @@ class ItemsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('item_code')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('canonical_product_id')
-                    ->label(__('ops.resources.contract_item_bridge.canonical_product'))
-                    ->options(fn (): array => CanonicalProduct::query()->orderBy('sku')->pluck('sku', 'id')->all())
-                    ->searchable()
-                    ->preload()
+                CanonicalProductSelect::make(labelKey: 'ops.resources.contract_item_bridge.canonical_product')
                     ->hintIcon('heroicon-m-information-circle', __('ops.resources.contract_item_bridge.canonical_product_help'))
                     ->live(),
                 Forms\Components\TextInput::make('name')

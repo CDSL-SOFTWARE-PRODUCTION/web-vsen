@@ -39,7 +39,7 @@ it('blocks order projection when bid opening lines are not mapped', function () 
     ]);
 
     expect(fn () => app(CreateOrderFromBidOpeningSessionService::class)->handle($session->id, $user->id))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 });
 
 it('creates order and supply order from fully mapped bid opening session', function () {
@@ -87,6 +87,7 @@ it('creates order and supply order from fully mapped bid opening session', funct
         ->and($supplyLine->canonical_product_id)->toBe($canonical->id)
         ->and($supplyLine->supplier_partner_id)->toBe($supplier->id)
         ->and($supplyLine->supplier_suggestion_source)->toBe('bidder_name')
+        ->and($supplyLine->supplier_selection_mode)->toBe('auto_suggested')
         ->and($supplyOrder->status)->toBe('Draft');
 });
 
@@ -133,15 +134,18 @@ it('requires supplier per line and mapped lines before approving supply order', 
     expect($supplyOrder->fresh()->status)->toBe('PendingApproval');
 
     expect(fn () => app(ApproveSupplyOrderService::class)->handle($supplyOrder->id, $user->id))
-        ->toThrow(\RuntimeException::class);
+        ->toThrow(RuntimeException::class);
 
     $supplier = Partner::query()->create([
         'name' => 'Supplier Z',
         'type' => 'Supplier',
     ]);
-    $supplyOrder->lines()->update([
+    $lineAfterManualSelection = $supplyOrder->lines()->firstOrFail();
+    $lineAfterManualSelection->update([
         'supplier_partner_id' => $supplier->id,
     ]);
+    $lineAfterManualSelection->refresh();
+    expect($lineAfterManualSelection->supplier_selection_mode)->toBe('manual_override');
 
     app(ApproveSupplyOrderService::class)->handle($supplyOrder->id, $user->id);
     expect($supplyOrder->fresh()->status)->toBe('Approved');
@@ -187,5 +191,6 @@ it('maps supplier by bidder identifier when generating supply line', function ()
     $supplyLine = $supplyOrder->lines()->firstOrFail();
 
     expect($supplyLine->supplier_partner_id)->toBe($supplier->id)
-        ->and($supplyLine->supplier_suggestion_source)->toBe('bidder_identifier');
+        ->and($supplyLine->supplier_suggestion_source)->toBe('bidder_identifier')
+        ->and($supplyLine->supplier_selection_mode)->toBe('auto_suggested');
 });

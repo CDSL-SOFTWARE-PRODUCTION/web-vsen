@@ -2,18 +2,19 @@
 
 namespace App\Filament\Ops\Resources\Demand\BidOpeningSessionResource\RelationManagers;
 
-use App\Models\Knowledge\CanonicalProduct;
+use App\Filament\Ops\Support\CanonicalProductSelect;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class LinesRelationManager extends RelationManager
 {
     protected static string $relationship = 'lines';
 
-    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('ops.bid_opening_lines.title');
     }
@@ -31,11 +32,7 @@ class LinesRelationManager extends RelationManager
             Forms\Components\TextInput::make('item_name')
                 ->label(__('ops.bid_opening_lines.fields.item_name'))
                 ->maxLength(255),
-            Forms\Components\Select::make('canonical_product_id')
-                ->label(__('ops.bid_opening_lines.fields.canonical_product'))
-                ->options(fn (): array => CanonicalProduct::query()->orderBy('sku')->pluck('sku', 'id')->all())
-                ->searchable()
-                ->preload()
+            CanonicalProductSelect::make(labelKey: 'ops.bid_opening_lines.fields.canonical_product')
                 ->nullable(),
             Forms\Components\Select::make('mapping_status')
                 ->label(__('ops.bid_opening_lines.fields.mapping_status'))

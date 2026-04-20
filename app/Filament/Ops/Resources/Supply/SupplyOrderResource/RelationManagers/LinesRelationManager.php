@@ -2,7 +2,7 @@
 
 namespace App\Filament\Ops\Resources\Supply\SupplyOrderResource\RelationManagers;
 
-use App\Models\Knowledge\CanonicalProduct;
+use App\Filament\Ops\Support\CanonicalProductSelect;
 use App\Models\Ops\Partner;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -17,11 +17,7 @@ class LinesRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('canonical_product_id')
-                ->label(__('ops.supply_order.lines.fields.canonical_product'))
-                ->options(fn (): array => CanonicalProduct::query()->orderBy('sku')->pluck('sku', 'id')->all())
-                ->searchable()
-                ->preload()
+            CanonicalProductSelect::make(labelKey: 'ops.supply_order.lines.fields.canonical_product')
                 ->required(),
             Forms\Components\Select::make('supplier_partner_id')
                 ->label(__('ops.supply_order.lines.fields.supplier_partner'))
@@ -33,10 +29,6 @@ class LinesRelationManager extends RelationManager
                 ->searchable()
                 ->preload()
                 ->required(),
-            Forms\Components\TextInput::make('supplier_suggestion_source')
-                ->label(__('ops.supply_order.lines.fields.supplier_suggestion_source'))
-                ->disabled()
-                ->dehydrated(false),
             Forms\Components\TextInput::make('item_name')
                 ->label(__('ops.supply_order.lines.fields.item_name'))
                 ->required()
@@ -44,15 +36,27 @@ class LinesRelationManager extends RelationManager
             Forms\Components\TextInput::make('required_qty')
                 ->label(__('ops.supply_order.lines.fields.required_qty'))
                 ->required()
-                ->numeric(),
+                ->numeric()
+                ->afterStateHydrated(function (Forms\Components\TextInput $component, $state): void {
+                    $component->state(self::normalizeQuantityInputState($state));
+                })
+                ->dehydrateStateUsing(fn ($state) => self::normalizeQuantityInputState($state)),
             Forms\Components\TextInput::make('available_qty')
                 ->label(__('ops.supply_order.lines.fields.available_qty'))
                 ->required()
-                ->numeric(),
+                ->numeric()
+                ->afterStateHydrated(function (Forms\Components\TextInput $component, $state): void {
+                    $component->state(self::normalizeQuantityInputState($state));
+                })
+                ->dehydrateStateUsing(fn ($state) => self::normalizeQuantityInputState($state)),
             Forms\Components\TextInput::make('shortage_qty')
                 ->label(__('ops.supply_order.lines.fields.shortage_qty'))
                 ->required()
-                ->numeric(),
+                ->numeric()
+                ->afterStateHydrated(function (Forms\Components\TextInput $component, $state): void {
+                    $component->state(self::normalizeQuantityInputState($state));
+                })
+                ->dehydrateStateUsing(fn ($state) => self::normalizeQuantityInputState($state)),
             Forms\Components\TextInput::make('planned_unit_price')
                 ->label(__('ops.supply_order.lines.fields.planned_unit_price'))
                 ->numeric(),
@@ -79,13 +83,6 @@ class LinesRelationManager extends RelationManager
                     ->label(__('ops.supply_order.lines.columns.supplier_partner'))
                     ->placeholder('-')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('supplier_suggestion_source')
-                    ->label(__('ops.supply_order.lines.columns.supplier_suggestion_source'))
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'bidder_identifier' => __('ops.supply_order.lines.suggestion_sources.bidder_identifier'),
-                        'bidder_name' => __('ops.supply_order.lines.suggestion_sources.bidder_name'),
-                        default => '-',
-                    }),
                 Tables\Columns\TextColumn::make('shortage_qty')
                     ->label(__('ops.supply_order.lines.columns.shortage_qty'))
                     ->formatStateUsing(fn ($state): string => self::formatQuantity($state)),
@@ -122,5 +119,21 @@ class LinesRelationManager extends RelationManager
         $formatted = number_format($number, 3, ',', '.');
 
         return rtrim(rtrim($formatted, '0'), ',');
+    }
+
+    private static function normalizeQuantityInputState($state): string
+    {
+        if (! is_numeric($state)) {
+            return (string) $state;
+        }
+
+        $number = (float) $state;
+        if (fmod($number, 1.0) === 0.0) {
+            return (string) (int) $number;
+        }
+
+        $normalized = number_format($number, 3, '.', '');
+
+        return rtrim(rtrim($normalized, '0'), '.');
     }
 }

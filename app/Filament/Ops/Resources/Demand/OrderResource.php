@@ -15,10 +15,11 @@ use App\Filament\Ops\Resources\Demand\OrderResource\RelationManagers\SalesTouchp
 use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use App\Models\LegalEntity;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
@@ -76,6 +77,12 @@ class OrderResource extends OpsResource
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->maxLength(255),
+                    Forms\Components\Select::make('legal_entity_id')
+                        ->label(__('ops.order.fields.legal_entity'))
+                        ->options(fn (): array => LegalEntity::query()->orderBy('name')->pluck('name', 'id')->all())
+                        ->searchable()
+                        ->preload()
+                        ->required(),
                     Forms\Components\Select::make('state')
                         ->label(__('ops.order.fields.state'))
                         ->visibleOn('edit')
@@ -135,6 +142,10 @@ class OrderResource extends OpsResource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->limit(40),
+                Tables\Columns\TextColumn::make('legalEntity.name')
+                    ->label(__('ops.order.fields.legal_entity'))
+                    ->placeholder('-')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('state')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {

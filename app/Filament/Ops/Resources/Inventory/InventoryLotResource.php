@@ -7,6 +7,7 @@ use App\Filament\Ops\Resources\Inventory\InventoryLotResource\Pages;
 use App\Filament\Ops\Resources\Inventory\InventoryLotResource\RelationManagers\LedgersRelationManager;
 use App\Filament\Ops\Resources\Inventory\InventoryLotResource\RelationManagers\ReservationsRelationManager;
 use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Support\CanonicalProductSelect;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Supply\InventoryLot;
 use App\Support\Ops\FilamentAccess;
@@ -47,11 +48,7 @@ class InventoryLotResource extends OpsResource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('canonical_product_id')
-                    ->label(__('ops.resources.inventory_lot.canonical_product'))
-                    ->options(fn (): array => CanonicalProduct::query()->orderBy('sku')->pluck('sku', 'id')->all())
-                    ->searchable()
-                    ->preload()
+                CanonicalProductSelect::make(labelKey: 'ops.resources.inventory_lot.canonical_product')
                     ->nullable()
                     ->live()
                     ->afterStateUpdated(function ($state, Forms\Set $set): void {

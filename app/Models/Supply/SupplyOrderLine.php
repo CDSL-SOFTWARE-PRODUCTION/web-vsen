@@ -8,10 +8,36 @@ use App\Models\Ops\Partner;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SupplyOrderLine extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $line): void {
+            if ($line->supplier_selection_mode !== null) {
+                return;
+            }
+
+            if ($line->supplier_suggestion_source !== null) {
+                $line->supplier_selection_mode = 'auto_suggested';
+            }
+        });
+
+        static::updating(function (self $line): void {
+            if ($line->isDirty('supplier_selection_mode')) {
+                return;
+            }
+
+            if (! $line->isDirty('supplier_partner_id')) {
+                return;
+            }
+
+            $line->supplier_selection_mode = 'manual_override';
+        });
+    }
 
     protected $fillable = [
         'supply_order_id',
@@ -19,6 +45,7 @@ class SupplyOrderLine extends Model
         'canonical_product_id',
         'supplier_partner_id',
         'supplier_suggestion_source',
+        'supplier_selection_mode',
         'item_name',
         'required_qty',
         'available_qty',
@@ -41,6 +68,7 @@ class SupplyOrderLine extends Model
             'canonical_product_id' => 'integer',
             'supplier_partner_id' => 'integer',
             'supplier_suggestion_source' => 'string',
+            'supplier_selection_mode' => 'string',
             'planned_unit_price' => 'decimal:2',
             'reference_unit_price' => 'decimal:2',
             'price_deviation_pct' => 'decimal:4',
@@ -66,5 +94,15 @@ class SupplyOrderLine extends Model
     public function supplierPartner(): BelongsTo
     {
         return $this->belongsTo(Partner::class, 'supplier_partner_id');
+    }
+
+    /**
+     * Procurement-entered comparison quotes (multiple suppliers per line).
+     *
+     * @return HasMany<SupplyOrderLineSupplierQuote, $this>
+     */
+    public function supplierComparisonQuotes(): HasMany
+    {
+        return $this->hasMany(SupplyOrderLineSupplierQuote::class);
     }
 }

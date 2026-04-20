@@ -27,7 +27,11 @@ class CreateOrder extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $user = auth()->user();
-        if ($user !== null && $user->legal_entity_id !== null) {
+        if (
+            (! isset($data['legal_entity_id']) || ! is_numeric($data['legal_entity_id']))
+            && $user !== null
+            && $user->legal_entity_id !== null
+        ) {
             $data['legal_entity_id'] = $user->legal_entity_id;
         }
 

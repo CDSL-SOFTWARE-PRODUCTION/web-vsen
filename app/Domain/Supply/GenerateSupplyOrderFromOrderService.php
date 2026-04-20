@@ -6,8 +6,8 @@ use App\Domain\Audit\AuditLogService;
 use App\Domain\Demand\BidOpeningMappingGateService;
 use App\Models\Demand\BidOpeningLine;
 use App\Models\Demand\BidOpeningSession;
-use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Demand\Order;
+use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Ops\Partner;
 use App\Models\Supply\InventoryLot;
 use App\Models\Supply\SupplyOrder;
@@ -21,17 +21,16 @@ class GenerateSupplyOrderFromOrderService
     public function __construct(
         private readonly AuditLogService $auditLogService,
         private readonly BidOpeningMappingGateService $mappingGateService
-    ) {
-    }
+    ) {}
 
     public function handle(int $orderId, ?int $actorUserId = null): GenerateSupplyOrderResult
     {
         $order = Order::query()->with(['items', 'snapshot.bidOpeningSessions', 'supplyOrders'])->findOrFail($orderId);
-        
+
         if ($order->supplyOrders->count() > 0) {
-            throw new RuntimeException(__('ops.order.notifications.generate_supply_order_duplicate', [], 'en') ?: "Cannot generate: A supply order already exists for this order.");
+            throw new RuntimeException(__('ops.order.notifications.generate_supply_order_duplicate', [], 'en') ?: 'Cannot generate: A supply order already exists for this order.');
         }
-        
+
         $latestSession = $order->snapshot?->bidOpeningSessions()
             ->latest('opened_at')
             ->latest('id')
@@ -75,6 +74,9 @@ class GenerateSupplyOrderFromOrderService
                     'supplier_suggestion_source' => $item->canonical_product_id !== null
                         ? ($partnerSuggestionByCanonicalProduct[$item->canonical_product_id]['source'] ?? null)
                         : null,
+                    'supplier_selection_mode' => $item->canonical_product_id !== null
+                        ? (isset($partnerSuggestionByCanonicalProduct[$item->canonical_product_id]['source']) ? 'auto_suggested' : null)
+                        : null,
                     'item_name' => $item->name,
                     'required_qty' => $requiredQty,
                     'available_qty' => $availableQty,
@@ -100,13 +102,14 @@ class GenerateSupplyOrderFromOrderService
                 action: 'GenerateSupplyOrderSkippedNoShortage',
                 context: $result->toArray()
             );
+
             return $result;
         }
 
         $supplyOrder = DB::transaction(function () use ($order, $shortages): SupplyOrder {
             $supplyOrder = SupplyOrder::query()->create([
                 'order_id' => $order->id,
-                'supply_order_code' => 'SO-' . $order->id . '-' . now()->format('YmdHis'),
+                'supply_order_code' => 'SO-'.$order->id.'-'.now()->format('YmdHis'),
                 'status' => 'Draft',
             ]);
 
@@ -117,6 +120,7 @@ class GenerateSupplyOrderFromOrderService
                     'canonical_product_id' => $line['canonical_product_id'],
                     'supplier_partner_id' => $line['supplier_partner_id'],
                     'supplier_suggestion_source' => $line['supplier_suggestion_source'],
+                    'supplier_selection_mode' => $line['supplier_selection_mode'],
                     'item_name' => $line['item_name'],
                     'required_qty' => $line['required_qty'],
                     'available_qty' => $line['available_qty'],

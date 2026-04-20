@@ -4,6 +4,7 @@ namespace App\Filament\Ops\Resources\MasterData\PriceListResource\RelationManage
 
 use App\Filament\Ops\Resources\MasterData\CanonicalProductResource;
 use App\Filament\Ops\Resources\MasterData\PriceListResource;
+use App\Filament\Ops\Support\CanonicalProductSelect;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -37,11 +38,7 @@ class PriceListItemsRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('canonical_product_id')
-                ->label(__('ops.resources.price_list.item_fields.canonical_product_sku'))
-                ->relationship('canonicalProduct', 'sku')
-                ->searchable()
-                ->preload()
+            CanonicalProductSelect::make(labelKey: 'ops.resources.price_list.item_fields.canonical_product_sku')
                 ->nullable()
                 ->hintIcon('heroicon-m-information-circle', __('ops.resources.price_list.item_fields.canonical_product_sku_helper')),
             Forms\Components\TextInput::make('product_name')

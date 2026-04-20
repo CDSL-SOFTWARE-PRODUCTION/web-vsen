@@ -7,10 +7,10 @@ use App\Domain\Supply\MarkSupplyOrderOrderedService;
 use App\Domain\Supply\ReceiveSupplyOrderService;
 use App\Domain\Supply\RequestSupplyOrderApprovalService;
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
+use App\Filament\Ops\Resources\Demand\OrderResource;
 use App\Filament\Ops\Resources\Supply\SupplyOrderResource\Pages;
 use App\Filament\Ops\Resources\Supply\SupplyOrderResource\RelationManagers\LinesRelationManager;
 use App\Filament\Ops\Resources\Support\OpsResource;
-use App\Filament\Ops\Resources\Demand\OrderResource;
 use App\Models\LegalEntity;
 use App\Models\Supply\SupplyOrder;
 use Filament\Forms;
@@ -45,6 +45,16 @@ class SupplyOrderResource extends OpsResource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.supply_order.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('ops.resources.supply_order.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('ops.resources.supply_order.plural_model_label');
     }
 
     public static function canViewAny(): bool
