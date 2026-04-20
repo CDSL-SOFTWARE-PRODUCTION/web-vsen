@@ -2,8 +2,10 @@
 
 namespace App\Filament\Ops\Resources\CanonicalProductResource\RelationManagers;
 
+use App\Support\Knowledge\MedicalDeviceDossierClass;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,9 +27,13 @@ class ProductDocumentsRelationManager extends RelationManager
                 ->required()
                 ->maxLength(100)
                 ->label(__('ops.resources.canonical_product_documents.document_type')),
-            Forms\Components\TextInput::make('document_group')
-                ->maxLength(50)
-                ->label(__('ops.resources.canonical_product_documents.document_group')),
+            Forms\Components\Select::make('document_group')
+                ->required()
+                ->label(__('ops.resources.canonical_product_documents.device_class'))
+                ->options(MedicalDeviceDossierClass::optionsForSelect())
+                ->helperText(__('ops.resources.canonical_product_documents.device_class_helper'))
+                ->native(false)
+                ->live(),
             Forms\Components\Select::make('status')
                 ->required()
                 ->options([
@@ -37,7 +43,18 @@ class ProductDocumentsRelationManager extends RelationManager
                 ])
                 ->label(__('ops.common.status')),
             Forms\Components\DatePicker::make('expiry_date')
-                ->label(__('ops.resources.canonical_product_documents.expiry_date')),
+                ->label(__('ops.resources.canonical_product_documents.expiry_date'))
+                ->helperText(function (Get $get): ?string {
+                    $class = $get('document_group');
+                    if (MedicalDeviceDossierClass::isPermanent($class)) {
+                        return __('ops.resources.canonical_product_documents.expiry_helper_ab');
+                    }
+                    if (MedicalDeviceDossierClass::hasFiveYearCycle($class)) {
+                        return __('ops.resources.canonical_product_documents.expiry_helper_cd');
+                    }
+
+                    return null;
+                }),
             Forms\Components\TextInput::make('file_path')
                 ->maxLength(255)
                 ->label(__('ops.resources.canonical_product_documents.file_path'))
@@ -57,7 +74,15 @@ class ProductDocumentsRelationManager extends RelationManager
                     ->label(__('ops.resources.canonical_product_documents.document_type'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('document_group')
-                    ->label(__('ops.resources.canonical_product_documents.document_group'))
+                    ->label(__('ops.resources.canonical_product_documents.device_class'))
+                    ->formatStateUsing(fn (?string $state): string => MedicalDeviceDossierClass::optionsForSelect()[$state] ?? (string) $state)
+                    ->badge()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('validity_policy')
+                    ->label(__('ops.resources.canonical_product_documents.validity_policy'))
+                    ->getStateUsing(fn ($record): string => MedicalDeviceDossierClass::validityLabel($record->document_group))
+                    ->badge()
+                    ->color(fn (string $state): string => $state === __('ops.resources.canonical_product_documents.validity_five_years') ? 'warning' : 'success')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label(__('ops.common.status'))

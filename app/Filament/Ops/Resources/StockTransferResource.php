@@ -2,28 +2,33 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Inventory;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\StockTransferResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Supply\StockTransfer;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class StockTransferResource extends Resource
+class StockTransferResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = StockTransfer::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Inventory::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
     protected static ?int $navigationSort = 2;
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'inventory';
+    }
 
     public static function getNavigationLabel(): string
     {

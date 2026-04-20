@@ -2,7 +2,8 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Demand;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Filament\Ops\Resources\TenderSnapshotResource\Pages;
 use App\Filament\Ops\Resources\TenderSnapshotResource\RelationManagers\AttachmentsRelationManager;
 use App\Filament\Ops\Resources\TenderSnapshotResource\RelationManagers\ItemsRelationManager;
@@ -11,25 +12,29 @@ use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class TenderSnapshotResource extends Resource
+class TenderSnapshotResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = TenderSnapshot::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-
-    protected static ?string $cluster = Demand::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
     protected static ?string $recordTitleAttribute = 'source_notify_no';
 
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'demand';
+    }
+
     public static function getNavigationLabel(): string
     {
-        return 'Tender Snapshots';
+        return __('ops.resources.tender_snapshot.navigation');
     }
 
     public static function canViewAny(): bool
@@ -41,18 +46,18 @@ class TenderSnapshotResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Snapshot')
+                Forms\Components\Section::make(__('ops.tender_snapshot.section_snapshot'))
                     ->schema([
                         Forms\Components\TextInput::make('source_system')
                             ->required()
                             ->default('muasamcong')
                             ->maxLength(50),
                         Forms\Components\TextInput::make('source_notify_no')
-                            ->label('Notify No (TBMT)')
+                            ->label(__('ops.tender_snapshot.fields.notify_no'))
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('source_plan_no')
-                            ->label('Plan No (KHLCNT)')
+                            ->label(__('ops.tender_snapshot.fields.plan_no'))
                             ->nullable()
                             ->maxLength(255),
                         Forms\Components\DateTimePicker::make('locked_at')
@@ -75,10 +80,10 @@ class TenderSnapshotResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('source_notify_no')
-                    ->label('TBMT')
+                    ->label(__('ops.tender_snapshot.columns.tbmt'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('source_plan_no')
-                    ->label('KHLCNT')
+                    ->label(__('ops.tender_snapshot.columns.kh_lcnt'))
                     ->searchable()
                     ->placeholder('-'),
                 Tables\Columns\TextColumn::make('contracts_count')
@@ -89,7 +94,7 @@ class TenderSnapshotResource extends Resource
                     ->sortable()
                     ->placeholder('-'),
                 Tables\Columns\TextColumn::make('snapshot_hash')
-                    ->label('Hash')
+                    ->label(__('ops.tender_snapshot.columns.hash'))
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->limit(10)
                     ->placeholder('-'),

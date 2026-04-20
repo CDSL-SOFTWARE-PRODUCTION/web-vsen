@@ -2,7 +2,8 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Demand;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Filament\Ops\Resources\TenderLineRequirementResource\Pages;
 use App\Models\Demand\TenderSnapshotItem;
 use App\Models\Demand\TenderSnapshotItemRequirement;
@@ -10,22 +11,26 @@ use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class TenderLineRequirementResource extends Resource
+class TenderLineRequirementResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = TenderSnapshotItemRequirement::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Demand::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-link';
 
     protected static ?int $navigationSort = 25;
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'demand';
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -82,9 +87,9 @@ class TenderLineRequirementResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('tenderSnapshotItem.snapshot.source_notify_no')
-                    ->label('TBMT')
+                    ->label(__('ops.tender_line_requirement.columns.tbmt'))
                     ->placeholder('—'),
-                Tables\Columns\TextColumn::make('tenderSnapshotItem.line_no')->label('Line'),
+                Tables\Columns\TextColumn::make('tenderSnapshotItem.line_no')->label(__('ops.tender_line_requirement.columns.line')),
                 Tables\Columns\TextColumn::make('tenderSnapshotItem.name')->limit(32),
                 Tables\Columns\TextColumn::make('requirement.code')->label(__('ops.resources.requirement.code')),
                 Tables\Columns\TextColumn::make('requirement.type')->badge(),

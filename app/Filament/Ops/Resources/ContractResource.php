@@ -5,32 +5,37 @@ namespace App\Filament\Ops\Resources;
 use App\Domain\Audit\AuditLogService;
 use App\Domain\Execution\GateEvaluator;
 use App\Domain\Execution\GateOverrideService;
-use App\Filament\Ops\Clusters\Demand;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\ContractResource\Pages;
 use App\Filament\Ops\Resources\ContractResource\RelationManagers\ItemsRelationManager;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Ops\Contract;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class ContractResource extends Resource
+class ContractResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = Contract::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Demand::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'demand';
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -49,13 +54,13 @@ class ContractResource extends Resource
                 Forms\Components\Section::make(__('ops.contract.section.contract_info'))
                     ->schema([
                         Forms\Components\TextInput::make('order_id')
-                            ->label('Order ID')
+                            ->label(__('ops.contract.fields.order_id'))
                             ->numeric()
-                            ->helperText('Soft reference tới Order (core). Có thể để trống ở MVP hiện tại.')
+                            ->helperText(__('ops.contract.helpers.order_id'))
                             ->nullable(),
                         Forms\Components\TextInput::make('tender_snapshot_ref')
-                            ->label('Tender Snapshot Ref')
-                            ->helperText('Ref snapshot từ muasamcong (notifyNo/planNo/hash).')
+                            ->label(__('ops.contract.fields.tender_snapshot_ref'))
+                            ->helperText(__('ops.contract.helpers.tender_snapshot_ref'))
                             ->nullable()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('contract_code')
@@ -94,7 +99,7 @@ class ContractResource extends Resource
             ->defaultSort('next_delivery_due_date')
             ->columns([
                 Tables\Columns\TextColumn::make('order_id')
-                    ->label('Order ID')
+                    ->label(__('ops.contract.columns.order_id'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('contract_code')
@@ -145,7 +150,7 @@ class ContractResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('preActivateGateCheck')
-                    ->label('Pre-activate check')
+                    ->label(__('ops.contract.actions.pre_activate_check'))
                     ->color('warning')
                     ->icon('heroicon-o-shield-check')
                     ->action(function (Contract $record): void {
@@ -154,25 +159,25 @@ class ContractResource extends Resource
                         $service->writeAudit(auth()->id(), $record, $decision);
 
                         Notification::make()
-                            ->title($decision->hasWarnings ? 'Gate warnings found' : 'Gate check passed')
-                            ->body(implode("\n", $decision->warnings) ?: 'No warning.')
+                            ->title($decision->hasWarnings ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
+                            ->body(implode("\n", $decision->warnings) ?: __('ops.contract.notifications.gate_no_warning'))
                             ->color($decision->hasWarnings ? 'warning' : 'success')
                             ->send();
                     }),
                 Tables\Actions\Action::make('preActivateGateOverride')
-                    ->label('Override pre-activate')
+                    ->label(__('ops.contract.actions.override_pre_activate'))
                     ->icon('heroicon-o-shield-exclamation')
                     ->color('danger')
                     ->form([
                         Forms\Components\Textarea::make('override_reason')
-                            ->label('Override reason')
-                            ->helperText('Required for audit trail.')
+                            ->label(__('ops.contract.override.reason_label'))
+                            ->helperText(__('ops.contract.override.reason_helper'))
                             ->required()
                             ->maxLength(1000),
                     ])
                     ->requiresConfirmation()
-                    ->modalHeading('Override pre-activate gate')
-                    ->modalDescription('Use override only when warnings are acceptable and documented.')
+                    ->modalHeading(__('ops.contract.override.modal_pre_activate_heading'))
+                    ->modalDescription(__('ops.contract.override.modal_description'))
                     ->visible(function (Contract $record): bool {
                         return app(GateEvaluator::class)->evaluatePreActivate($record)['hasWarnings'];
                     })
@@ -183,13 +188,13 @@ class ContractResource extends Resource
                         $service->writeAudit(auth()->id(), $record, $decision);
 
                         Notification::make()
-                            ->title('Pre-activate gate override recorded')
+                            ->title(__('ops.contract.notifications.pre_activate_override_recorded'))
                             ->body(implode("\n", $decision->warnings))
                             ->color('warning')
                             ->send();
                     }),
                 Tables\Actions\Action::make('preDeliveryGateCheck')
-                    ->label('Pre-delivery check')
+                    ->label(__('ops.contract.actions.pre_delivery_check'))
                     ->color('warning')
                     ->icon('heroicon-o-shield-check')
                     ->action(function (Contract $record): void {
@@ -198,25 +203,25 @@ class ContractResource extends Resource
                         $service->writeAudit(auth()->id(), $record, $decision);
 
                         Notification::make()
-                            ->title($decision->hasWarnings ? 'Gate warnings found' : 'Gate check passed')
-                            ->body(implode("\n", $decision->warnings) ?: 'No warning.')
+                            ->title($decision->hasWarnings ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
+                            ->body(implode("\n", $decision->warnings) ?: __('ops.contract.notifications.gate_no_warning'))
                             ->color($decision->hasWarnings ? 'warning' : 'success')
                             ->send();
                     }),
                 Tables\Actions\Action::make('preDeliveryGateOverride')
-                    ->label('Override pre-delivery')
+                    ->label(__('ops.contract.actions.override_pre_delivery'))
                     ->icon('heroicon-o-shield-exclamation')
                     ->color('danger')
                     ->form([
                         Forms\Components\Textarea::make('override_reason')
-                            ->label('Override reason')
-                            ->helperText('Required for audit trail.')
+                            ->label(__('ops.contract.override.reason_label'))
+                            ->helperText(__('ops.contract.override.reason_helper'))
                             ->required()
                             ->maxLength(1000),
                     ])
                     ->requiresConfirmation()
-                    ->modalHeading('Override pre-delivery gate')
-                    ->modalDescription('Use override only when warnings are acceptable and documented.')
+                    ->modalHeading(__('ops.contract.override.modal_pre_delivery_heading'))
+                    ->modalDescription(__('ops.contract.override.modal_description'))
                     ->visible(function (Contract $record): bool {
                         return app(GateEvaluator::class)->evaluatePreDelivery($record)['hasWarnings'];
                     })
@@ -227,13 +232,13 @@ class ContractResource extends Resource
                         $service->writeAudit(auth()->id(), $record, $decision);
 
                         Notification::make()
-                            ->title('Pre-delivery gate override recorded')
+                            ->title(__('ops.contract.notifications.pre_delivery_override_recorded'))
                             ->body(implode("\n", $decision->warnings))
                             ->color('warning')
                             ->send();
                     }),
                 Tables\Actions\Action::make('prePaymentGate')
-                    ->label('Pre-payment gate')
+                    ->label(__('ops.contract.actions.pre_payment_gate'))
                     ->color('warning')
                     ->action(function (Contract $record): void {
                         $result = app(GateEvaluator::class)->evaluatePrePayment($record);
@@ -246,8 +251,8 @@ class ContractResource extends Resource
                         );
 
                         Notification::make()
-                            ->title($result['hasWarnings'] ? 'Gate warnings found' : 'Gate check passed')
-                            ->body(implode("\n", $result['warnings']) ?: 'No warning.')
+                            ->title($result['hasWarnings'] ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
+                            ->body(implode("\n", $result['warnings']) ?: __('ops.contract.notifications.gate_no_warning'))
                             ->color($result['hasWarnings'] ? 'warning' : 'success')
                             ->send();
                     }),

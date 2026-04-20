@@ -21,7 +21,7 @@ class ViewTenderSnapshot extends ViewRecord
 
         return [
             Actions\Action::make('lock')
-                ->label('Lock Snapshot')
+                ->label(__('ops.tender_snapshot.actions.lock_snapshot'))
                 ->color('warning')
                 ->requiresConfirmation()
                 ->visible(fn (): bool => !$record->isLocked())
@@ -36,12 +36,12 @@ class ViewTenderSnapshot extends ViewRecord
                     );
 
                     Notification::make()
-                        ->title('Snapshot locked')
+                        ->title(__('ops.tender_snapshot.notifications.locked'))
                         ->success()
                         ->send();
                 }),
             Actions\Action::make('generatePlan')
-                ->label('Generate Execution Plan')
+                ->label(__('ops.tender_snapshot.actions.generate_execution_plan'))
                 ->color('success')
                 ->requiresConfirmation()
                 ->visible(fn (): bool => $record->isLocked())
@@ -51,8 +51,8 @@ class ViewTenderSnapshot extends ViewRecord
 
                     Notification::make()
                         ->title($existingContractId === null
-                            ? "Execution plan generated (Contract #{$contract->id})"
-                            : "Execution plan already exists (Contract #{$contract->id})")
+                            ? __('ops.tender_snapshot.notifications.plan_created', ['id' => $contract->id])
+                            : __('ops.tender_snapshot.notifications.plan_exists', ['id' => $contract->id]))
                         ->color($existingContractId === null ? 'success' : 'warning')
                         ->send();
                 }),

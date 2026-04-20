@@ -2,28 +2,38 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\MasterData;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\RequirementResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Knowledge\Requirement;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class RequirementResource extends Resource
+class RequirementResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = Requirement::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = MasterData::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-check-badge';
 
     protected static ?int $navigationSort = 14;
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'master_data';
+    }
+
+    protected static function visibleInMasterDataStewardSidebar(): bool
+    {
+        return true;
+    }
 
     public static function getNavigationLabel(): string
     {

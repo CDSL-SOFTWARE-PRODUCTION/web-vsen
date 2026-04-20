@@ -2,30 +2,35 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Inventory;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\ReturnOrderResource\Pages;
 use App\Filament\Ops\Resources\ReturnOrderResource\RelationManagers\ReturnLinesRelationManager;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Demand\Order;
 use App\Models\Supply\ReturnOrder;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class ReturnOrderResource extends Resource
+class ReturnOrderResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = ReturnOrder::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Inventory::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-arrow-uturn-left';
 
     protected static ?int $navigationSort = 3;
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'inventory';
+    }
 
     public static function getNavigationLabel(): string
     {

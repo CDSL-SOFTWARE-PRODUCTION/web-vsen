@@ -2,8 +2,9 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Demand;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\DocumentResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\ContractItem;
 use App\Models\Ops\Document;
@@ -12,19 +13,23 @@ use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class DocumentResource extends Resource
+class DocumentResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = Document::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Demand::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-folder-open';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'demand';
+    }
 
     public static function getNavigationLabel(): string
     {

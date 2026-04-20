@@ -2,30 +2,40 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\MasterData;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\PriceListResource\Pages;
 use App\Filament\Ops\Resources\PriceListResource\RelationManagers\PriceListItemsRelationManager;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Demand\PriceList;
 use App\Models\Ops\Partner;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class PriceListResource extends Resource
+class PriceListResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = PriceList::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = MasterData::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
     protected static ?int $navigationSort = 13;
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'master_data';
+    }
+
+    protected static function visibleInMasterDataStewardSidebar(): bool
+    {
+        return true;
+    }
 
     public static function getNavigationLabel(): string
     {

@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Ops\Pages\Dashboard as OpsDashboard;
+use App\Filament\Ops\Pages\MasterDataHome;
 use App\Filament\Ops\Widgets\LedgerInflowOutflowChartWidget;
 use App\Filament\Ops\Widgets\OpsDebtAndLedgerKpiWidget;
 use App\Filament\Ops\Widgets\OpsDemandAndSupplyKpiWidget;
@@ -12,6 +13,7 @@ use App\Filament\Ops\Widgets\OrdersCreatedTrendChartWidget;
 use App\Filament\Ops\Widgets\RopLowStockTableWidget;
 use App\Filament\Ops\Widgets\SupplyOrderStatsWidget;
 use App\Http\Middleware\SetLocale;
+use App\Support\Ops\FilamentAccess;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -37,6 +39,13 @@ class OpsPanelProvider extends PanelProvider
         return $panel
             ->id('ops')
             ->path('ops')
+            ->homeUrl(function (): string {
+                if (FilamentAccess::isMasterDataSteward()) {
+                    return MasterDataHome::getUrl();
+                }
+
+                return OpsDashboard::getUrl();
+            })
             ->login()
             ->profile()
             ->darkMode(true, false)
@@ -46,7 +55,6 @@ class OpsPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Indigo,
             ])
-            ->discoverClusters(in: app_path('Filament/Ops/Clusters'), for: 'App\\Filament\\Ops\\Clusters')
             ->discoverResources(in: app_path('Filament/Ops/Resources'), for: 'App\\Filament\\Ops\\Resources')
             ->discoverPages(in: app_path('Filament/Ops/Pages'), for: 'App\\Filament\\Ops\\Pages')
             ->pages([
@@ -79,8 +87,23 @@ class OpsPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make(__('ops.nav_groups.master_data'))
+                NavigationGroup::make(__('ops.clusters.demand'))
+                    ->icon('heroicon-o-document-text')
+                    ->collapsed(),
+                NavigationGroup::make(__('ops.clusters.master_data'))
                     ->icon('heroicon-o-circle-stack')
+                    ->collapsed(),
+                NavigationGroup::make(__('ops.clusters.supply'))
+                    ->icon('heroicon-o-shopping-cart')
+                    ->collapsed(),
+                NavigationGroup::make(__('ops.clusters.inventory'))
+                    ->icon('heroicon-o-archive-box')
+                    ->collapsed(),
+                NavigationGroup::make(__('ops.clusters.delivery'))
+                    ->icon('heroicon-o-truck')
+                    ->collapsed(),
+                NavigationGroup::make(__('ops.clusters.finance'))
+                    ->icon('heroicon-o-banknotes')
                     ->collapsed(),
                 NavigationGroup::make(__('ops.nav_groups.system'))
                     ->icon('heroicon-o-cog-6-tooth')

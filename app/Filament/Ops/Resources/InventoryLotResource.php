@@ -2,31 +2,36 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Inventory;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\InventoryLotResource\Pages;
 use App\Filament\Ops\Resources\InventoryLotResource\RelationManagers\LedgersRelationManager;
 use App\Filament\Ops\Resources\InventoryLotResource\RelationManagers\ReservationsRelationManager;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Supply\InventoryLot;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class InventoryLotResource extends Resource
+class InventoryLotResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = InventoryLot::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Inventory::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-cube-transparent';
 
     protected static ?int $navigationSort = 1;
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'inventory';
+    }
 
     public static function getNavigationLabel(): string
     {

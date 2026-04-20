@@ -2,17 +2,17 @@
 
 namespace App\Filament\Ops\Resources;
 
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Filament\Ops\Resources\UserResource\Pages;
 use App\Models\User;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class UserResource extends Resource
+class UserResource extends OpsResource
 {
     protected static ?string $model = User::class;
 
@@ -62,6 +62,7 @@ class UserResource extends Resource
                                 'MuaHang' => __('ops.user.role.mua_hang'),
                                 'Kho' => __('ops.user.role.kho'),
                                 'KeToan' => __('ops.user.role.ke_toan'),
+                                'DuLieuNen' => __('ops.user.role.du_lieu_nen'),
                             ])
                             ->required()
                             ->native(false),
@@ -91,6 +92,7 @@ class UserResource extends Resource
                         'MuaHang' => 'mua_hang',
                         'Kho' => 'kho',
                         'KeToan' => 'ke_toan',
+                        'DuLieuNen' => 'du_lieu_nen',
                         default => 'label',
                     }))
                     ->color(fn (string $state): string => match ($state) {
@@ -99,6 +101,7 @@ class UserResource extends Resource
                         'MuaHang' => 'info',
                         'Kho' => 'success',
                         'KeToan' => 'gray',
+                        'DuLieuNen' => 'primary',
                         default => 'gray',
                     })
                     ->searchable(),
@@ -115,6 +118,7 @@ class UserResource extends Resource
                         'MuaHang' => __('ops.user.role.mua_hang'),
                         'Kho' => __('ops.user.role.kho'),
                         'KeToan' => __('ops.user.role.ke_toan'),
+                        'DuLieuNen' => __('ops.user.role.du_lieu_nen'),
                     ]),
             ])
             ->actions([

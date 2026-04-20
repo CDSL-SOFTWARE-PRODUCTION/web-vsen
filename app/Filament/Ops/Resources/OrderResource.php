@@ -7,32 +7,37 @@ use App\Domain\Demand\CloseContractCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\StartExecutionCommandService;
-use App\Filament\Ops\Clusters\Demand;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\OrderResource\Pages;
 use App\Filament\Ops\Resources\OrderResource\RelationManagers\ItemsRelationManager;
 use App\Filament\Ops\Resources\OrderResource\RelationManagers\SalesTouchpointsRelationManager;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Gate;
 
-class OrderResource extends Resource
+class OrderResource extends OpsResource
 {
-    protected static ?string $model = Order::class;
+    use HasOpsNavigationGroup;
 
-    protected static ?string $cluster = Demand::class;
+    protected static ?string $model = Order::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?string $recordTitleAttribute = 'order_code';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'demand';
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -114,7 +119,7 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('confirmContract')
-                    ->label('Confirm contract')
+                    ->label(__('ops.order.actions.confirm_contract'))
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
                     ->requiresConfirmation()
@@ -123,17 +128,17 @@ class OrderResource extends Resource
                         $result = app(ConfirmContractCommandService::class)->handle($record->id, auth()->id());
 
                         Notification::make()
-                            ->title('Order moved to ConfirmContract')
+                            ->title(__('ops.order.notifications.moved_confirm_contract'))
                             ->body(
                                 $result->warningRaised
                                     ? implode("\n", $result->warnings)
-                                    : 'Transition completed without warnings.'
+                                    : __('ops.order.notifications.transition_ok')
                             )
                             ->color($result->warningRaised ? 'warning' : 'success')
                             ->send();
                     }),
                 Tables\Actions\Action::make('startExecution')
-                    ->label('Start execution')
+                    ->label(__('ops.order.actions.start_execution'))
                     ->icon('heroicon-o-play')
                     ->color('primary')
                     ->requiresConfirmation()
@@ -141,17 +146,17 @@ class OrderResource extends Resource
                     ->action(function (Order $record): void {
                         $result = app(StartExecutionCommandService::class)->handle($record->id, auth()->id());
                         Notification::make()
-                            ->title('Order moved to StartExecution')
+                            ->title(__('ops.order.notifications.moved_start_execution'))
                             ->body(
                                 $result->warningRaised
                                     ? implode("\n", $result->warnings)
-                                    : 'Transition completed without warnings.'
+                                    : __('ops.order.notifications.transition_ok')
                             )
                             ->color($result->warningRaised ? 'warning' : 'success')
                             ->send();
                     }),
                 Tables\Actions\Action::make('confirmFulfillment')
-                    ->label('Confirm fulfillment')
+                    ->label(__('ops.order.actions.confirm_fulfillment'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
@@ -159,17 +164,17 @@ class OrderResource extends Resource
                     ->action(function (Order $record): void {
                         $result = app(ConfirmFulfillmentCommandService::class)->handle($record->id, auth()->id());
                         Notification::make()
-                            ->title('Order moved to Fulfilled')
+                            ->title(__('ops.order.notifications.moved_fulfilled'))
                             ->body(
                                 $result->warningRaised
                                     ? implode("\n", $result->warnings)
-                                    : 'Transition completed without warnings.'
+                                    : __('ops.order.notifications.transition_ok')
                             )
                             ->color($result->warningRaised ? 'warning' : 'success')
                             ->send();
                     }),
                 Tables\Actions\Action::make('closeContract')
-                    ->label('Close contract')
+                    ->label(__('ops.order.actions.close_contract'))
                     ->icon('heroicon-o-lock-closed')
                     ->color('gray')
                     ->requiresConfirmation()
@@ -177,17 +182,17 @@ class OrderResource extends Resource
                     ->action(function (Order $record): void {
                         $result = app(CloseContractCommandService::class)->handle($record->id, auth()->id());
                         Notification::make()
-                            ->title('Order moved to ContractClosed')
+                            ->title(__('ops.order.notifications.moved_contract_closed'))
                             ->body(
                                 $result->warningRaised
                                     ? implode("\n", $result->warnings)
-                                    : 'Transition completed without warnings.'
+                                    : __('ops.order.notifications.transition_ok')
                             )
                             ->color($result->warningRaised ? 'warning' : 'success')
                             ->send();
                     }),
                 Tables\Actions\Action::make('abandonTender')
-                    ->label('Abandon tender')
+                    ->label(__('ops.order.actions.abandon_tender'))
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
@@ -195,11 +200,11 @@ class OrderResource extends Resource
                     ->action(function (Order $record): void {
                         $result = app(AbandonTenderCommandService::class)->handle($record->id, auth()->id());
                         Notification::make()
-                            ->title('Order moved to Abandoned')
+                            ->title(__('ops.order.notifications.moved_abandoned'))
                             ->body(
                                 $result->warningRaised
                                     ? implode("\n", $result->warnings)
-                                    : 'Transition completed without warnings.'
+                                    : __('ops.order.notifications.transition_ok')
                             )
                             ->color($result->warningRaised ? 'warning' : 'success')
                             ->send();

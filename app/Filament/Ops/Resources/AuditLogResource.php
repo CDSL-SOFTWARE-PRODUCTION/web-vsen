@@ -2,27 +2,32 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Demand;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\AuditLogResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\System\AuditLog;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
 
-class AuditLogResource extends Resource
+class AuditLogResource extends OpsResource
 {
-    protected static ?string $model = AuditLog::class;
+    use HasOpsNavigationGroup;
 
-    protected static ?string $cluster = Demand::class;
+    protected static ?string $model = AuditLog::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'demand';
+    }
 
     public static function getNavigationLabel(): string
     {

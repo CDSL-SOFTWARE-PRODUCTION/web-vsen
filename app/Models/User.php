@@ -36,6 +36,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
                 'Kho',
                 'KeToan',
                 'Admin_PM',
+                'DuLieuNen',
             ]);
         }
 

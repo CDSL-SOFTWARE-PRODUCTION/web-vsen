@@ -2,27 +2,32 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Supply;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\SupplyOrderResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\LegalEntity;
 use App\Models\Supply\SupplyOrder;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 
-class SupplyOrderResource extends Resource
+class SupplyOrderResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = SupplyOrder::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Supply::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-inbox';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'supply';
+    }
 
     public static function getEloquentQuery(): Builder
     {
@@ -54,8 +59,8 @@ class SupplyOrderResource extends Resource
                 Tables\Columns\TextColumn::make('order.order_code')
                     ->label(__('ops.resources.order.navigation'))
                     ->url(fn (SupplyOrder $r): string => OrderResource::getUrl('edit', ['record' => $r->order_id])),
-                Tables\Columns\TextColumn::make('order.legalEntity.name')->label('Legal entity')->toggleable(),
-                Tables\Columns\TextColumn::make('lines_count')->counts('lines')->label('Lines'),
+                Tables\Columns\TextColumn::make('order.legalEntity.name')->label(__('ops.supply_order.columns.legal_entity'))->toggleable(),
+                Tables\Columns\TextColumn::make('lines_count')->counts('lines')->label(__('ops.supply_order.columns.lines')),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->filters([
@@ -83,7 +88,7 @@ class SupplyOrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('open_order')
-                    ->label('Order')
+                    ->label(__('ops.supply_order.actions.open_order'))
                     ->url(fn (SupplyOrder $r): string => OrderResource::getUrl('edit', ['record' => $r->order_id])),
             ]);
     }

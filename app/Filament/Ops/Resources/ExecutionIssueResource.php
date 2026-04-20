@@ -2,9 +2,10 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Demand;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\ExecutionIssueResource\Pages;
 use App\Filament\Ops\Resources\ExecutionIssueResource\RelationManagers\UpdatesRelationManager;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\ContractItem;
 use App\Models\Ops\ExecutionIssue;
@@ -14,19 +15,23 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class ExecutionIssueResource extends Resource
+class ExecutionIssueResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = ExecutionIssue::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Demand::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-exclamation-circle';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'demand';
+    }
 
     public static function getNavigationLabel(): string
     {

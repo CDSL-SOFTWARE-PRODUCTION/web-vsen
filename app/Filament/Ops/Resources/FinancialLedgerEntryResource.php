@@ -2,26 +2,31 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Finance;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\FinancialLedgerEntryResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\FinancialLedgerEntry;
 use App\Support\Ops\FilamentAccess;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class FinancialLedgerEntryResource extends Resource
+class FinancialLedgerEntryResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = FinancialLedgerEntry::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Finance::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'finance';
+    }
 
     public static function getNavigationLabel(): string
     {

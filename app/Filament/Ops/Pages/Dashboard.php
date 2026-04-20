@@ -9,6 +9,7 @@ use App\Filament\Ops\Widgets\OpsExecutionAndRiskKpiWidget;
 use App\Filament\Ops\Widgets\OpsMilestonesAndLiquidityKpiWidget;
 use App\Filament\Ops\Widgets\OrdersCreatedTrendChartWidget;
 use App\Filament\Ops\Widgets\RopLowStockTableWidget;
+use App\Support\Ops\FilamentAccess;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Widgets\Widget;
 use Illuminate\Contracts\Support\Htmlable;
@@ -16,6 +17,15 @@ use Illuminate\Contracts\Support\Htmlable;
 class Dashboard extends BaseDashboard
 {
     protected static bool $isDiscovered = false;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        if (FilamentAccess::isMasterDataSteward()) {
+            return false;
+        }
+
+        return parent::shouldRegisterNavigation();
+    }
 
     public function getTitle(): string|Htmlable
     {
@@ -32,6 +42,10 @@ class Dashboard extends BaseDashboard
      */
     public function getWidgets(): array
     {
+        if (FilamentAccess::isMasterDataSteward()) {
+            return [];
+        }
+
         return [
             OpsExecutionAndRiskKpiWidget::class,
             OrdersCreatedTrendChartWidget::class,

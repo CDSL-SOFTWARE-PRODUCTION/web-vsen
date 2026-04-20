@@ -2,30 +2,35 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Delivery as DeliveryCluster;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\DeliveryRouteResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Ops\DeliveryRoute;
 use App\Models\Ops\Vehicle;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 
-class DeliveryRouteResource extends Resource
+class DeliveryRouteResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = DeliveryRoute::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = DeliveryCluster::class;
-
     protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'delivery';
+    }
 
     public static function getNavigationLabel(): string
     {

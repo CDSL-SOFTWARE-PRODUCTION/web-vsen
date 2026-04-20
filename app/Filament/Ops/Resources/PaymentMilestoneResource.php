@@ -3,8 +3,9 @@
 namespace App\Filament\Ops\Resources;
 
 use App\Domain\Audit\AuditLogService;
-use App\Filament\Ops\Clusters\Finance;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\PaymentMilestoneResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\PaymentMilestone;
 use App\Support\Ops\FilamentAccess;
@@ -12,20 +13,24 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Table;
 
-class PaymentMilestoneResource extends Resource
+class PaymentMilestoneResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = PaymentMilestone::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Finance::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'finance';
+    }
 
     public static function getNavigationLabel(): string
     {

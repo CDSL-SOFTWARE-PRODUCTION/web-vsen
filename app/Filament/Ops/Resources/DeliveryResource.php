@@ -3,8 +3,9 @@
 namespace App\Filament\Ops\Resources;
 
 use App\Domain\Delivery\DeliveryService;
-use App\Filament\Ops\Clusters\Delivery as DeliveryCluster;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\DeliveryResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\Delivery;
 use App\Models\Ops\DeliveryRoute;
@@ -13,22 +14,26 @@ use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
-class DeliveryResource extends Resource
+class DeliveryResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = Delivery::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = DeliveryCluster::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-truck';
 
     protected static ?int $navigationSort = 3;
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'delivery';
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -89,10 +94,10 @@ class DeliveryResource extends Resource
                     ])
                     ->default('Dispatched'),
                 Forms\Components\TextInput::make('expected_gps_coordinates')
-                    ->label('Expected GPS (lat,lng)')
+                    ->label(__('ops.delivery.fields.expected_gps'))
                     ->maxLength(64),
                 Forms\Components\TextInput::make('gps_coordinates_actual')
-                    ->label('Actual GPS proof (lat,lng)')
+                    ->label(__('ops.delivery.fields.actual_gps'))
                     ->maxLength(120),
             ])->columns(2);
     }

@@ -2,8 +2,9 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Clusters\Inventory;
+use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\InventoryReservationResource\Pages;
+use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Demand\OrderItem;
 use App\Models\Supply\InventoryLot;
 use App\Models\Supply\InventoryReservation;
@@ -11,22 +12,26 @@ use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class InventoryReservationResource extends Resource
+class InventoryReservationResource extends OpsResource
 {
+    use HasOpsNavigationGroup;
+
     protected static ?string $model = InventoryReservation::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $cluster = Inventory::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
 
     protected static ?int $navigationSort = 4;
+
+    protected static function opsNavigationClusterKey(): string
+    {
+        return 'inventory';
+    }
 
     public static function getNavigationLabel(): string
     {

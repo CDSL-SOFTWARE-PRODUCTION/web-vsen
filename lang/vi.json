@@ -190,5 +190,6 @@
     "Send Request": "Gửi yêu cầu",
     "Sending...": "Đang gửi...",
     "for": "cho",
-    "Request a Quote": "Yêu cầu báo giá"
+    "Request a Quote": "Yêu cầu báo giá",
+    "ops.resources.medical_device_declaration.navigation": "Hồ sơ công bố TBYT"
 }
