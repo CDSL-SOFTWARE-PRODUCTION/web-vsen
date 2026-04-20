@@ -2,9 +2,9 @@
 
 namespace App\Filament\Ops\Pages;
 
-use App\Filament\Ops\Resources\ContractResource;
-use App\Filament\Ops\Resources\OrderResource;
-use App\Filament\Ops\Resources\TenderSnapshotResource;
+use App\Filament\Ops\Resources\Demand\ContractResource;
+use App\Filament\Ops\Resources\Demand\OrderResource;
+use App\Filament\Ops\Resources\Demand\TenderSnapshotResource;
 use App\Support\Ops\FilamentAccess;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;

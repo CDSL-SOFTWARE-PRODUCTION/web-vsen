@@ -1,10 +1,10 @@
 @php
-    use App\Filament\Ops\Resources\CanonicalProductResource;
-    use App\Filament\Ops\Resources\LegalEntityResource;
-    use App\Filament\Ops\Resources\MedicalDeviceDeclarationResource;
-    use App\Filament\Ops\Resources\PartnerResource;
-    use App\Filament\Ops\Resources\PriceListResource;
-    use App\Filament\Ops\Resources\RequirementResource;
+    use App\Filament\Ops\Resources\MasterData\CanonicalProductResource;
+    use App\Filament\Ops\Resources\MasterData\LegalEntityResource;
+    use App\Filament\Ops\Resources\MasterData\MedicalDeviceDeclarationResource;
+    use App\Filament\Ops\Resources\MasterData\PartnerResource;
+    use App\Filament\Ops\Resources\MasterData\PriceListResource;
+    use App\Filament\Ops\Resources\MasterData\RequirementResource;
 @endphp
 
 <x-filament-panels::page>

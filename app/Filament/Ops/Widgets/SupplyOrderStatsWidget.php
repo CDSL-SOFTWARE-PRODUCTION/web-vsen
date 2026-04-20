@@ -2,7 +2,7 @@
 
 namespace App\Filament\Ops\Widgets;
 
-use App\Filament\Ops\Resources\SupplyOrderResource;
+use App\Filament\Ops\Resources\Supply\SupplyOrderResource;
 use App\Models\Supply\SupplyOrder;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 

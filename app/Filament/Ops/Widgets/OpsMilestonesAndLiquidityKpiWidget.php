@@ -2,9 +2,9 @@
 
 namespace App\Filament\Ops\Widgets;
 
-use App\Filament\Ops\Resources\CashPlanEventResource;
-use App\Filament\Ops\Resources\ContractResource;
-use App\Filament\Ops\Resources\PaymentMilestoneResource;
+use App\Filament\Ops\Resources\Finance\CashPlanEventResource;
+use App\Filament\Ops\Resources\Demand\ContractResource;
+use App\Filament\Ops\Resources\Finance\PaymentMilestoneResource;
 use App\Models\Ops\CashPlanEvent;
 use App\Models\Ops\Contract;
 use App\Models\Ops\PaymentMilestone;

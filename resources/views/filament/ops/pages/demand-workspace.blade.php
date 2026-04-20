@@ -21,25 +21,12 @@
                                     {{ $entryPoint['title'] }}
                                 </h3>
                                 @if (! empty($entryPoint['info']))
-                                    <div class="relative" x-data="{ open: false }">
-                                        <button
-                                            type="button"
-                                            class="inline-flex items-center"
-                                            @click="open = !open"
-                                            @click.outside="open = false"
-                                            aria-label="Info"
-                                        >
-                                            <x-filament::icon icon="heroicon-m-information-circle" class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                        </button>
-
-                                        <div
-                                            x-show="open"
-                                            x-transition
-                                            class="absolute left-0 z-20 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-700 shadow-lg select-text dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
-                                        >
-                                            {{ $entryPoint['info'] }}
-                                        </div>
-                                    </div>
+                                    <x-filament::icon
+                                        icon="heroicon-m-information-circle"
+                                        class="h-4 w-4 text-gray-500 dark:text-gray-400 focus:outline-none cursor-help"
+                                        x-tooltip.raw="{{ $entryPoint['info'] }}"
+                                        tabindex="0"
+                                    />
                                 @endif
                             </div>
                             <p class="text-sm text-gray-600 dark:text-gray-300">

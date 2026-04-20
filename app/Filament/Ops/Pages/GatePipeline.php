@@ -4,7 +4,7 @@ namespace App\Filament\Ops\Pages;
 
 use App\Domain\Execution\GateEvaluator;
 use App\Filament\Ops\Pages\DemandWorkspace;
-use App\Filament\Ops\Resources\ContractResource;
+use App\Filament\Ops\Resources\Demand\ContractResource;
 use App\Models\Ops\Contract;
 use App\Support\Ops\FilamentAccess;
 use Filament\Actions\Action;

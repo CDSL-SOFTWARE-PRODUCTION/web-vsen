@@ -26,7 +26,12 @@ class GenerateSupplyOrderFromOrderService
 
     public function handle(int $orderId, ?int $actorUserId = null): GenerateSupplyOrderResult
     {
-        $order = Order::query()->with(['items', 'snapshot.bidOpeningSessions'])->findOrFail($orderId);
+        $order = Order::query()->with(['items', 'snapshot.bidOpeningSessions', 'supplyOrders'])->findOrFail($orderId);
+        
+        if ($order->supplyOrders->count() > 0) {
+            throw new RuntimeException(__('ops.order.notifications.generate_supply_order_duplicate', [], 'en') ?: "Cannot generate: A supply order already exists for this order.");
+        }
+        
         $latestSession = $order->snapshot?->bidOpeningSessions()
             ->latest('opened_at')
             ->latest('id')
