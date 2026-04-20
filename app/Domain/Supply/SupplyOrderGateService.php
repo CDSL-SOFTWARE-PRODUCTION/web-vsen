@@ -14,13 +14,16 @@ final class SupplyOrderGateService
     {
         $warnings = [];
 
-        if ($supplyOrder->supplier_partner_id === null) {
-            $warnings[] = 'Supplier partner is required before approval.';
-        }
-
         $lineCount = $supplyOrder->lines->count();
         if ($lineCount === 0) {
             $warnings[] = 'Supply order must contain at least one line.';
+        }
+
+        $missingSupplierLines = $supplyOrder->lines->filter(
+            fn ($line): bool => $line->supplier_partner_id === null
+        )->count();
+        if ($missingSupplierLines > 0) {
+            $warnings[] = "{$missingSupplierLines} supply lines do not have supplier assigned.";
         }
 
         $unmappedLines = $supplyOrder->lines->filter(

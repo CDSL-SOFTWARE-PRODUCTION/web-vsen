@@ -11,7 +11,6 @@ use App\Filament\Ops\Resources\SupplyOrderResource\Pages;
 use App\Filament\Ops\Resources\SupplyOrderResource\RelationManagers\LinesRelationManager;
 use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\LegalEntity;
-use App\Models\Ops\Partner;
 use App\Models\Supply\SupplyOrder;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -39,7 +38,7 @@ class SupplyOrderResource extends OpsResource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['order.legalEntity', 'supplierPartner', 'lines']);
+        return parent::getEloquentQuery()->with(['order.legalEntity', 'supplierPartner', 'lines.supplierPartner']);
     }
 
     public static function getNavigationLabel(): string
@@ -57,18 +56,9 @@ class SupplyOrderResource extends OpsResource
         return $form->schema([
             Forms\Components\TextInput::make('supply_order_code')
                 ->label(__('ops.supply_order.fields.supply_order_code'))
+                ->hintIcon('heroicon-m-information-circle', __('ops.supply_order.fields.supplier_partner_helper'))
                 ->disabled()
                 ->dehydrated(false),
-            Forms\Components\Select::make('supplier_partner_id')
-                ->label(__('ops.supply_order.fields.supplier_partner'))
-                ->options(fn (): array => Partner::query()
-                    ->where('type', 'Supplier')
-                    ->orderBy('name')
-                    ->pluck('name', 'id')
-                    ->all())
-                ->searchable()
-                ->preload()
-                ->required(),
             Forms\Components\Textarea::make('blocked_reason')
                 ->label(__('ops.supply_order.fields.blocked_reason'))
                 ->rows(2)
@@ -87,7 +77,28 @@ class SupplyOrderResource extends OpsResource
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('supplierPartner.name')
                     ->label(__('ops.supply_order.columns.supplier_partner'))
-                    ->placeholder('-')
+                    ->state(function (SupplyOrder $record): string {
+                        if ($record->supplierPartner?->name !== null) {
+                            return $record->supplierPartner->name;
+                        }
+
+                        $supplierNames = $record->lines
+                            ->loadMissing('supplierPartner')
+                            ->pluck('supplierPartner.name')
+                            ->filter(fn ($name): bool => is_string($name) && $name !== '')
+                            ->unique()
+                            ->values();
+
+                        if ($supplierNames->count() === 0) {
+                            return '-';
+                        }
+
+                        if ($supplierNames->count() === 1) {
+                            return (string) $supplierNames->first();
+                        }
+
+                        return __('ops.supply_order.columns.multiple_suppliers', ['count' => $supplierNames->count()]);
+                    })
                     ->searchable(),
                 Tables\Columns\TextColumn::make('order.order_code')
                     ->label(__('ops.resources.order.navigation'))

@@ -657,12 +657,14 @@ return [
         'columns' => [
             'legal_entity' => 'Legal entity',
             'supplier_partner' => 'Supplier',
+            'multiple_suppliers' => ':count suppliers',
             'lines' => 'Line items',
             'approved_at' => 'Approved at',
         ],
         'fields' => [
             'supply_order_code' => 'Supply order code',
             'supplier_partner' => 'Supplier',
+            'supplier_partner_helper' => 'Optional default supplier for this order. If each SKU is sourced from a different supplier, assign supplier per line below.',
             'blocked_reason' => 'Blocked reason',
         ],
         'actions' => [
@@ -682,6 +684,8 @@ return [
         'lines' => [
             'fields' => [
                 'canonical_product' => 'Canonical SKU',
+                'supplier_partner' => 'Supplier',
+                'supplier_suggestion_source' => 'Supplier suggestion source',
                 'item_name' => 'Item name',
                 'required_qty' => 'Required qty',
                 'available_qty' => 'Available qty',
@@ -691,12 +695,18 @@ return [
             ],
             'columns' => [
                 'canonical_product' => 'SKU',
+                'supplier_partner' => 'Supplier',
+                'supplier_suggestion_source' => 'Supplier suggestion source',
                 'item_name' => 'Item name',
                 'shortage_qty' => 'Shortage',
                 'planned_unit_price' => 'Planned price',
                 'reference_unit_price' => 'Reference price',
                 'price_deviation_flag' => 'Price deviation',
                 'status' => 'Status',
+            ],
+            'suggestion_sources' => [
+                'bidder_identifier' => 'Bidder identifier',
+                'bidder_name' => 'Bidder name',
             ],
         ],
     ],

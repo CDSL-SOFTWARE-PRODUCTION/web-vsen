@@ -657,12 +657,14 @@ return [
         'columns' => [
             'legal_entity' => 'Pháp nhân',
             'supplier_partner' => 'Nhà cung cấp',
+            'multiple_suppliers' => ':count nhà cung cấp',
             'lines' => 'Dòng hàng',
             'approved_at' => 'Duyệt lúc',
         ],
         'fields' => [
             'supply_order_code' => 'Mã đơn mua',
             'supplier_partner' => 'Nhà cung cấp',
+            'supplier_partner_helper' => 'Tùy chọn nhà cung cấp mặc định cho toàn đơn. Nếu mỗi SKU mua khác nhà cung cấp, khai báo ở từng dòng hàng bên dưới.',
             'blocked_reason' => 'Lý do bị chặn',
         ],
         'actions' => [
@@ -682,6 +684,8 @@ return [
         'lines' => [
             'fields' => [
                 'canonical_product' => 'SKU chuẩn hóa',
+                'supplier_partner' => 'Nhà cung cấp',
+                'supplier_suggestion_source' => 'Nguồn gợi ý NCC',
                 'item_name' => 'Tên hàng',
                 'required_qty' => 'Số lượng cần',
                 'available_qty' => 'Số lượng sẵn có',
@@ -691,12 +695,18 @@ return [
             ],
             'columns' => [
                 'canonical_product' => 'SKU',
+                'supplier_partner' => 'Nhà cung cấp',
+                'supplier_suggestion_source' => 'Nguồn gợi ý NCC',
                 'item_name' => 'Tên hàng',
                 'shortage_qty' => 'Thiếu',
                 'planned_unit_price' => 'Giá dự kiến',
                 'reference_unit_price' => 'Giá tham chiếu',
                 'price_deviation_flag' => 'Lệch giá',
                 'status' => 'Trạng thái',
+            ],
+            'suggestion_sources' => [
+                'bidder_identifier' => 'Mã định danh nhà thầu',
+                'bidder_name' => 'Tên nhà thầu',
             ],
         ],
     ],

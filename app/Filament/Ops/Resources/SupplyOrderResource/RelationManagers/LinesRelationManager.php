@@ -3,6 +3,7 @@
 namespace App\Filament\Ops\Resources\SupplyOrderResource\RelationManagers;
 
 use App\Models\Knowledge\CanonicalProduct;
+use App\Models\Ops\Partner;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -22,6 +23,20 @@ class LinesRelationManager extends RelationManager
                 ->searchable()
                 ->preload()
                 ->required(),
+            Forms\Components\Select::make('supplier_partner_id')
+                ->label(__('ops.supply_order.lines.fields.supplier_partner'))
+                ->options(fn (): array => Partner::query()
+                    ->where('type', 'Supplier')
+                    ->orderBy('name')
+                    ->pluck('name', 'id')
+                    ->all())
+                ->searchable()
+                ->preload()
+                ->required(),
+            Forms\Components\TextInput::make('supplier_suggestion_source')
+                ->label(__('ops.supply_order.lines.fields.supplier_suggestion_source'))
+                ->disabled()
+                ->dehydrated(false),
             Forms\Components\TextInput::make('item_name')
                 ->label(__('ops.supply_order.lines.fields.item_name'))
                 ->required()
@@ -60,6 +75,17 @@ class LinesRelationManager extends RelationManager
                     ->label(__('ops.supply_order.lines.columns.item_name'))
                     ->searchable()
                     ->limit(40),
+                Tables\Columns\TextColumn::make('supplierPartner.name')
+                    ->label(__('ops.supply_order.lines.columns.supplier_partner'))
+                    ->placeholder('-')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('supplier_suggestion_source')
+                    ->label(__('ops.supply_order.lines.columns.supplier_suggestion_source'))
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'bidder_identifier' => __('ops.supply_order.lines.suggestion_sources.bidder_identifier'),
+                        'bidder_name' => __('ops.supply_order.lines.suggestion_sources.bidder_name'),
+                        default => '-',
+                    }),
                 Tables\Columns\TextColumn::make('shortage_qty')
                     ->label(__('ops.supply_order.lines.columns.shortage_qty'))
                     ->formatStateUsing(fn ($state): string => self::formatQuantity($state)),

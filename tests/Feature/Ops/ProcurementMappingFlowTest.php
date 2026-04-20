@@ -56,6 +56,10 @@ it('creates order and supply order from fully mapped bid opening session', funct
         'source_notify_no' => 'IB-STRICT-002',
         'session_version' => 1,
     ]);
+    $supplier = Partner::query()->create([
+        'name' => 'NCC B',
+        'type' => 'Supplier',
+    ]);
 
     BidOpeningLine::query()->create([
         'bid_opening_session_id' => $session->id,
@@ -81,10 +85,12 @@ it('creates order and supply order from fully mapped bid opening session', funct
     expect($result['order_items_count'])->toBe(1)
         ->and($orderItem->canonical_product_id)->toBe($canonical->id)
         ->and($supplyLine->canonical_product_id)->toBe($canonical->id)
+        ->and($supplyLine->supplier_partner_id)->toBe($supplier->id)
+        ->and($supplyLine->supplier_suggestion_source)->toBe('bidder_name')
         ->and($supplyOrder->status)->toBe('Draft');
 });
 
-it('requires supplier and mapped lines before approving supply order', function () {
+it('requires supplier per line and mapped lines before approving supply order', function () {
     $user = User::factory()->create(['role' => 'Admin_PM']);
     $legalEntity = LegalEntity::query()->create(['name' => 'LE-3']);
     $user->update(['legal_entity_id' => $legalEntity->id]);
@@ -133,8 +139,53 @@ it('requires supplier and mapped lines before approving supply order', function 
         'name' => 'Supplier Z',
         'type' => 'Supplier',
     ]);
-    $supplyOrder->update(['supplier_partner_id' => $supplier->id]);
+    $supplyOrder->lines()->update([
+        'supplier_partner_id' => $supplier->id,
+    ]);
 
     app(ApproveSupplyOrderService::class)->handle($supplyOrder->id, $user->id);
     expect($supplyOrder->fresh()->status)->toBe('Approved');
+});
+
+it('maps supplier by bidder identifier when generating supply line', function () {
+    $user = User::factory()->create(['role' => 'Admin_PM']);
+    $legalEntity = LegalEntity::query()->create(['name' => 'LE-4']);
+    $user->update(['legal_entity_id' => $legalEntity->id]);
+    $canonical = CanonicalProduct::query()->create([
+        'sku' => 'PP2600114848',
+        'raw_name' => 'Bang dan vo trung 3',
+    ]);
+    $supplier = Partner::query()->create([
+        'name' => 'Supplier By Identifier',
+        'type' => 'Supplier',
+        'bidder_identifier' => '010203',
+    ]);
+
+    $session = BidOpeningSession::query()->create([
+        'source_system' => 'muasamcong',
+        'source_notify_no' => 'IB-STRICT-003',
+        'session_version' => 1,
+    ]);
+    BidOpeningLine::query()->create([
+        'bid_opening_session_id' => $session->id,
+        'source_row_no' => 1,
+        'lot_code' => 'PP2600114848',
+        'item_name' => 'Bang dan theo ma dinh danh',
+        'canonical_product_id' => $canonical->id,
+        'mapping_status' => 'mapped',
+        'mapped_at' => now(),
+        'bidder_identifier' => '010203',
+        'bidder_name' => 'Name not equal partner',
+        'bid_price' => 50000,
+        'currency' => 'VND',
+        'row_fingerprint' => sha1('row-3'),
+    ]);
+
+    $result = app(CreateOrderFromBidOpeningSessionService::class)->handle($session->id, $user->id);
+
+    $supplyOrder = SupplyOrder::query()->where('order_id', $result['order_id'])->firstOrFail();
+    $supplyLine = $supplyOrder->lines()->firstOrFail();
+
+    expect($supplyLine->supplier_partner_id)->toBe($supplier->id)
+        ->and($supplyLine->supplier_suggestion_source)->toBe('bidder_identifier');
 });
