@@ -19,6 +19,9 @@ class ReceiveSupplyOrderService
     public function handle(int $supplyOrderId, ?int $actorUserId = null): ReceiveSupplyOrderResult
     {
         $supplyOrder = SupplyOrder::query()->with('lines')->findOrFail($supplyOrderId);
+        if (! in_array($supplyOrder->status, ['Draft', 'Open', 'Approved', 'Ordered', 'PartiallyReceived'], true)) {
+            throw new RuntimeException('Supply order cannot be received from current status.');
+        }
         if ($supplyOrder->lines->count() === 0) {
             throw new RuntimeException('Cannot receive supply order without lines.');
         }
@@ -33,8 +36,14 @@ class ReceiveSupplyOrderService
                 }
 
                 $lot = InventoryLot::query()->firstOrCreate(
-                    ['item_name' => $line->item_name],
-                    ['available_qty' => 0]
+                    [
+                        'canonical_product_id' => $line->canonical_product_id,
+                        'item_name' => $line->item_name,
+                    ],
+                    [
+                        'available_qty' => 0,
+                        'warehouse_code' => 'DC',
+                    ]
                 );
 
                 $newBalance = (float) $lot->available_qty + $qtyToReceive;
@@ -58,7 +67,8 @@ class ReceiveSupplyOrderService
                 $count++;
             }
 
-            $supplyOrder->update(['status' => 'Received']);
+            $remaining = $supplyOrder->lines()->where('shortage_qty', '>', 0)->count();
+            $supplyOrder->update(['status' => $remaining > 0 ? 'PartiallyReceived' : 'Received']);
             return $count;
         });
 

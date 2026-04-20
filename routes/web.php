@@ -48,4 +48,24 @@ Route::get('/language/{locale}', function ($locale) {
     return redirect()->back();
 })->name('language.switch');
 
+Route::middleware('auth')->prefix('ops')->group(function () {
+    Route::get('/demand', function () {
+        return redirect('/ops/demand-workspace', 302);
+    });
+
+    Route::get('/orders/{path?}', function (?string $path = null) {
+        $targetPath = '/ops/demand/orders'.($path !== null && $path !== '' ? '/'.$path : '');
+        $queryString = request()->getQueryString();
+
+        return redirect($queryString !== null ? $targetPath.'?'.$queryString : $targetPath, 302);
+    })->where('path', '.*');
+
+    Route::get('/contracts/{path?}', function (?string $path = null) {
+        $targetPath = '/ops/demand/contracts'.($path !== null && $path !== '' ? '/'.$path : '');
+        $queryString = request()->getQueryString();
+
+        return redirect($queryString !== null ? $targetPath.'?'.$queryString : $targetPath, 302);
+    })->where('path', '.*');
+});
+
 require __DIR__.'/auth.php';

@@ -35,7 +35,7 @@ class CreateOrderFromSnapshotCommandService
 
         $order = new Order([
             'legal_entity_id' => $legalEntityId,
-            'order_code' => 'ORD-'.$snapshot->id.'-'.now()->format('YmdHis'),
+            'order_code' => Order::buildOrderCodeFromTbmt($snapshot->source_notify_no),
             'name' => 'Order from '.$snapshot->source_notify_no,
             'tender_snapshot_id' => $snapshot->id,
             'awarded_at' => now(),

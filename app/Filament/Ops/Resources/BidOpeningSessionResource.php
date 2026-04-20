@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Resources;
 
+use App\Domain\Demand\CreateOrderFromBidOpeningSessionService;
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\BidOpeningSessionResource\Pages;
 use App\Filament\Ops\Resources\BidOpeningSessionResource\RelationManagers\AwardOutcomesRelationManager;
@@ -12,6 +13,7 @@ use App\Models\Demand\TenderSnapshot;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -122,6 +124,25 @@ class BidOpeningSessionResource extends OpsResource
             ])
             ->filters([])
             ->actions([
+                Tables\Actions\Action::make('create_order_projection')
+                    ->label(__('ops.bid_opening_session.actions.create_order_projection'))
+                    ->icon('heroicon-o-arrow-right-circle')
+                    ->requiresConfirmation()
+                    ->action(function (BidOpeningSession $record): void {
+                        $result = app(CreateOrderFromBidOpeningSessionService::class)->handle(
+                            $record->id,
+                            auth()->id()
+                        );
+
+                        Notification::make()
+                            ->title(__('ops.bid_opening_session.notifications.order_created'))
+                            ->body(__('ops.bid_opening_session.notifications.order_created_body', [
+                                'order_id' => $result['order_id'],
+                                'items' => $result['order_items_count'],
+                            ]))
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ]);

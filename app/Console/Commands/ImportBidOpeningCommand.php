@@ -2,11 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Knowledge\CanonicalProduct;
+use App\Models\Knowledge\ProductAlias;
 use App\Models\Demand\BidOpeningSession;
 use App\Models\Demand\TenderSnapshot;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class ImportBidOpeningCommand extends Command
@@ -91,6 +94,10 @@ class ImportBidOpeningCommand extends Command
                         'source_row_no' => $normalized['source_row_no'],
                         'lot_code' => $normalized['lot_code'],
                         'item_name' => $normalized['item_name'],
+                        'canonical_product_id' => $normalized['canonical_product_id'],
+                        'mapping_status' => $normalized['mapping_status'],
+                        'mapping_note' => $normalized['mapping_note'],
+                        'mapped_at' => $normalized['mapped_at'],
                         'bidder_identifier' => $normalized['bidder_identifier'],
                         'bidder_name' => $normalized['bidder_name'],
                         'bid_valid_days' => $normalized['bid_valid_days'],
@@ -200,6 +207,31 @@ class ImportBidOpeningCommand extends Command
             $merged[] = array_merge($meta, $line);
         }
 
+        if ($merged !== []) {
+            return $merged;
+        }
+
+        $bidders = $decoded['bidders'] ?? [];
+        if (! is_array($bidders)) {
+            return [];
+        }
+
+        foreach ($bidders as $bidder) {
+            if (! is_array($bidder)) {
+                continue;
+            }
+            $items = $bidder['items'] ?? [];
+            if (! is_array($items)) {
+                continue;
+            }
+            foreach ($items as $item) {
+                if (! is_array($item)) {
+                    continue;
+                }
+                $merged[] = array_merge($meta, $bidder, $item);
+            }
+        }
+
         return $merged;
     }
 
@@ -227,6 +259,10 @@ class ImportBidOpeningCommand extends Command
      *     source_row_no: int|null,
      *     lot_code: string,
      *     item_name: string|null,
+     *     canonical_product_id: int|null,
+     *     mapping_status: string,
+     *     mapping_note: string|null,
+     *     mapped_at: Carbon|null,
      *     bidder_identifier: string|null,
      *     bidder_name: string,
      *     bid_valid_days: int|null,
@@ -242,7 +278,11 @@ class ImportBidOpeningCommand extends Command
     private function normalizeRow(array $row, int $fallbackRowNo): array
     {
         $lotCode = trim((string) ($row['lot_code'] ?? $row['pp_code'] ?? ''));
-        $bidderName = trim((string) ($row['bidder_name'] ?? ''));
+        $itemName = $this->toNullableString($row['item_name'] ?? $row['ten_hang'] ?? null);
+        if ($lotCode === '' && is_string($itemName) && preg_match('/^(PP\d+)\s*[-:]\s*/u', $itemName, $match) === 1) {
+            $lotCode = $match[1];
+        }
+        $bidderName = trim((string) ($row['bidder_name'] ?? $row['contractor_name'] ?? $row['company_name'] ?? ''));
         $bidPrice = $this->toFloat($row['bid_price_vnd'] ?? $row['bid_price'] ?? null);
 
         if ($lotCode === '' || $bidderName === '' || $bidPrice === null) {
@@ -252,11 +292,22 @@ class ImportBidOpeningCommand extends Command
         $discountRate = $this->toFloat($row['discount_rate'] ?? $row['discount_pct'] ?? 0) ?? 0.0;
         $afterDiscount = $this->toFloat($row['bid_price_after_discount'] ?? null);
 
+        [$canonicalProductId, $mappingStatus, $mappingNote] = $this->resolveCanonicalMapping(
+            $lotCode,
+            $itemName
+        );
+
         return [
             'source_row_no' => $this->toInt($row['source_row_no'] ?? $fallbackRowNo),
             'lot_code' => $lotCode,
-            'item_name' => $this->toNullableString($row['item_name'] ?? null),
-            'bidder_identifier' => $this->toNullableString($row['bidder_tax_id'] ?? $row['bidder_identifier'] ?? null),
+            'item_name' => $itemName,
+            'canonical_product_id' => $canonicalProductId,
+            'mapping_status' => $mappingStatus,
+            'mapping_note' => $mappingNote,
+            'mapped_at' => $canonicalProductId !== null ? now() : null,
+            'bidder_identifier' => $this->toNullableString(
+                $row['bidder_tax_id'] ?? $row['bidder_identifier'] ?? $row['tax_code'] ?? null
+            ),
             'bidder_name' => $bidderName,
             'bid_valid_days' => $this->toInt($row['bid_valid_days'] ?? null),
             'bid_security_value' => $this->toFloat($row['bid_security_value'] ?? null),
@@ -274,6 +325,10 @@ class ImportBidOpeningCommand extends Command
      *     source_row_no: int|null,
      *     lot_code: string,
      *     item_name: string|null,
+     *     canonical_product_id: int|null,
+     *     mapping_status: string,
+     *     mapping_note: string|null,
+     *     mapped_at: Carbon|null,
      *     bidder_identifier: string|null,
      *     bidder_name: string,
      *     bid_valid_days: int|null,
@@ -299,6 +354,51 @@ class ImportBidOpeningCommand extends Command
         ];
 
         return hash('sha256', implode('|', $parts));
+    }
+
+    /**
+     * @return array{0:int|null,1:string,2:string|null}
+     */
+    private function resolveCanonicalMapping(string $lotCode, ?string $itemName): array
+    {
+        if ($lotCode !== '') {
+            $skuMatch = CanonicalProduct::query()
+                ->whereRaw('UPPER(sku) = ?', [Str::upper($lotCode)])
+                ->value('id');
+            if (is_int($skuMatch)) {
+                return [$skuMatch, 'mapped', 'Matched by SKU code'];
+            }
+        }
+
+        if ($itemName !== null && $itemName !== '') {
+            $normalizedName = Str::lower(trim($itemName));
+            $aliasMatch = ProductAlias::query()
+                ->whereRaw('LOWER(alias_name) = ?', [$normalizedName])
+                ->value('canonical_product_id');
+            if (is_int($aliasMatch)) {
+                return [$aliasMatch, 'mapped', 'Matched by product alias'];
+            }
+
+            $exactNameMatch = CanonicalProduct::query()
+                ->whereRaw('LOWER(raw_name) = ?', [$normalizedName])
+                ->value('id');
+            if (is_int($exactNameMatch)) {
+                return [$exactNameMatch, 'mapped', 'Matched by canonical product name'];
+            }
+
+            $likeMatches = CanonicalProduct::query()
+                ->whereRaw('LOWER(raw_name) like ?', ['%'.$normalizedName.'%'])
+                ->limit(2)
+                ->pluck('id');
+            if ($likeMatches->count() > 1) {
+                return [null, 'conflict', 'Multiple canonical products matched line name'];
+            }
+            if ($likeMatches->count() === 1) {
+                return [(int) $likeMatches->first(), 'mapped', 'Matched by fuzzy canonical product name'];
+            }
+        }
+
+        return [null, 'unmapped', 'No canonical product mapping found'];
     }
 
     private function toNullableString(mixed $value): ?string

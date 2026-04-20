@@ -26,7 +26,12 @@ class AuditLogResource extends OpsResource
 
     protected static function opsNavigationClusterKey(): string
     {
-        return 'demand';
+        return 'system';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('ops.nav_groups.system');
     }
 
     public static function getNavigationLabel(): string

@@ -4,6 +4,7 @@ namespace App\Filament\Ops\Widgets;
 
 use App\Filament\Ops\Resources\OrderResource;
 use App\Filament\Ops\Resources\SupplyOrderResource;
+use App\Models\Demand\BidOpeningLine;
 use App\Models\Demand\Order;
 use App\Models\Supply\SupplyOrder;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -26,7 +27,10 @@ class OpsDemandAndSupplyKpiWidget extends OpsStatsOverviewWidget
     {
         $total = SupplyOrder::query()->count();
         $inProgress = SupplyOrder::query()->whereNotIn('status', ['Received'])->count();
-        $draftOrOpen = SupplyOrder::query()->whereIn('status', ['Draft', 'Open'])->count();
+        $draftOrOpen = SupplyOrder::query()->whereIn('status', ['Draft', 'Open', 'PendingApproval'])->count();
+        $mappedLines = BidOpeningLine::query()->where('mapping_status', 'mapped')->count();
+        $allLines = BidOpeningLine::query()->count();
+        $mappedRatio = $allLines > 0 ? round(($mappedLines * 100) / $allLines, 1) : 100.0;
 
         $supplyStats = [
             Stat::make(__('ops.supply_order.stats.total'), (string) $total)
@@ -43,6 +47,14 @@ class OpsDemandAndSupplyKpiWidget extends OpsStatsOverviewWidget
                 ->description(__('ops.supply_order.stats.draft_open_desc'))
                 ->icon('heroicon-o-inbox')
                 ->color('info')
+                ->url(SupplyOrderResource::getUrl('index')),
+            Stat::make(__('ops.widgets.procurement.mapped_ratio.title'), $mappedRatio.'%')
+                ->description(__('ops.widgets.procurement.mapped_ratio.description', [
+                    'mapped' => $mappedLines,
+                    'total' => $allLines,
+                ]))
+                ->icon('heroicon-o-link')
+                ->color($mappedRatio >= 100 ? 'success' : 'warning')
                 ->url(SupplyOrderResource::getUrl('index')),
         ];
 

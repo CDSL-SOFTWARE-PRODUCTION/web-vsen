@@ -24,7 +24,7 @@ class SupplyOrderStatsWidget extends OpsStatsOverviewWidget
     {
         $total = SupplyOrder::query()->count();
         $inProgress = SupplyOrder::query()->whereNotIn('status', ['Received'])->count();
-        $draftOrOpen = SupplyOrder::query()->whereIn('status', ['Draft', 'Open'])->count();
+        $draftOrOpen = SupplyOrder::query()->whereIn('status', ['Draft', 'Open', 'PendingApproval'])->count();
 
         return [
             Stat::make(__('ops.supply_order.stats.total'), (string) $total)

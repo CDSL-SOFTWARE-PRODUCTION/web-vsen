@@ -29,12 +29,12 @@ class ProductDocumentsRelationManager extends RelationManager
                 ->native(false)
                 ->searchable()
                 ->label(__('ops.resources.canonical_product_documents.document_type'))
-                ->hintIcon('heroicon-o-information-circle')
+                ->hintIcon('heroicon-m-information-circle')
                 ->hintIconTooltip(__('ops.resources.canonical_product_documents.document_type_helper')),
             Forms\Components\Placeholder::make('device_class_reference')
                 ->label(__('ops.resources.canonical_product_documents.device_class_reference'))
                 ->content($this->resolveDeviceClassLabel())
-                ->hintIcon('heroicon-o-information-circle')
+                ->hintIcon('heroicon-m-information-circle')
                 ->hintIconTooltip(__('ops.resources.canonical_product_documents.device_class_reference_helper')),
             Forms\Components\Select::make('status')
                 ->required()
@@ -46,7 +46,7 @@ class ProductDocumentsRelationManager extends RelationManager
                 ->label(__('ops.common.status')),
             Forms\Components\DatePicker::make('expiry_date')
                 ->label(__('ops.resources.canonical_product_documents.expiry_date'))
-                ->hintIcon('heroicon-o-information-circle')
+                ->hintIcon('heroicon-m-information-circle')
                 ->hintIconTooltip(function (): ?string {
                     $class = $this->resolveDeviceClass();
                     if (MedicalDeviceDossierClass::isPermanent($class)) {

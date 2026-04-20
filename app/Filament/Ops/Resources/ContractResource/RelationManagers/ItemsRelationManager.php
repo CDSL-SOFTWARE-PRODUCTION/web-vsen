@@ -111,7 +111,7 @@ class ItemsRelationManager extends RelationManager
                     ->options(fn (): array => CanonicalProduct::query()->orderBy('sku')->pluck('sku', 'id')->all())
                     ->searchable()
                     ->preload()
-                    ->helperText(__('ops.resources.contract_item_bridge.canonical_product_help'))
+                    ->hintIcon('heroicon-m-information-circle', __('ops.resources.contract_item_bridge.canonical_product_help'))
                     ->live(),
                 Forms\Components\TextInput::make('name')
                     ->required()

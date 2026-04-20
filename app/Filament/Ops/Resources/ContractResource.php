@@ -19,6 +19,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class ContractResource extends OpsResource
 {
@@ -26,9 +27,13 @@ class ContractResource extends OpsResource
 
     protected static ?string $model = Contract::class;
 
+    protected static ?string $slug = 'demand/contracts';
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?int $navigationSort = -70;
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -40,6 +45,11 @@ class ContractResource extends OpsResource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.contract.navigation');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
     }
 
     public static function canViewAny(): bool
@@ -56,14 +66,16 @@ class ContractResource extends OpsResource
                         Forms\Components\TextInput::make('order_id')
                             ->label(__('ops.contract.fields.order_id'))
                             ->numeric()
-                            ->helperText(__('ops.contract.helpers.order_id'))
+                            ->hintIcon('heroicon-m-information-circle', __('ops.contract.helpers.order_id'))
                             ->nullable(),
                         Forms\Components\TextInput::make('tender_snapshot_ref')
                             ->label(__('ops.contract.fields.tender_snapshot_ref'))
-                            ->helperText(__('ops.contract.helpers.tender_snapshot_ref'))
+                            ->hintIcon('heroicon-m-information-circle', __('ops.contract.helpers.tender_snapshot_ref'))
                             ->nullable()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('contract_code')
+                            ->label(__('ops.contract.fields.contract_code'))
+                            ->hintIcon('heroicon-m-information-circle', __('ops.contract.helpers.contract_code'))
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
@@ -149,118 +161,218 @@ class ContractResource extends OpsResource
                         ->whereDate('next_delivery_due_date', '<', now()->toDateString())),
             ])
             ->actions([
-                Tables\Actions\Action::make('preActivateGateCheck')
-                    ->label(__('ops.contract.actions.pre_activate_check'))
-                    ->color('warning')
-                    ->icon('heroicon-o-shield-check')
-                    ->action(function (Contract $record): void {
-                        $service = app(GateOverrideService::class);
-                        $decision = $service->evaluate($record, 'preActivate');
-                        $service->writeAudit(auth()->id(), $record, $decision);
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('preActivateGateCheck')
+                        ->label(__('ops.contract.actions.pre_activate_check'))
+                        ->color('warning')
+                        ->icon('heroicon-o-shield-check')
+                        ->action(function (Contract $record): void {
+                            $service = app(GateOverrideService::class);
+                            $decision = $service->evaluate($record, 'preActivate');
+                            $service->writeAudit(auth()->id(), $record, $decision);
 
-                        Notification::make()
-                            ->title($decision->hasWarnings ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
-                            ->body(implode("\n", $decision->warnings) ?: __('ops.contract.notifications.gate_no_warning'))
-                            ->color($decision->hasWarnings ? 'warning' : 'success')
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('preActivateGateOverride')
-                    ->label(__('ops.contract.actions.override_pre_activate'))
-                    ->icon('heroicon-o-shield-exclamation')
-                    ->color('danger')
-                    ->form([
-                        Forms\Components\Textarea::make('override_reason')
-                            ->label(__('ops.contract.override.reason_label'))
-                            ->helperText(__('ops.contract.override.reason_helper'))
-                            ->required()
-                            ->maxLength(1000),
-                    ])
-                    ->requiresConfirmation()
-                    ->modalHeading(__('ops.contract.override.modal_pre_activate_heading'))
-                    ->modalDescription(__('ops.contract.override.modal_description'))
-                    ->visible(function (Contract $record): bool {
-                        return app(GateEvaluator::class)->evaluatePreActivate($record)['hasWarnings'];
-                    })
-                    ->action(function (Contract $record, array $data): void {
-                        $overrideReason = trim((string) ($data['override_reason'] ?? ''));
-                        $service = app(GateOverrideService::class);
-                        $decision = $service->override($record, 'preActivate', $overrideReason);
-                        $service->writeAudit(auth()->id(), $record, $decision);
+                            Notification::make()
+                                ->title($decision->hasWarnings ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
+                                ->body(implode("\n", $decision->warnings) ?: __('ops.contract.notifications.gate_no_warning'))
+                                ->color($decision->hasWarnings ? 'warning' : 'success')
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('preActivateGateOverride')
+                        ->label(__('ops.contract.actions.override_pre_activate'))
+                        ->icon('heroicon-o-shield-exclamation')
+                        ->color('danger')
+                        ->form([
+                            Forms\Components\Textarea::make('override_reason')
+                                ->label(__('ops.contract.override.reason_label'))
+                                ->hintIcon('heroicon-m-information-circle', __('ops.contract.override.reason_helper'))
+                                ->required()
+                                ->maxLength(1000),
+                        ])
+                        ->requiresConfirmation()
+                        ->modalHeading(__('ops.contract.override.modal_pre_activate_heading'))
+                        ->modalDescription(__('ops.contract.override.modal_description'))
+                        ->visible(function (Contract $record): bool {
+                            return app(GateEvaluator::class)->evaluatePreActivate($record)['hasWarnings'];
+                        })
+                        ->action(function (Contract $record, array $data): void {
+                            $overrideReason = trim((string) ($data['override_reason'] ?? ''));
+                            $service = app(GateOverrideService::class);
+                            $decision = $service->override($record, 'preActivate', $overrideReason);
+                            $service->writeAudit(auth()->id(), $record, $decision);
 
-                        Notification::make()
-                            ->title(__('ops.contract.notifications.pre_activate_override_recorded'))
-                            ->body(implode("\n", $decision->warnings))
-                            ->color('warning')
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('preDeliveryGateCheck')
-                    ->label(__('ops.contract.actions.pre_delivery_check'))
-                    ->color('warning')
-                    ->icon('heroicon-o-shield-check')
-                    ->action(function (Contract $record): void {
-                        $service = app(GateOverrideService::class);
-                        $decision = $service->evaluate($record, 'preDelivery');
-                        $service->writeAudit(auth()->id(), $record, $decision);
+                            Notification::make()
+                                ->title(__('ops.contract.notifications.pre_activate_override_recorded'))
+                                ->body(implode("\n", $decision->warnings))
+                                ->color('warning')
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('preDeliveryGateCheck')
+                        ->label(__('ops.contract.actions.pre_delivery_check'))
+                        ->color('warning')
+                        ->icon('heroicon-o-shield-check')
+                        ->action(function (Contract $record): void {
+                            $service = app(GateOverrideService::class);
+                            $decision = $service->evaluate($record, 'preDelivery');
+                            $service->writeAudit(auth()->id(), $record, $decision);
 
-                        Notification::make()
-                            ->title($decision->hasWarnings ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
-                            ->body(implode("\n", $decision->warnings) ?: __('ops.contract.notifications.gate_no_warning'))
-                            ->color($decision->hasWarnings ? 'warning' : 'success')
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('preDeliveryGateOverride')
-                    ->label(__('ops.contract.actions.override_pre_delivery'))
-                    ->icon('heroicon-o-shield-exclamation')
-                    ->color('danger')
-                    ->form([
-                        Forms\Components\Textarea::make('override_reason')
-                            ->label(__('ops.contract.override.reason_label'))
-                            ->helperText(__('ops.contract.override.reason_helper'))
-                            ->required()
-                            ->maxLength(1000),
-                    ])
-                    ->requiresConfirmation()
-                    ->modalHeading(__('ops.contract.override.modal_pre_delivery_heading'))
-                    ->modalDescription(__('ops.contract.override.modal_description'))
-                    ->visible(function (Contract $record): bool {
-                        return app(GateEvaluator::class)->evaluatePreDelivery($record)['hasWarnings'];
-                    })
-                    ->action(function (Contract $record, array $data): void {
-                        $overrideReason = trim((string) ($data['override_reason'] ?? ''));
-                        $service = app(GateOverrideService::class);
-                        $decision = $service->override($record, 'preDelivery', $overrideReason);
-                        $service->writeAudit(auth()->id(), $record, $decision);
+                            Notification::make()
+                                ->title($decision->hasWarnings ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
+                                ->body(implode("\n", $decision->warnings) ?: __('ops.contract.notifications.gate_no_warning'))
+                                ->color($decision->hasWarnings ? 'warning' : 'success')
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('preDeliveryGateOverride')
+                        ->label(__('ops.contract.actions.override_pre_delivery'))
+                        ->icon('heroicon-o-shield-exclamation')
+                        ->color('danger')
+                        ->form([
+                            Forms\Components\Textarea::make('override_reason')
+                                ->label(__('ops.contract.override.reason_label'))
+                                ->hintIcon('heroicon-m-information-circle', __('ops.contract.override.reason_helper'))
+                                ->required()
+                                ->maxLength(1000),
+                        ])
+                        ->requiresConfirmation()
+                        ->modalHeading(__('ops.contract.override.modal_pre_delivery_heading'))
+                        ->modalDescription(__('ops.contract.override.modal_description'))
+                        ->visible(function (Contract $record): bool {
+                            return app(GateEvaluator::class)->evaluatePreDelivery($record)['hasWarnings'];
+                        })
+                        ->action(function (Contract $record, array $data): void {
+                            $overrideReason = trim((string) ($data['override_reason'] ?? ''));
+                            $service = app(GateOverrideService::class);
+                            $decision = $service->override($record, 'preDelivery', $overrideReason);
+                            $service->writeAudit(auth()->id(), $record, $decision);
 
-                        Notification::make()
-                            ->title(__('ops.contract.notifications.pre_delivery_override_recorded'))
-                            ->body(implode("\n", $decision->warnings))
-                            ->color('warning')
-                            ->send();
-                    }),
-                Tables\Actions\Action::make('prePaymentGate')
-                    ->label(__('ops.contract.actions.pre_payment_gate'))
-                    ->color('warning')
-                    ->action(function (Contract $record): void {
-                        $result = app(GateEvaluator::class)->evaluatePrePayment($record);
-                        app(AuditLogService::class)->log(
-                            auth()->id(),
-                            'Contract',
-                            $record->id,
-                            'GateCheckPrePayment',
-                            $result
-                        );
+                            Notification::make()
+                                ->title(__('ops.contract.notifications.pre_delivery_override_recorded'))
+                                ->body(implode("\n", $decision->warnings))
+                                ->color('warning')
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('prePaymentGate')
+                        ->label(__('ops.contract.actions.pre_payment_gate'))
+                        ->color('warning')
+                        ->action(function (Contract $record): void {
+                            $result = app(GateEvaluator::class)->evaluatePrePayment($record);
+                            app(AuditLogService::class)->log(
+                                auth()->id(),
+                                'Contract',
+                                $record->id,
+                                'GateCheckPrePayment',
+                                $result
+                            );
 
-                        Notification::make()
-                            ->title($result['hasWarnings'] ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
-                            ->body(implode("\n", $result['warnings']) ?: __('ops.contract.notifications.gate_no_warning'))
-                            ->color($result['hasWarnings'] ? 'warning' : 'success')
-                            ->send();
-                    }),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                            Notification::make()
+                                ->title($result['hasWarnings'] ? __('ops.contract.notifications.gate_warnings_found') : __('ops.contract.notifications.gate_check_passed'))
+                                ->body(implode("\n", $result['warnings']) ?: __('ops.contract.notifications.gate_no_warning'))
+                                ->color($result['hasWarnings'] ? 'warning' : 'success')
+                                ->send();
+                        }),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                ])
+                    ->label('')
+                    ->icon('heroicon-o-ellipsis-horizontal')
+                    ->button(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('bulkPreActivateGateCheck')
+                        ->label(__('ops.contract.actions.bulk_pre_activate_check'))
+                        ->icon('heroicon-o-shield-check')
+                        ->action(function (Collection $records): void {
+                            $service = app(GateOverrideService::class);
+                            $passed = 0;
+                            $warnings = 0;
+
+                            foreach ($records as $record) {
+                                if (! $record instanceof Contract) {
+                                    continue;
+                                }
+                                $decision = $service->evaluate($record, 'preActivate');
+                                $service->writeAudit(auth()->id(), $record, $decision);
+                                if ($decision->hasWarnings) {
+                                    $warnings++;
+                                } else {
+                                    $passed++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title(__('ops.contract.notifications.bulk_gate_check_done'))
+                                ->body(__('ops.contract.notifications.bulk_gate_check_summary', [
+                                    'passed' => $passed,
+                                    'warnings' => $warnings,
+                                ]))
+                                ->color($warnings > 0 ? 'warning' : 'success')
+                                ->send();
+                        }),
+                    Tables\Actions\BulkAction::make('bulkPreDeliveryGateCheck')
+                        ->label(__('ops.contract.actions.bulk_pre_delivery_check'))
+                        ->icon('heroicon-o-shield-check')
+                        ->action(function (Collection $records): void {
+                            $service = app(GateOverrideService::class);
+                            $passed = 0;
+                            $warnings = 0;
+
+                            foreach ($records as $record) {
+                                if (! $record instanceof Contract) {
+                                    continue;
+                                }
+                                $decision = $service->evaluate($record, 'preDelivery');
+                                $service->writeAudit(auth()->id(), $record, $decision);
+                                if ($decision->hasWarnings) {
+                                    $warnings++;
+                                } else {
+                                    $passed++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title(__('ops.contract.notifications.bulk_gate_check_done'))
+                                ->body(__('ops.contract.notifications.bulk_gate_check_summary', [
+                                    'passed' => $passed,
+                                    'warnings' => $warnings,
+                                ]))
+                                ->color($warnings > 0 ? 'warning' : 'success')
+                                ->send();
+                        }),
+                    Tables\Actions\BulkAction::make('bulkPrePaymentGateCheck')
+                        ->label(__('ops.contract.actions.bulk_pre_payment_check'))
+                        ->icon('heroicon-o-shield-check')
+                        ->action(function (Collection $records): void {
+                            $passed = 0;
+                            $warnings = 0;
+
+                            foreach ($records as $record) {
+                                if (! $record instanceof Contract) {
+                                    continue;
+                                }
+                                $result = app(GateEvaluator::class)->evaluatePrePayment($record);
+                                app(AuditLogService::class)->log(
+                                    auth()->id(),
+                                    'Contract',
+                                    $record->id,
+                                    'GateCheckPrePayment',
+                                    $result
+                                );
+                                if (($result['hasWarnings'] ?? false) === true) {
+                                    $warnings++;
+                                } else {
+                                    $passed++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title(__('ops.contract.notifications.bulk_gate_check_done'))
+                                ->body(__('ops.contract.notifications.bulk_gate_check_summary', [
+                                    'passed' => $passed,
+                                    'warnings' => $warnings,
+                                ]))
+                                ->color($warnings > 0 ? 'warning' : 'success')
+                                ->send();
+                        }),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);

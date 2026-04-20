@@ -37,6 +37,21 @@ class TenderLineRequirementResource extends OpsResource
         return __('ops.resources.tender_line_requirement.navigation');
     }
 
+    public static function getModelLabel(): string
+    {
+        return __('ops.resources.tender_line_requirement.model_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('ops.resources.tender_line_requirement.plural_model_label');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->with(['tenderSnapshotItem.snapshot', 'requirement']);

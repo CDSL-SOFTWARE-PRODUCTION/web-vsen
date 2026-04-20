@@ -7,6 +7,7 @@ use App\Domain\Demand\CloseContractCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\StartExecutionCommandService;
+use App\Domain\Supply\GenerateSupplyOrderFromOrderService;
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\OrderResource\Pages;
 use App\Filament\Ops\Resources\OrderResource\RelationManagers\ItemsRelationManager;
@@ -14,13 +15,17 @@ use App\Filament\Ops\Resources\OrderResource\RelationManagers\SalesTouchpointsRe
 use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Gate;
+use RuntimeException;
 
 class OrderResource extends OpsResource
 {
@@ -28,9 +33,13 @@ class OrderResource extends OpsResource
 
     protected static ?string $model = Order::class;
 
+    protected static ?string $slug = 'demand/orders';
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static ?int $navigationSort = -80;
 
     protected static ?string $recordTitleAttribute = 'order_code';
 
@@ -42,6 +51,11 @@ class OrderResource extends OpsResource
     public static function getNavigationLabel(): string
     {
         return __('ops.resources.order.navigation');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
     }
 
     public static function canViewAny(): bool
@@ -57,14 +71,16 @@ class OrderResource extends OpsResource
                     Forms\Components\TextInput::make('order_code')
                         ->required()
                         ->unique(ignoreRecord: true)
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->hintIcon('heroicon-m-information-circle', __('ops.order.fields.order_code_helper')),
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->maxLength(255),
                     Forms\Components\Select::make('state')
                         ->label(__('ops.order.fields.state'))
                         ->visibleOn('edit')
-                        ->helperText(__('ops.order.fields.state_helper'))
+                        ->hintIcon('heroicon-m-information-circle')
+                        ->hintIconTooltip(__('ops.order.fields.state_helper'))
                         ->disabled()
                         ->dehydrated(false)
                         ->options([
@@ -80,7 +96,30 @@ class OrderResource extends OpsResource
                         ->label(__('ops.order.fields.tender_snapshot'))
                         ->options(TenderSnapshot::query()->pluck('source_notify_no', 'id'))
                         ->searchable()
-                        ->preload(),
+                        ->preload()
+                        ->live()
+                        ->afterStateUpdated(function (Set $set, Get $get, mixed $state): void {
+                            if (! is_numeric($state)) {
+                                return;
+                            }
+
+                            $tbmt = TenderSnapshot::query()->whereKey((int) $state)->value('source_notify_no');
+                            $currentOrderCode = (string) ($get('order_code') ?? '');
+                            if ($tbmt === null || $tbmt === '') {
+                                return;
+                            }
+
+                            $isEmpty = trim($currentOrderCode) === '';
+                            $isGenerated = str_starts_with($currentOrderCode, 'ORD-');
+                            if ($isEmpty || $isGenerated) {
+                                $set('order_code', Order::buildOrderCodeFromTbmt($tbmt));
+                            }
+
+                            $currentName = (string) ($get('name') ?? '');
+                            if (trim($currentName) === '' || str_starts_with($currentName, 'Order from')) {
+                                $set('name', 'Order from '.$tbmt);
+                            }
+                        }),
                 ])
                 ->columns(2),
         ]);
@@ -135,6 +174,43 @@ class OrderResource extends OpsResource
                                     : __('ops.order.notifications.transition_ok')
                             )
                             ->color($result->warningRaised ? 'warning' : 'success')
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('generateSupplyOrder')
+                    ->label(__('ops.order.actions.generate_supply_order'))
+                    ->icon('heroicon-o-inbox')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->action(function (Order $record): void {
+                        try {
+                            $result = app(GenerateSupplyOrderFromOrderService::class)->handle($record->id, auth()->id());
+                        } catch (RuntimeException $exception) {
+                            Notification::make()
+                                ->title(__('ops.order.notifications.generate_supply_order_blocked'))
+                                ->body($exception->getMessage())
+                                ->actions([
+                                    NotificationAction::make('openTenderLineRequirements')
+                                        ->label(__('ops.order.notifications.open_tender_line_requirements'))
+                                        ->button()
+                                        ->url(TenderLineRequirementResource::getUrl('index')),
+                                ])
+                                ->color('warning')
+                                ->send();
+
+                            return;
+                        }
+
+                        $body = $result->supplyOrderId !== null
+                            ? __('ops.order.notifications.supply_order_created', [
+                                'supply_order_id' => $result->supplyOrderId,
+                                'lines' => $result->shortageLinesCount,
+                            ])
+                            : __('ops.order.notifications.supply_order_not_needed');
+
+                        Notification::make()
+                            ->title(__('ops.order.notifications.generate_supply_order_done'))
+                            ->body($body)
+                            ->color('success')
                             ->send();
                     }),
                 Tables\Actions\Action::make('startExecution')

@@ -19,4 +19,9 @@ class SupplyOrderPolicy
     {
         return $this->viewAny($user);
     }
+
+    public function update(User $user, SupplyOrder $order): bool
+    {
+        return in_array($user->role, ['Admin_PM', 'MuaHang'], true);
+    }
 }

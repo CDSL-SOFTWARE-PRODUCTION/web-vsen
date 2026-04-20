@@ -30,7 +30,7 @@ class AttachmentsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('label')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('file_path')
-                    ->helperText('MVP: lưu path nội bộ hoặc S3 key. (Upload thật sẽ làm sau)')
+                    ->hintIcon('heroicon-m-information-circle', 'MVP: lưu path nội bộ hoặc S3 key. (Upload thật sẽ làm sau)')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('external_url')
                     ->url()

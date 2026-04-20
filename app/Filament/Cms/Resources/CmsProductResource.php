@@ -126,7 +126,7 @@ class CmsProductResource extends Resource
                             ->schema([
                                 Forms\Components\FileUpload::make('images')
                                     ->label(__('Product Images'))
-                                    ->helperText(__('Kéo thả hàng loạt ảnh vào đây. Bạn có thể kéo các ảnh để thay đổi thứ tự. Ảnh đầu tiên (góc trên bên trái) sẽ tự động là ảnh đại diện.'))
+                                    ->hintIcon('heroicon-m-information-circle', __('Kéo thả hàng loạt ảnh vào đây. Bạn có thể kéo các ảnh để thay đổi thứ tự. Ảnh đầu tiên (góc trên bên trái) sẽ tự động là ảnh đại diện.'))
                                     ->image()
                                     ->multiple()
                                     ->reorderable()

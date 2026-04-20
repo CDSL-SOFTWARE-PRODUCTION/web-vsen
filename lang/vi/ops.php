@@ -12,13 +12,14 @@ return [
         'supply' => 'Cung ứng & mua sắm',
         'demand' => 'Nhu cầu & hợp đồng',
         'delivery' => 'Giao hàng & logistics',
+        'system' => 'Hệ thống',
     ],
     'common' => [
         'contract' => 'Hợp đồng',
         'vendor' => 'Nhà cung cấp',
-        'contract_item' => 'Hạng mục hợp đồng',
+        'contract_item' => 'Dòng hàng hợp đồng',
         'payment_milestone' => 'Mốc thanh toán',
-        'item' => 'Hạng mục',
+        'item' => 'Dòng hàng',
         'milestone' => 'Mốc',
         'owner' => 'Người phụ trách',
         'status' => 'Trạng thái',
@@ -34,9 +35,13 @@ return [
             'red' => 'Đỏ',
         ],
     ],
+    'flow' => [
+        'step_1_chip' => 'Bước 1 - Nhu cầu',
+        'step_2_chip' => 'Bước 2 - Hợp đồng',
+    ],
     'resources' => [
-        'contract' => ['navigation' => 'Hợp đồng'],
-        'order' => ['navigation' => 'Đơn hàng'],
+        'contract' => ['navigation' => 'Bước 2 - Hợp đồng'],
+        'order' => ['navigation' => 'Bước 1 - Nhu cầu'],
         'payment_milestone' => ['navigation' => 'Mốc thanh toán'],
         'cash_plan_event' => ['navigation' => 'Kế hoạch dòng tiền'],
         'document' => ['navigation' => 'Chứng từ'],
@@ -140,6 +145,7 @@ return [
             'singular' => 'Đối tác',
             'fields' => [
                 'name' => 'Tên gọi',
+                'bidder_identifier' => 'Mã định danh nhà thầu',
                 'type' => 'Loại đối tác',
                 'segment' => 'Phân khúc',
                 'lead_time_days' => 'Thời gian giao hàng (ngày)',
@@ -198,10 +204,10 @@ return [
             'tooltips' => [
                 'name' => 'Tên nội bộ để phân biệt các bảng (ví dụ: “Bảng 2026 — đối tác X”). Chỉ dùng hiển thị và chọn nhanh; không tự tính lại giá trên đơn hàng.',
                 'channel' => 'Kênh thương mại mà bảng giá tham chiếu này áp dụng. Giá trị lưu trong hệ thống là mã cố định; giao diện hiển thị đầy đủ tiếng Việt để dễ hiểu.',
-                'partner' => 'Tùy chọn: gắn bảng với một đối tác (khách / nhà cung cấp). Giúp chọn đúng dòng giá tham chiếu khi liên kết với dòng đơn hàng.',
+                'partner' => 'Tùy chọn: gắn bảng với một đối tác (khách / nhà cung cấp). Giúp chọn đúng dòng giá tham chiếu khi liên kết với dòng hàng nhu cầu.',
                 'valid_from' => 'Ngày bắt đầu coi bảng có hiệu lực (dùng cho kiểm tra như cảnh báo lệch giá C-PR-001).',
                 'valid_to' => 'Ngày cuối cùng bảng còn hiệu lực. Để trống nếu không giới hạn ngày kết thúc.',
-                'product_name' => 'Tên hàng ghi trên dòng (text). Dòng đơn hàng có thể liên kết tới đây để hệ thống so sánh đơn giá thực tế với giá tham chiếu (cảnh báo, không khóa cứng).',
+                'product_name' => 'Tên hàng ghi trên dòng (text). Dòng hàng nhu cầu có thể liên kết tới đây để hệ thống so sánh đơn giá thực tế với giá tham chiếu (cảnh báo, không khóa cứng).',
                 'unit_price' => 'Đơn giá tham chiếu theo loại tiền. Giá thương lượng trên đơn có thể khác; lệch nhiều có thể cảnh báo khi xác nhận hợp đồng.',
                 'min_qty' => 'Số lượng tối thiểu để áp dụng mức giá này (ví dụ bậc giá theo số lượng).',
                 'currency' => 'Mã loại tiền theo chuẩn quốc tế (ví dụ: USD, EUR, JPY, VND).',
@@ -230,8 +236,8 @@ return [
         ],
         'return_order' => [
             'navigation' => 'Trả hàng (RMA)',
-            'lines' => 'Dòng',
-            'lines_title' => 'Chi tiết trả',
+            'lines' => 'Dòng hàng',
+            'lines_title' => 'Dòng hàng trả',
             'condition_good' => 'Tốt (nhập lại)',
             'condition_defective' => 'Lỗi',
         ],
@@ -335,34 +341,46 @@ return [
         ],
         'tender_line_requirement' => [
             'navigation' => 'Dòng thầu ↔ chứng chỉ',
-            'snapshot_line' => 'Dòng trong ảnh chụp tender',
+            'model_label' => 'Yêu cầu chứng chỉ dòng thầu',
+            'plural_model_label' => 'Yêu cầu chứng chỉ dòng thầu',
+            'snapshot_line' => 'Dòng trong kết quả chọn thầu',
         ],
         'tender_snapshot' => [
-            'navigation' => 'Ảnh chụp tender',
+            'navigation' => 'Kết quả chọn thầu',
         ],
         'bid_opening_session' => [
             'navigation' => 'Phiên mở thầu',
         ],
     ],
     'order' => [
+        'flow_hint' => 'Bạn đang ở Bước 1 - Nhu cầu. Hoàn tất xử lý nhu cầu trước khi chuyển sang Bước 2 - Hợp đồng.',
         'section' => [
             'order_info' => 'Thông tin đơn hàng',
         ],
         'fields' => [
-            'tender_snapshot' => 'Ảnh chụp tender',
-            'items_count' => 'Số hạng mục',
+            'tender_snapshot' => 'Kết quả chọn thầu',
+            'items_count' => 'Số dòng hàng',
+            'order_code_helper' => 'Tự động sinh theo TBMT khi chọn kết quả chọn thầu (ví dụ: ORD-IB2600104000-YYYYMMDDHHMMSS).',
             'state' => 'Trạng thái',
             'state_helper' => 'Chỉ đọc. Dùng nút trên bảng (Xác nhận hợp đồng, Bắt đầu thực thi, …) — đổi trạng thái qua lệnh/command, không sửa tay.',
         ],
         'actions' => [
             'confirm_contract' => 'Xác nhận hợp đồng',
+            'generate_supply_order' => 'Sinh đơn mua hàng',
             'start_execution' => 'Bắt đầu thực thi',
             'confirm_fulfillment' => 'Xác nhận hoàn tất giao hàng',
             'close_contract' => 'Đóng hợp đồng',
             'abandon_tender' => 'Bỏ thầu',
+            'go_demand_workspace' => 'Về màn hình bắt đầu',
+            'go_contracts' => 'Sang danh sách hợp đồng',
         ],
         'notifications' => [
             'moved_confirm_contract' => 'Đơn hàng đã chuyển sang ConfirmContract',
+            'generate_supply_order_done' => 'Đã chạy tạo đơn mua hàng',
+            'generate_supply_order_blocked' => 'Không thể tạo đơn mua hàng',
+            'open_tender_line_requirements' => 'Mở màn hình dòng thầu ↔ chứng chỉ',
+            'supply_order_created' => 'Đã tạo đơn mua hàng #:supply_order_id với :lines dòng hàng thiếu cần mua.',
+            'supply_order_not_needed' => 'Không có thiếu hụt tồn kho, chưa cần tạo đơn mua.',
             'moved_start_execution' => 'Đơn hàng đã chuyển sang StartExecution',
             'moved_fulfilled' => 'Đơn hàng đã chuyển sang Fulfilled',
             'moved_contract_closed' => 'Đơn hàng đã chuyển sang ContractClosed',
@@ -380,19 +398,22 @@ return [
         ],
     ],
     'contract' => [
+        'flow_hint' => 'Bạn đang ở Bước 2 - Hợp đồng. Nếu thiếu dữ liệu đầu vào, quay lại Bước 1 - Nhu cầu.',
         'section' => [
             'contract_info' => 'Thông tin hợp đồng',
         ],
         'fields' => [
-            'order_id' => 'ID đơn hàng',
-            'tender_snapshot_ref' => 'Tham chiếu ảnh chụp tender',
+            'order_id' => 'ID đơn hàng (nội bộ)',
+            'contract_code' => 'Mã hợp đồng (mã nghiệp vụ)',
+            'tender_snapshot_ref' => 'Tham chiếu kết quả chọn thầu',
         ],
         'helpers' => [
-            'order_id' => 'Tham chiếu mềm tới đơn hàng lõi (Order). Có thể để trống ở MVP hiện tại.',
+            'order_id' => 'Mã nội bộ dùng để liên kết dữ liệu trong hệ thống với Order lõi.',
+            'contract_code' => 'Mã nghiệp vụ dùng để vận hành, trao đổi và đối soát chứng từ.',
             'tender_snapshot_ref' => 'Tham chiếu snapshot từ muasamcong (notifyNo/planNo/hash).',
         ],
         'columns' => [
-            'open_items' => 'Hạng mục đang mở',
+            'open_items' => 'Dòng hàng đang mở',
             'open_issues' => 'Vấn đề đang mở',
             'missing_docs' => 'Chứng từ thiếu',
             'order_id' => 'ID đơn hàng',
@@ -406,6 +427,11 @@ return [
             'pre_delivery_check' => 'Kiểm tra trước giao hàng',
             'override_pre_delivery' => 'Ghi đè kiểm tra trước giao hàng',
             'pre_payment_gate' => 'Cổng trước thanh toán',
+            'bulk_pre_activate_check' => 'Kiểm tra trước kích hoạt (hàng loạt)',
+            'bulk_pre_delivery_check' => 'Kiểm tra trước giao hàng (hàng loạt)',
+            'bulk_pre_payment_check' => 'Cổng trước thanh toán (hàng loạt)',
+            'go_demand_workspace' => 'Về màn hình bắt đầu',
+            'go_orders' => 'Sang danh sách nhu cầu',
         ],
         'override' => [
             'reason_label' => 'Lý do ghi đè',
@@ -420,6 +446,8 @@ return [
             'gate_no_warning' => 'Không có cảnh báo.',
             'pre_activate_override_recorded' => 'Đã ghi nhận ghi đè cổng trước kích hoạt',
             'pre_delivery_override_recorded' => 'Đã ghi nhận ghi đè cổng trước giao hàng',
+            'bulk_gate_check_done' => 'Đã chạy kiểm tra hàng loạt.',
+            'bulk_gate_check_summary' => ':passed hợp đồng đạt, :warnings hợp đồng có cảnh báo.',
         ],
     ],
     'cash_plan_event' => [
@@ -535,7 +563,30 @@ return [
         ],
     ],
     'order_items' => [
+        'title' => 'Dòng hàng nhu cầu',
+        'item_name' => 'Tên hàng',
+        'uom' => 'Đơn vị tính',
+        'quantity' => 'Số lượng',
+        'status' => 'Trạng thái dòng hàng',
+        'status_options' => [
+            'planned' => 'Đã lập kế hoạch',
+            'delivered' => 'Đã giao',
+            'accepted' => 'Đã nghiệm thu',
+        ],
         'unit_price' => 'Đơn giá (kênh)',
+        'lot_code' => 'Mã phần (lô)',
+        'project_location' => 'Địa điểm dự án',
+        'required_delivery_timeline' => 'Tiến độ cung cấp hàng hóa',
+        'proposed_delivery_timeline' => 'Tiến độ nhà thầu đề xuất',
+        'canonical_product' => 'SKU chuẩn hóa',
+        'canonical_product_helper' => 'Tìm theo tên hàng hoặc mã SKU. Danh sách hiển thị theo dạng: Tên hàng (quy cách/kích cỡ) — SKU.',
+        'procurement_status' => 'Trạng thái mua hàng',
+        'procurement_status_options' => [
+            'pending' => 'Chờ mua',
+            'queued' => 'Đã xếp hàng mua',
+            'ordered' => 'Đã đặt mua',
+            'received' => 'Đã nhận đủ',
+        ],
     ],
     'contract_items' => [
         'title' => 'Hạng mục hợp đồng',
@@ -562,7 +613,7 @@ return [
         ],
         'fields' => [
             'vehicle' => 'Xe',
-            'delivery_route' => 'Tuyến giao',
+            'delivery_route' => 'Tuyến giao hàng',
             'expected_gps' => 'GPS dự kiến (lat,lng)',
             'actual_gps' => 'Bằng chứng GPS thực tế (lat,lng)',
         ],
@@ -589,6 +640,7 @@ return [
         'tabs' => [
             'all' => 'Tất cả',
             'in_progress' => 'Đang xử lý',
+            'approval_queue' => 'Chờ duyệt mua',
             'draft_open' => 'Nháp / mở',
         ],
         'stats' => [
@@ -604,10 +656,48 @@ return [
         ],
         'columns' => [
             'legal_entity' => 'Pháp nhân',
+            'supplier_partner' => 'Nhà cung cấp',
             'lines' => 'Dòng hàng',
+            'approved_at' => 'Duyệt lúc',
+        ],
+        'fields' => [
+            'supply_order_code' => 'Mã đơn mua',
+            'supplier_partner' => 'Nhà cung cấp',
+            'blocked_reason' => 'Lý do bị chặn',
         ],
         'actions' => [
             'open_order' => 'Đơn hàng',
+            'request_approval' => 'Gửi duyệt mua',
+            'approve' => 'Phê duyệt',
+            'mark_ordered' => 'Đánh dấu đã đặt NCC',
+            'receive' => 'Nhận hàng',
+        ],
+        'notifications' => [
+            'requested_approval' => 'Đã gửi đơn mua hàng sang hàng chờ duyệt.',
+            'approved' => 'Đơn mua hàng đã được duyệt.',
+            'ordered' => 'Đơn mua hàng đã chuyển sang trạng thái Ordered.',
+            'received' => 'Nhận hàng thành công.',
+            'received_lines' => 'Đã nhận :count dòng hàng.',
+        ],
+        'lines' => [
+            'fields' => [
+                'canonical_product' => 'SKU chuẩn hóa',
+                'item_name' => 'Tên hàng',
+                'required_qty' => 'Số lượng cần',
+                'available_qty' => 'Số lượng sẵn có',
+                'shortage_qty' => 'Số lượng thiếu',
+                'planned_unit_price' => 'Đơn giá mua dự kiến',
+                'reference_unit_price' => 'Đơn giá tham chiếu',
+            ],
+            'columns' => [
+                'canonical_product' => 'SKU',
+                'item_name' => 'Tên hàng',
+                'shortage_qty' => 'Thiếu',
+                'planned_unit_price' => 'Giá dự kiến',
+                'reference_unit_price' => 'Giá tham chiếu',
+                'price_deviation_flag' => 'Lệch giá',
+                'status' => 'Trạng thái',
+            ],
         ],
     ],
     'financial_ledger' => [
@@ -653,7 +743,7 @@ return [
         'contracts' => 'Hợp đồng thực thi',
     ],
     'tender_snapshot_items' => [
-        'title' => 'Hạng mục (2A)',
+        'title' => 'Dòng thầu (2A)',
         'form' => [
             'uom' => 'Đơn vị tính',
             'quantity_awarded' => 'Khối lượng',
@@ -687,7 +777,7 @@ return [
             'session_version' => 'Phiên bản mở thầu',
             'opened_at' => 'Thời điểm hoàn thành mở thầu',
             'total_bidders' => 'Tổng số nhà thầu',
-            'tender_snapshot' => 'Ảnh chụp tender (neo)',
+            'tender_snapshot' => 'Kết quả chọn thầu (neo)',
             'source_url' => 'Link nguồn',
         ],
         'columns' => [
@@ -696,17 +786,35 @@ return [
             'version' => 'Phiên bản',
             'opened_at' => 'Mở thầu lúc',
             'total_bidders' => 'Số nhà thầu',
-            'lines_count' => 'Số dòng',
+            'lines_count' => 'Số dòng thầu',
+        ],
+        'actions' => [
+            'create_order_projection' => 'Tạo Order + đơn mua từ BBMT',
+        ],
+        'notifications' => [
+            'order_created' => 'Đã tạo Order từ BBMT.',
+            'order_created_body' => 'Order #:order_id với :items dòng hàng đã được khởi tạo.',
         ],
     ],
     'bid_opening_lines' => [
         'title' => 'Dòng mở thầu (ma trận giá)',
+        'mapping_status' => [
+            'mapped' => 'Đã map',
+            'unmapped' => 'Chưa map',
+            'conflict' => 'Xung đột map',
+        ],
         'fields' => [
             'source_row_no' => 'STT nguồn',
             'lot_code' => 'Mã phần / lot',
             'item_name' => 'Tên mặt hàng',
+            'canonical_product' => 'SKU chuẩn hóa',
+            'mapping_status' => 'Trạng thái map',
+            'mapping_note' => 'Ghi chú map',
             'bidder_identifier' => 'Mã định danh nhà thầu',
             'bidder_name' => 'Tên nhà thầu',
+            'bid_valid_days' => 'Hiệu lực hồ sơ (ngày)',
+            'bid_security_value' => 'Giá trị bảo đảm',
+            'bid_security_days' => 'Hiệu lực bảo đảm (ngày)',
             'bid_price' => 'Giá dự thầu',
             'discount_rate' => 'Tỷ lệ giảm giá',
             'bid_price_after_discount' => 'Giá sau giảm',
@@ -717,10 +825,16 @@ return [
         'columns' => [
             'source_row_no' => 'STT',
             'lot_code' => 'Mã lot',
+            'canonical_product' => 'SKU',
+            'mapping_status' => 'Map',
             'bidder_name' => 'Nhà thầu',
             'bid_price' => 'Giá dự thầu',
             'discount_rate' => 'Giảm giá (%)',
             'bid_price_after_discount' => 'Giá sau giảm',
+            'delivery_commitment' => 'Cam kết giao',
+            'bid_valid_days' => 'Hiệu lực HS',
+            'bid_security_value' => 'Giá trị BĐDT',
+            'bid_security_days' => 'Hiệu lực BĐDT',
         ],
     ],
     'award_outcome' => [
@@ -733,7 +847,7 @@ return [
             'currency' => 'Tiền tệ',
             'awarded_at' => 'Thời điểm có kết quả',
             'status' => 'Trạng thái',
-            'tender_snapshot' => 'Ảnh chụp tender (neo)',
+            'tender_snapshot' => 'Kết quả chọn thầu (neo)',
         ],
         'columns' => [
             'lot_code' => 'Mã lot',
@@ -746,7 +860,7 @@ return [
     'tender_line_requirement' => [
         'columns' => [
             'tbmt' => 'TBMT',
-            'line' => 'Dòng',
+            'line' => 'Dòng thầu',
         ],
     ],
     'vehicle' => [
@@ -781,6 +895,79 @@ return [
         'flow_step_1' => 'Tạo hoặc mở hồ sơ công bố (số công bố, ngày, loại A/B/C/D…).',
         'flow_step_2' => 'Trong tab «SKU gắn hồ sơ», thêm mã mới hoặc gắn SKU có sẵn (chưa thuộc hồ sơ khác).',
         'flow_step_3' => 'Cần facet / ảnh / alias: mở Sản phẩm chuẩn hóa → sửa đầy đủ.',
+    ],
+    'demand_workspace' => [
+        'navigation' => 'Bắt đầu Nhu cầu & Hợp đồng',
+        'title' => 'Lộ trình Nhu cầu & Hợp đồng',
+        'subheading_ops' => 'Bắt đầu từ Nhu cầu, chuyển sang Hợp đồng, rồi xử lý các cảnh báo theo luồng thực thi.',
+        'subheading_manager' => 'Bắt đầu từ Nhu cầu, theo dõi Hợp đồng và dùng Gate Pipeline để ưu tiên điểm nghẽn cần quyết định.',
+        'section' => [
+            'quick_start' => 'Chọn nơi bắt đầu',
+            'quick_start_description' => 'Giảm nhầm luồng: đi theo thứ tự từ trái sang phải.',
+            'quick_actions' => 'Tác vụ theo dõi nhanh',
+            'quick_actions_description' => 'Các đường tắt này không phải điểm bắt đầu chính của luồng.',
+        ],
+        'cards' => [
+            'orders' => [
+                'title' => 'Bước 1 - Nhu cầu',
+                'description' => 'Tạo và xử lý đơn hàng từ kết quả chọn thầu.',
+                'info_tooltip' => 'Điểm bắt đầu mặc định cho luồng Demand. "Kết quả chọn thầu" là dữ liệu đầu vào đã chuẩn hóa từ thông tin trúng thầu.',
+                'action' => 'Mở danh sách nhu cầu',
+            ],
+            'contracts' => [
+                'title' => 'Bước 2 - Hợp đồng',
+                'description' => 'Theo dõi hợp đồng thực thi sau khi đã xác nhận nhu cầu.',
+                'action' => 'Mở danh sách hợp đồng',
+            ],
+            'execution_plan' => [
+                'title' => 'Sinh kế hoạch thực thi',
+                'description' => 'Mở danh sách TBMT/BBMT để khóa snapshot và sinh kế hoạch thực thi.',
+                'action' => 'Mở TBMT/BBMT',
+            ],
+            'gate_pipeline' => [
+                'title' => 'Gate Pipeline',
+                'description_ops' => 'Theo dõi nhanh hợp đồng đang vướng cảnh báo để xử lý theo thứ tự ưu tiên.',
+                'description_manager' => 'Bảng theo dõi cảnh báo để quyết định can thiệp và phân công xử lý.',
+                'action' => 'Mở Gate Pipeline',
+            ],
+        ],
+    ],
+    'gate_pipeline' => [
+        'navigation' => 'Gate Pipeline',
+        'title' => 'Gate Pipeline',
+        'subheading' => 'Board điều hành theo luồng cổng: Pre-Activate -> Pre-Delivery -> Pre-Payment.',
+        'actions' => [
+            'go_demand_workspace' => 'Về lộ trình Nhu cầu & Hợp đồng',
+            'go_contracts' => 'Mở danh sách hợp đồng',
+            'open_contract' => 'Mở hợp đồng',
+            'switch_compact' => 'Chuyển compact mode',
+            'switch_verbose' => 'Chuyển verbose mode',
+        ],
+        'density' => [
+            'compact' => 'Compact mode',
+            'verbose' => 'Verbose mode',
+        ],
+        'total_contracts' => 'Đang theo dõi :count hợp đồng gần nhất.',
+        'stage' => [
+            'pre_activate' => 'Pre-Activate',
+            'pre_delivery' => 'Pre-Delivery',
+            'pre_payment' => 'Pre-Payment',
+        ],
+        'badge' => [
+            'pre_activate' => 'Pre-Activate',
+            'pre_delivery' => 'Pre-Delivery',
+            'pre_payment' => 'Pre-Payment',
+        ],
+        'stage_count' => ':count hợp đồng',
+        'warning' => 'Cảnh báo',
+        'passed' => 'Đạt',
+        'warning_short' => 'Warn',
+        'pass_short' => 'Pass',
+        'customer' => 'Khách hàng: :name',
+        'next_delivery_due_date' => 'Hạn giao kế tiếp: :date',
+        'warning_count' => ':count cảnh báo (bấm vào để xem chi tiết đầy đủ)',
+        'warning_count_compact' => ':count cảnh báo',
+        'empty_stage' => 'Không có hợp đồng nào ở stage này.',
     ],
     'dashboard' => [
         'title' => 'Bảng điều khiển vận hành',
@@ -882,6 +1069,12 @@ return [
         'sale' => [
             'open_orders' => 'Đơn đang mở',
             'open_orders_desc' => 'Chưa đóng hoặc hủy',
+        ],
+        'procurement' => [
+            'mapped_ratio' => [
+                'title' => 'Tỷ lệ map SKU nền',
+                'description' => ':mapped / :total dòng BBMT đã map canonical',
+            ],
         ],
         'founder' => [
             'inflow_30d' => 'Thu (inflow) ledger 30 ngày',

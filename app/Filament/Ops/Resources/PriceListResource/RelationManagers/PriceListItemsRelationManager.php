@@ -43,7 +43,7 @@ class PriceListItemsRelationManager extends RelationManager
                 ->searchable()
                 ->preload()
                 ->nullable()
-                ->helperText(__('ops.resources.price_list.item_fields.canonical_product_sku_helper')),
+                ->hintIcon('heroicon-m-information-circle', __('ops.resources.price_list.item_fields.canonical_product_sku_helper')),
             Forms\Components\TextInput::make('product_name')
                 ->maxLength(512)
                 ->label(__('ops.resources.price_list.item_fields.product_name'))

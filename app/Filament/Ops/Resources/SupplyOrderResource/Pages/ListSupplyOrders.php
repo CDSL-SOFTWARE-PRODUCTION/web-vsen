@@ -32,9 +32,12 @@ class ListSupplyOrders extends ListRecords
             'in_progress' => Tab::make(__('ops.supply_order.tabs.in_progress'))
                 ->badge(SupplyOrder::query()->whereNotIn('status', ['Received'])->count())
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereNotIn('status', ['Received'])),
+            'approval_queue' => Tab::make(__('ops.supply_order.tabs.approval_queue'))
+                ->badge(SupplyOrder::query()->whereIn('status', ['PendingApproval', 'Approved'])->count())
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereIn('status', ['PendingApproval', 'Approved'])),
             'draft_open' => Tab::make(__('ops.supply_order.tabs.draft_open'))
-                ->badge(SupplyOrder::query()->whereIn('status', ['Draft', 'Open'])->count())
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereIn('status', ['Draft', 'Open'])),
+                ->badge(SupplyOrder::query()->whereIn('status', ['Draft', 'Open', 'Ordered'])->count())
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->whereIn('status', ['Draft', 'Open', 'Ordered'])),
         ];
     }
 

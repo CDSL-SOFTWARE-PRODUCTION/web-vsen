@@ -3,6 +3,7 @@
 namespace App\Models\Supply;
 
 use App\Models\Demand\OrderItem;
+use App\Models\Knowledge\CanonicalProduct;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,12 +15,17 @@ class SupplyOrderLine extends Model
     protected $fillable = [
         'supply_order_id',
         'order_item_id',
+        'canonical_product_id',
         'item_name',
         'required_qty',
         'available_qty',
         'shortage_qty',
         'received_qty',
         'status',
+        'planned_unit_price',
+        'reference_unit_price',
+        'price_deviation_pct',
+        'price_deviation_flag',
     ];
 
     protected function casts(): array
@@ -29,6 +35,11 @@ class SupplyOrderLine extends Model
             'available_qty' => 'decimal:3',
             'shortage_qty' => 'decimal:3',
             'received_qty' => 'decimal:3',
+            'canonical_product_id' => 'integer',
+            'planned_unit_price' => 'decimal:2',
+            'reference_unit_price' => 'decimal:2',
+            'price_deviation_pct' => 'decimal:4',
+            'price_deviation_flag' => 'boolean',
         ];
     }
 
@@ -40,5 +51,10 @@ class SupplyOrderLine extends Model
     public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class);
+    }
+
+    public function canonicalProduct(): BelongsTo
+    {
+        return $this->belongsTo(CanonicalProduct::class);
     }
 }

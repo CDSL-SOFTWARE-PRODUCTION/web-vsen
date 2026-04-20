@@ -12,6 +12,7 @@ class Partner extends Model
 
     protected $fillable = [
         'name',
+        'bidder_identifier',
         'type',
         'segment',
         'lead_time_days',

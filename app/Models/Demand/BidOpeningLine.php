@@ -2,6 +2,7 @@
 
 namespace App\Models\Demand;
 
+use App\Models\Knowledge\CanonicalProduct;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,10 @@ class BidOpeningLine extends Model
         'source_row_no',
         'lot_code',
         'item_name',
+        'canonical_product_id',
+        'mapping_status',
+        'mapping_note',
+        'mapped_at',
         'bidder_identifier',
         'bidder_name',
         'bid_valid_days',
@@ -33,12 +38,14 @@ class BidOpeningLine extends Model
         return [
             'bid_opening_session_id' => 'integer',
             'source_row_no' => 'integer',
+            'canonical_product_id' => 'integer',
             'bid_valid_days' => 'integer',
             'bid_security_days' => 'integer',
             'bid_security_value' => 'decimal:2',
             'bid_price' => 'decimal:2',
             'discount_rate' => 'decimal:4',
             'bid_price_after_discount' => 'decimal:2',
+            'mapped_at' => 'datetime',
         ];
     }
 
@@ -62,5 +69,15 @@ class BidOpeningLine extends Model
     public function session(): BelongsTo
     {
         return $this->belongsTo(BidOpeningSession::class, 'bid_opening_session_id');
+    }
+
+    public function canonicalProduct(): BelongsTo
+    {
+        return $this->belongsTo(CanonicalProduct::class);
+    }
+
+    public function isMapped(): bool
+    {
+        return $this->canonical_product_id !== null && $this->mapping_status === 'mapped';
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class Order extends Model
@@ -114,6 +115,19 @@ class Order extends Model
     public function setInitialState(string $initialState): void
     {
         $this->state = $initialState;
+    }
+
+    public static function buildOrderCodeFromTbmt(?string $tbmt): string
+    {
+        $normalizedTbmt = Str::of((string) $tbmt)
+            ->upper()
+            ->replaceMatches('/[^A-Z0-9]/', '')
+            ->value();
+        if ($normalizedTbmt === '') {
+            $normalizedTbmt = 'NO-TBMT';
+        }
+
+        return 'ORD-'.$normalizedTbmt.'-'.now()->format('YmdHis');
     }
 
     protected static function booted(): void

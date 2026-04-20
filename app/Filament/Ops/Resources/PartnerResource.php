@@ -63,6 +63,9 @@ class PartnerResource extends OpsResource
                     ->label(__('ops.resources.partner.fields.name'))
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('bidder_identifier')
+                    ->label(__('ops.resources.partner.fields.bidder_identifier'))
+                    ->maxLength(64),
                 Forms\Components\Select::make('type')
                     ->label(__('ops.resources.partner.fields.type'))
                     ->required()
@@ -131,6 +134,10 @@ class PartnerResource extends OpsResource
                             default => (string) $state,
                         };
                     }),
+                Tables\Columns\TextColumn::make('bidder_identifier')
+                    ->label(__('ops.resources.partner.fields.bidder_identifier'))
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('segment')
                     ->label(__('ops.resources.partner.fields.segment'))
                     ->formatStateUsing(function (?string $state): ?string {

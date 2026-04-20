@@ -28,7 +28,7 @@ class DocumentsRelationManager extends RelationManager
                 ->native(false)
                 ->searchable()
                 ->label(__('ops.resources.medical_device_declaration_documents.document_type'))
-                ->hintIcon('heroicon-o-information-circle')
+                ->hintIcon('heroicon-m-information-circle')
                 ->hintIconTooltip(__('ops.resources.medical_device_declaration_documents.document_type_helper')),
             Forms\Components\Select::make('status')
                 ->required()

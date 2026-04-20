@@ -97,7 +97,7 @@ class CanonicalProductResource extends OpsResource
                                         ->label(__('ops.resources.canonical_product.fields.raw_name')),
                                     Forms\Components\Select::make('abc_class')
                                         ->label(__('ops.resources.canonical_product.fields.abc_class'))
-                                        ->hintIcon('heroicon-o-information-circle')
+                                        ->hintIcon('heroicon-m-information-circle')
                                         ->hintIconTooltip(__('ops.resources.canonical_product.abc_class_tooltip'))
                                         ->options([
                                             'A' => 'A',
@@ -108,7 +108,7 @@ class CanonicalProductResource extends OpsResource
                                 ]),
                             Forms\Components\Select::make('medical_device_declaration_id')
                                 ->label(__('ops.resources.canonical_product.fields.medical_device_declaration'))
-                                ->hintIcon('heroicon-o-information-circle')
+                                ->hintIcon('heroicon-m-information-circle')
                                 ->hintIconTooltip(__('ops.resources.canonical_product.medical_device_declaration_tooltip'))
                                 ->relationship(
                                     'medicalDeviceDeclaration',
@@ -131,7 +131,7 @@ class CanonicalProductResource extends OpsResource
                                 ->searchable()
                                 ->preload()
                                 ->nullable()
-                                ->hintIcon('heroicon-o-information-circle')
+                                ->hintIcon('heroicon-m-information-circle')
                                 ->hintIconTooltip(__('ops.resources.canonical_product.product_family_tooltip'))
                                 ->columnSpanFull(),
                         ]),
@@ -140,7 +140,7 @@ class CanonicalProductResource extends OpsResource
                         ->schema([
                             Forms\Components\KeyValue::make('spec_json')
                                 ->label(__('ops.resources.canonical_product.spec_json_label'))
-                                ->hintIcon('heroicon-o-information-circle')
+                                ->hintIcon('heroicon-m-information-circle')
                                 ->hintIconTooltip(__('ops.resources.canonical_product.facets_sku_info_tooltip'))
                                 ->keyLabel(__('ops.resources.canonical_product.spec_key'))
                                 ->valueLabel(__('ops.resources.canonical_product.spec_value'))
@@ -183,7 +183,7 @@ class CanonicalProductResource extends OpsResource
                         ->schema([
                             Forms\Components\Repeater::make('image_urls')
                                 ->label(__('ops.resources.canonical_product.fields.image_urls'))
-                                ->helperText(__('ops.resources.canonical_product.image_urls_helper'))
+                                ->hintIcon('heroicon-m-information-circle', __('ops.resources.canonical_product.image_urls_helper'))
                                 ->simple(
                                     Forms\Components\TextInput::make('')
                                         ->url()
