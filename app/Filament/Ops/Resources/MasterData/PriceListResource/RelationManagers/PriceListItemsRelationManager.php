@@ -2,7 +2,7 @@
 
 namespace App\Filament\Ops\Resources\MasterData\PriceListResource\RelationManagers;
 
-use App\Filament\Ops\Support\PriceListItemFilament;
+use App\Filament\Ops\Forms\PriceListItemFilament;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Table;

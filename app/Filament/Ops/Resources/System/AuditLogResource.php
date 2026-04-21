@@ -4,7 +4,7 @@ namespace App\Filament\Ops\Resources\System;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\System\AuditLogResource\Pages;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\System\AuditLog;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms\Form;

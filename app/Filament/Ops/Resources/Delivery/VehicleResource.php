@@ -3,7 +3,7 @@
 namespace App\Filament\Ops\Resources\Delivery;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Filament\Ops\Resources\Delivery\VehicleResource\Pages;
 use App\Models\Ops\Vehicle;
 use Filament\Forms;

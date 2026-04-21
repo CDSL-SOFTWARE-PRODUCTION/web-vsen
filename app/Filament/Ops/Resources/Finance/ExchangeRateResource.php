@@ -4,7 +4,7 @@ namespace App\Filament\Ops\Resources\Finance;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Finance\ExchangeRateResource\Pages;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Ops\ExchangeRate;
 use App\Support\Currency\CurrencyConverter;
 use App\Support\Currency\CurrencyFormatter;

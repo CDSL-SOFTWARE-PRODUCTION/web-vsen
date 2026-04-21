@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Ops\Support;
+namespace App\Filament\Ops\Forms;
 
 use App\Models\Knowledge\CanonicalProduct;
 use Filament\Forms\Components\Select;

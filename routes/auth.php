@@ -57,29 +57,3 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
-
-// #region agent log
-try {
-    file_put_contents(
-        '/home/hungp0722/development/DVT/web-vsen/.cursor/debug-44995f.log',
-        json_encode([
-            'sessionId' => '44995f',
-            'runId' => 'auth-routes-check',
-            'hypothesisId' => 'H1',
-            'location' => 'routes/auth.php:28',
-            'message' => 'auth_routes_registered',
-            'data' => [
-                'has_login' => Route::has('login'),
-                'has_register' => Route::has('register'),
-                'has_password_request' => Route::has('password.request'),
-                'has_password_reset' => Route::has('password.reset'),
-                'has_verification_verify' => Route::has('verification.verify'),
-                'has_verification_notice' => Route::has('verification.notice'),
-            ],
-            'timestamp' => (int) round(microtime(true) * 1000),
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL,
-        FILE_APPEND
-    );
-} catch (\Throwable $e) {
-}
-// #endregion

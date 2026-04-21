@@ -12,7 +12,7 @@ use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Demand\OrderResource\Pages;
 use App\Filament\Ops\Resources\Demand\OrderResource\RelationManagers\ItemsRelationManager;
 use App\Filament\Ops\Resources\Demand\OrderResource\RelationManagers\SalesTouchpointsRelationManager;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
 use App\Models\LegalEntity;

@@ -13,21 +13,29 @@ final class FilamentAccess
     /** @var list<string> Roles allowed into the Data Steward panel. */
     public const ROLES_DATA_STEWARD_PANEL = ['Admin_PM', 'DuLieuNen'];
 
-    /**
-     * Master-data focus: minimal sidebar + custom home (see MasterDataHome, OpsResource).
-     *
-     * @var list<string>
-     */
-    public const ROLES_MASTER_DATA_STEWARD = ['DuLieuNen'];
-
-    public static function isMasterDataSteward(): bool
-    {
-        return self::allowRoles(self::ROLES_MASTER_DATA_STEWARD);
-    }
-
     public static function canAccessDataStewardPanel(): bool
     {
         return self::allowRoles(self::ROLES_DATA_STEWARD_PANEL);
+    }
+
+    public static function isAdminPm(): bool
+    {
+        return self::allowRoles(self::ROLES_ADMIN_ONLY);
+    }
+
+    public static function isFounder(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $user->role === 'Founder';
+    }
+
+    /** Data Steward primary role — hide certain Ops shortcuts in favour of the steward panel. */
+    public static function isMasterDataSteward(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $user->role === 'DuLieuNen';
     }
 
     /** @var list<string> */

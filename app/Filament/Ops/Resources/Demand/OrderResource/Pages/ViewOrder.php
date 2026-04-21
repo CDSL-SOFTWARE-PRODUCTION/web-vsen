@@ -7,7 +7,7 @@ use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\StartExecutionCommandService;
 use App\Filament\Ops\Resources\Demand\OrderResource;
-use App\Filament\Ops\Resources\Support\HasDemandFlowSubheading;
+use App\Filament\Ops\Resources\Base\HasDemandFlowSubheading;
 use App\Models\Demand\Order;
 use Filament\Actions;
 use Filament\Notifications\Notification;

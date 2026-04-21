@@ -37,18 +37,19 @@ return [
             'red' => 'Đỏ',
         ],
     ],
-    'flow' => [
-        'step_1_chip' => 'Bước 1 - Nhu cầu',
-        'step_2_chip' => 'Bước 2 - Hợp đồng',
-    ],
     'resources' => [
-        'contract' => ['navigation' => 'Bước 2 - Hợp đồng'],
-        'order' => ['navigation' => 'Bước 1 - Nhu cầu'],
+        'contract' => ['navigation' => 'Hợp đồng'],
+        'order' => ['navigation' => 'Nhu cầu'],
         'payment_milestone' => ['navigation' => 'Mốc thanh toán'],
         'cash_plan_event' => ['navigation' => 'Kế hoạch dòng tiền'],
         'document' => ['navigation' => 'Chứng từ'],
         'execution_issue' => ['navigation' => 'Vấn đề thực thi'],
         'audit_log' => ['navigation' => 'Nhật ký audit'],
+        'founder_work_card' => [
+            'navigation' => 'Thẻ việc Founder',
+            'model_label' => 'Thẻ việc Founder',
+            'plural_model_label' => 'Thẻ việc Founder',
+        ],
         'user' => ['navigation' => 'Người dùng'],
         'delivery' => ['navigation' => 'Chuyến giao hàng'],
         'invoice' => ['navigation' => 'Hóa đơn'],
@@ -427,7 +428,7 @@ return [
         ],
     ],
     'order' => [
-        'flow_hint' => 'Bạn đang ở Bước 1 - Nhu cầu. Hoàn tất xử lý nhu cầu trước khi chuyển sang Bước 2 - Hợp đồng.',
+        'subheading' => 'Đơn hàng nhu cầu gắn với kết quả chọn thầu và pháp nhân trúng thầu.',
         'section' => [
             'order_info' => 'Thông tin đơn hàng',
         ],
@@ -473,7 +474,7 @@ return [
         ],
     ],
     'contract' => [
-        'flow_hint' => 'Bạn đang ở Bước 2 - Hợp đồng. Nếu thiếu dữ liệu đầu vào, quay lại Bước 1 - Nhu cầu.',
+        'subheading' => 'Hợp đồng thực thi liên kết với đơn hàng nhu cầu và chứng từ.',
         'section' => [
             'contract_info' => 'Thông tin hợp đồng',
         ],
@@ -635,6 +636,7 @@ return [
             'kho' => 'Kho',
             'ke_toan' => 'Kế toán',
             'du_lieu_nen' => 'Dữ liệu nền (master)',
+            'founder' => 'Founder (inbox — không vận hành đầy đủ)',
         ],
     ],
     'order_items' => [
@@ -1134,26 +1136,26 @@ return [
         'flow_step_3' => 'Cần facet / ảnh / alias: mở Sản phẩm chuẩn hóa → sửa đầy đủ.',
     ],
     'demand_workspace' => [
-        'navigation' => 'Bắt đầu Nhu cầu & Hợp đồng',
-        'title' => 'Lộ trình Nhu cầu & Hợp đồng',
-        'subheading_ops' => 'Bắt đầu từ Nhu cầu, chuyển sang Hợp đồng, rồi xử lý các cảnh báo theo luồng thực thi.',
-        'subheading_manager' => 'Bắt đầu từ Nhu cầu, theo dõi Hợp đồng và dùng Gate Pipeline để ưu tiên điểm nghẽn cần quyết định.',
+        'navigation' => 'Nhu cầu & Hợp đồng',
+        'title' => 'Nhu cầu & Hợp đồng',
+        'subheading_ops' => 'Đường tắt tới danh sách và công cụ liên quan; quyền và vai trò quyết định màn nào cần dùng.',
+        'subheading_manager' => 'Theo dõi nhu cầu, hợp đồng và Gate Pipeline theo nhu cầu điều hành.',
         'section' => [
-            'quick_start' => 'Chọn nơi bắt đầu',
-            'quick_start_description' => 'Giảm nhầm luồng: đi theo thứ tự từ trái sang phải.',
-            'quick_actions' => 'Tác vụ theo dõi nhanh',
-            'quick_actions_description' => 'Các đường tắt này không phải điểm bắt đầu chính của luồng.',
+            'quick_start' => 'Truy cập nhanh',
+            'quick_start_description' => 'Mở danh sách hoặc màn hình thường dùng.',
+            'quick_actions' => 'Theo dõi & công cụ',
+            'quick_actions_description' => 'Các đường tắt bổ sung (TBMT, cảnh báo, v.v.).',
         ],
         'cards' => [
             'orders' => [
-                'title' => 'Bước 1 - Nhu cầu',
+                'title' => 'Nhu cầu',
                 'description' => 'Tạo và xử lý đơn hàng từ kết quả chọn thầu.',
-                'info_tooltip' => 'Điểm bắt đầu mặc định cho luồng Demand. "Kết quả chọn thầu" là dữ liệu đầu vào đã chuẩn hóa từ thông tin trúng thầu.',
+                'info_tooltip' => 'Danh sách đơn hàng nhu cầu; dữ liệu đầu vào thường từ kết quả chọn thầu đã chuẩn hóa.',
                 'action' => 'Mở danh sách nhu cầu',
             ],
             'contracts' => [
-                'title' => 'Bước 2 - Hợp đồng',
-                'description' => 'Theo dõi hợp đồng thực thi sau khi đã xác nhận nhu cầu.',
+                'title' => 'Hợp đồng',
+                'description' => 'Theo dõi hợp đồng thực thi liên kết với đơn hàng.',
                 'action' => 'Mở danh sách hợp đồng',
             ],
             'execution_plan' => [
@@ -1279,7 +1281,85 @@ return [
             'confusion_points' => 'Confusion points: số điểm dừng/hỏi lại ở mỗi màn chính.',
         ],
     ],
+    'admin_overview' => [
+        'navigation' => 'Tổng quan Founder',
+        'title' => 'Tổng quan Founder',
+        'subheading' => 'Cổng vào các workspace và console đầy đủ — không cần duyệt hết sidebar để nắm bức tranh.',
+        'section' => [
+            'portals_heading' => 'Các portal khác',
+            'portals_description' => 'Dữ liệu nền và nội dung site tách khỏi Ops vận hành.',
+            'ops_console_heading' => 'Console vận hành đầy đủ (Ops)',
+            'ops_console_description' => 'Bảng KPI, biểu đồ và cảnh báo tổng hợp — dùng khi cần độ sâu số liệu.',
+        ],
+        'link_data_steward' => 'Data Steward',
+        'link_cms' => 'CMS',
+        'link_full_dashboard' => 'Mở bảng KPI vận hành đầy đủ',
+    ],
+    'founder_inbox' => [
+        'navigation' => 'Việc cần chốt',
+        'title' => 'Hộp thư quyết định',
+        'subheading' => 'Tóm tắt hôm nay và thẻ việc — không cần đi sâu model vận hành.',
+        'digest' => [
+            'signature_heading' => 'Cần chữ ký / phê duyệt',
+            'signature_description' => 'Việc đang chờ bạn ký hoặc duyệt.',
+            'reply_heading' => 'Cần trả lời',
+            'reply_description' => 'Đội đang chờ ý kiến / hướng xử lý từ bạn.',
+            'overdue_heading' => 'Trễ hạn',
+            'overdue_description' => 'Thẻ mở đã quá deadline.',
+        ],
+        'cards_heading' => 'Thẻ việc',
+        'cards_description' => 'Gói công việc giao cho bạn — tương tự task Bitrix, dữ liệu nguồn nằm ở layer vận hành.',
+        'empty' => 'Chưa có thẻ việc nào. Admin_PM tạo thẻ tại Ops → Hệ thống → Thẻ việc Founder.',
+        'card' => [
+            'assignee' => 'Người phụ trách: :name',
+            'due' => 'Hạn: :at',
+            'overdue_badge' => 'Trễ hạn',
+            'attachment' => 'Tệp đính kèm',
+            'attachment_n' => 'Tệp :n',
+            'lane' => [
+                'signature' => 'Luồng chữ ký',
+                'reply' => 'Luồng trả lời',
+                'general' => 'Chung',
+            ],
+        ],
+        'actions' => [
+            'digest_export' => 'Xuất bản in (PDF qua trình duyệt)',
+        ],
+        'digest_export' => [
+            'document_title' => 'Tóm tắt inbox Founder',
+            'heading' => 'Tóm tắt inbox Founder',
+            'table' => [
+                'title' => 'Tiêu đề',
+                'assignee' => 'Người phụ trách',
+                'due' => 'Hạn',
+                'lane' => 'Luồng',
+                'summary' => 'Mô tả ngắn',
+            ],
+            'print_hint' => 'Mẹo: dùng In trình duyệt → Lưu thành PDF để thay thế file gửi kèm quen thuộc.',
+        ],
+    ],
+    'founder_work_card' => [
+        'section' => [
+            'card' => 'Thẻ việc',
+        ],
+        'fields' => [
+            'founder_user' => 'Tài khoản Founder (inbox)',
+            'title' => 'Tiêu đề',
+            'summary' => 'Mô tả ngắn',
+            'assignee_label' => 'Người phụ trách (nhãn hiển thị)',
+            'due_at' => 'Hạn xử lý',
+            'status' => 'Trạng thái',
+            'digest_lane' => 'Luồng digest',
+            'attachment_urls' => 'Liên kết đính kèm (HTTPS)',
+            'attachment_urls_placeholder' => 'Mỗi URL một thẻ — Enter để thêm',
+        ],
+        'status' => [
+            'open' => 'Đang mở',
+            'done' => 'Đã xong',
+        ],
+    ],
     'dashboard' => [
+        'navigation' => 'KPI vận hành (đầy đủ)',
         'title' => 'Bảng điều khiển vận hành',
         'subheading' => 'Hàng KPI (gom nhóm), rồi biểu đồ xu hướng, rồi tồn kho — ít hộp hơn, số liệu giữ nguyên.',
         'bid_intelligence' => [

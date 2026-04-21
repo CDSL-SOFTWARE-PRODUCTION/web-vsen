@@ -2,7 +2,7 @@
 
 namespace App\Filament\Ops\Resources\Demand\BidOpeningSessionResource\RelationManagers;
 
-use App\Filament\Ops\Support\CanonicalProductSelect;
+use App\Filament\Ops\Forms\CanonicalProductSelect;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;

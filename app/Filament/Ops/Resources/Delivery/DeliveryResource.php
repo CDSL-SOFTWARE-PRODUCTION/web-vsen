@@ -5,7 +5,7 @@ namespace App\Filament\Ops\Resources\Delivery;
 use App\Domain\Delivery\DeliveryService;
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Delivery\DeliveryResource\Pages;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\Delivery;
 use App\Models\Ops\DeliveryRoute;

@@ -9,7 +9,7 @@ use App\Filament\Ops\Resources\MasterData\CanonicalProductResource\RelationManag
 use App\Filament\Ops\Resources\MasterData\CanonicalProductResource\RelationManagers\ProductAliasesRelationManager;
 use App\Filament\Ops\Resources\MasterData\CanonicalProductResource\RelationManagers\ProductDocumentsRelationManager;
 use App\Filament\Ops\Resources\MasterData\CanonicalProductResource\RelationManagers\RequirementsRelationManager;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Knowledge\MedicalDeviceDeclaration;
 use App\Models\Knowledge\ProductFamily;

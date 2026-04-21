@@ -5,7 +5,7 @@ namespace App\Filament\Ops\Resources\Demand\OrderResource\Pages;
 use App\Filament\Ops\Pages\DemandWorkspace;
 use App\Filament\Ops\Resources\Demand\ContractResource;
 use App\Filament\Ops\Resources\Demand\OrderResource;
-use App\Filament\Ops\Resources\Support\HasDemandFlowSubheading;
+use App\Filament\Ops\Resources\Base\HasDemandFlowSubheading;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Support\Htmlable;

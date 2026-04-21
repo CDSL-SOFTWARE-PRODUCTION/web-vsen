@@ -2,8 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Ops\Pages\AdminPmOverview;
 use App\Filament\Ops\Pages\Dashboard as OpsDashboard;
-use App\Filament\Ops\Pages\MasterDataHome;
+use App\Filament\Ops\Pages\FounderInbox;
 use App\Filament\Ops\Widgets\LedgerInflowOutflowChartWidget;
 use App\Filament\Ops\Widgets\OpsDebtAndLedgerKpiWidget;
 use App\Filament\Ops\Widgets\OpsDemandAndSupplyKpiWidget;
@@ -11,7 +12,7 @@ use App\Filament\Ops\Widgets\OpsExecutionAndRiskKpiWidget;
 use App\Filament\Ops\Widgets\OpsMilestonesAndLiquidityKpiWidget;
 use App\Filament\Ops\Widgets\OrdersCreatedTrendChartWidget;
 use App\Filament\Ops\Widgets\RopLowStockTableWidget;
-use App\Filament\Ops\Widgets\SupplyOrderStatsWidget;
+use App\Http\Middleware\RestrictFounderOpsToInboxSurface;
 use App\Http\Middleware\SetLocale;
 use App\Support\Ops\FilamentAccess;
 use Filament\Http\Middleware\Authenticate;
@@ -40,8 +41,12 @@ class OpsPanelProvider extends PanelProvider
             ->id('ops')
             ->path('ops')
             ->homeUrl(function (): string {
-                if (FilamentAccess::isMasterDataSteward()) {
-                    return MasterDataHome::getUrl();
+                if (FilamentAccess::isFounder()) {
+                    return FounderInbox::getUrl(panel: 'ops');
+                }
+
+                if (FilamentAccess::isAdminPm()) {
+                    return AdminPmOverview::getUrl();
                 }
 
                 return OpsDashboard::getUrl();
@@ -68,7 +73,6 @@ class OpsPanelProvider extends PanelProvider
                 OpsDemandAndSupplyKpiWidget::class,
                 OpsMilestonesAndLiquidityKpiWidget::class,
                 OpsDebtAndLedgerKpiWidget::class,
-                SupplyOrderStatsWidget::class,
                 RopLowStockTableWidget::class,
             ])
             ->middleware([
@@ -85,7 +89,8 @@ class OpsPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
+                RestrictFounderOpsToInboxSurface::class,
+            ], isPersistent: true)
             ->navigationGroups([
                 NavigationGroup::make(__('ops.clusters.demand'))
                     ->icon('heroicon-o-document-text')

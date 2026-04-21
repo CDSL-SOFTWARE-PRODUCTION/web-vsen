@@ -2,7 +2,7 @@
 
 namespace App\Filament\Ops\Resources\Demand\ContractResource\RelationManagers;
 
-use App\Filament\Ops\Support\CanonicalProductSelect;
+use App\Filament\Ops\Forms\CanonicalProductSelect;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Knowledge\CanonicalProductDocument;
 use App\Models\Ops\ContractItem;

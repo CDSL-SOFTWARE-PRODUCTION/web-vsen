@@ -2,7 +2,7 @@
 
 namespace App\Filament\Ops\Resources;
 
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Filament\Ops\Resources\UserResource\Pages;
 use App\Models\User;
 use App\Support\Ops\FilamentAccess;
@@ -58,6 +58,7 @@ class UserResource extends OpsResource
                             ->label(__('ops.user.role.label'))
                             ->options([
                                 'Admin_PM' => __('ops.user.role.admin_pm'),
+                                'Founder' => __('ops.user.role.founder'),
                                 'Sale' => __('ops.user.role.sale'),
                                 'MuaHang' => __('ops.user.role.mua_hang'),
                                 'Kho' => __('ops.user.role.kho'),

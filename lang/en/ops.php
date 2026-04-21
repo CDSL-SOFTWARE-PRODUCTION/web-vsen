@@ -37,18 +37,19 @@ return [
             'red' => 'Red',
         ],
     ],
-    'flow' => [
-        'step_1_chip' => 'Step 1 - Demand',
-        'step_2_chip' => 'Step 2 - Contracts',
-    ],
     'resources' => [
-        'contract' => ['navigation' => 'Step 2 - Contracts'],
-        'order' => ['navigation' => 'Step 1 - Demand'],
+        'contract' => ['navigation' => 'Contracts'],
+        'order' => ['navigation' => 'Demand'],
         'payment_milestone' => ['navigation' => 'Payment milestones'],
         'cash_plan_event' => ['navigation' => 'Cash plan events'],
         'document' => ['navigation' => 'Documents'],
         'execution_issue' => ['navigation' => 'Execution issues'],
         'audit_log' => ['navigation' => 'Audit logs'],
+        'founder_work_card' => [
+            'navigation' => 'Founder work cards',
+            'model_label' => 'Founder work card',
+            'plural_model_label' => 'Founder work cards',
+        ],
         'user' => ['navigation' => 'Users'],
         'delivery' => ['navigation' => 'Deliveries'],
         'invoice' => ['navigation' => 'Invoices'],
@@ -427,7 +428,7 @@ return [
         ],
     ],
     'order' => [
-        'flow_hint' => 'You are in Step 1 - Demand. Complete demand processing before moving to Step 2 - Contracts.',
+        'subheading' => 'Demand orders tied to bid-award snapshots and awarded legal entities.',
         'section' => [
             'order_info' => 'Order info',
         ],
@@ -473,7 +474,7 @@ return [
         ],
     ],
     'contract' => [
-        'flow_hint' => 'You are in Step 2 - Contracts. If input is missing, go back to Step 1 - Demand.',
+        'subheading' => 'Execution contracts linked to demand orders and documents.',
         'section' => [
             'contract_info' => 'Contract info',
         ],
@@ -635,6 +636,7 @@ return [
             'kho' => 'Warehouse',
             'ke_toan' => 'Accounting',
             'du_lieu_nen' => 'Master data',
+            'founder' => 'Founder (inbox — not full operations)',
         ],
     ],
     'order_items' => [
@@ -1134,26 +1136,26 @@ return [
         'flow_step_3' => 'For facets, images, or aliases, open the canonical product full edit screen.',
     ],
     'demand_workspace' => [
-        'navigation' => 'Demand & Contract Start',
-        'title' => 'Demand & Contract Flow',
-        'subheading_ops' => 'Start from Demand, continue to Contracts, then process warnings along execution gates.',
-        'subheading_manager' => 'Start from Demand, track Contracts, then use Gate Pipeline to prioritize decision bottlenecks.',
+        'navigation' => 'Demand & contracts',
+        'title' => 'Demand & contracts',
+        'subheading_ops' => 'Shortcuts to lists and tools; what each role needs is driven by permissions.',
+        'subheading_manager' => 'Monitor demand, contracts, and Gate Pipeline as leadership needs.',
         'section' => [
-            'quick_start' => 'Choose where to begin',
-            'quick_start_description' => 'Follow the left-to-right flow to avoid route confusion.',
-            'quick_actions' => 'Quick monitoring actions',
-            'quick_actions_description' => 'These are shortcuts, not the primary start points of the flow.',
+            'quick_start' => 'Quick access',
+            'quick_start_description' => 'Open frequently used lists and screens.',
+            'quick_actions' => 'Monitoring & tools',
+            'quick_actions_description' => 'Additional shortcuts (tenders, warnings, etc.).',
         ],
         'cards' => [
             'orders' => [
-                'title' => 'Step 1 - Demand',
+                'title' => 'Demand',
                 'description' => 'Create and process orders from awarded tender results.',
-                'info_tooltip' => 'This is the default start point of the Demand flow. "Awarded tender results" means the normalized input from bid-award outcomes.',
+                'info_tooltip' => 'Demand order list; inputs are usually normalized bid-award snapshots.',
                 'action' => 'Open demand list',
             ],
             'contracts' => [
-                'title' => 'Step 2 - Contracts',
-                'description' => 'Manage execution contracts after demand has been confirmed.',
+                'title' => 'Contracts',
+                'description' => 'Track execution contracts linked to orders.',
                 'action' => 'Open contract list',
             ],
             'execution_plan' => [
@@ -1279,7 +1281,85 @@ return [
             'confusion_points' => 'Confusion points: where users stop and ask for clarification.',
         ],
     ],
+    'admin_overview' => [
+        'navigation' => 'Founder overview',
+        'title' => 'Founder overview',
+        'subheading' => 'Entry points to workspaces and the full console — without scanning the entire sidebar first.',
+        'section' => [
+            'portals_heading' => 'Other portals',
+            'portals_description' => 'Master data and marketing content live outside day-to-day Ops.',
+            'ops_console_heading' => 'Full operations console (Ops)',
+            'ops_console_description' => 'KPI strips, charts, and consolidated signals — use when you need depth.',
+        ],
+        'link_data_steward' => 'Data Steward',
+        'link_cms' => 'CMS',
+        'link_full_dashboard' => 'Open full operations KPI dashboard',
+    ],
+    'founder_inbox' => [
+        'navigation' => 'Decisions inbox',
+        'title' => 'Founder decisions inbox',
+        'subheading' => 'Today’s digest and work cards — no need to learn the full operations model.',
+        'digest' => [
+            'signature_heading' => 'Needs signature / approval',
+            'signature_description' => 'Items waiting for your sign-off.',
+            'reply_heading' => 'Needs your reply',
+            'reply_description' => 'Your team is blocked on your guidance.',
+            'overdue_heading' => 'Overdue',
+            'overdue_description' => 'Open cards past their deadline.',
+        ],
+        'cards_heading' => 'Work cards',
+        'cards_description' => 'Bitrix-style tasks assigned to you; source-of-truth data stays in the operations layer.',
+        'empty' => 'No work cards yet. Admin_PM can add cards under Ops → System → Founder work cards.',
+        'card' => [
+            'assignee' => 'Owner: :name',
+            'due' => 'Due: :at',
+            'overdue_badge' => 'Overdue',
+            'attachment' => 'Attachment',
+            'attachment_n' => 'File :n',
+            'lane' => [
+                'signature' => 'Signature lane',
+                'reply' => 'Reply lane',
+                'general' => 'General',
+            ],
+        ],
+        'actions' => [
+            'digest_export' => 'Print-friendly export (save as PDF)',
+        ],
+        'digest_export' => [
+            'document_title' => 'Founder inbox digest',
+            'heading' => 'Founder inbox digest',
+            'table' => [
+                'title' => 'Title',
+                'assignee' => 'Owner',
+                'due' => 'Due',
+                'lane' => 'Lane',
+                'summary' => 'Summary',
+            ],
+            'print_hint' => 'Tip: use your browser’s Print dialog → Save as PDF.',
+        ],
+    ],
+    'founder_work_card' => [
+        'section' => [
+            'card' => 'Work card',
+        ],
+        'fields' => [
+            'founder_user' => 'Founder account (inbox)',
+            'title' => 'Title',
+            'summary' => 'Short description',
+            'assignee_label' => 'Owner (display label)',
+            'due_at' => 'Due date',
+            'status' => 'Status',
+            'digest_lane' => 'Digest lane',
+            'attachment_urls' => 'Attachment links (HTTPS)',
+            'attachment_urls_placeholder' => 'One URL per tag — press Enter to add',
+        ],
+        'status' => [
+            'open' => 'Open',
+            'done' => 'Done',
+        ],
+    ],
     'dashboard' => [
+        'navigation' => 'Operations KPIs (full)',
         'title' => 'Operations overview',
         'subheading' => 'KPI strips (grouped metrics), then trend charts, then inventory — fewer boxes, same numbers.',
         'bid_intelligence' => [

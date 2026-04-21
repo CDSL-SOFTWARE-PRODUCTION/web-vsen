@@ -4,7 +4,7 @@ namespace App\Filament\Ops\Resources\Inventory;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Inventory\StockTransferResource\Pages;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Supply\StockTransfer;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;

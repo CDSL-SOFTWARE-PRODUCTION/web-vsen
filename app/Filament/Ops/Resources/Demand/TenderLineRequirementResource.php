@@ -3,7 +3,7 @@
 namespace App\Filament\Ops\Resources\Demand;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Filament\Ops\Resources\Demand\TenderLineRequirementResource\Pages;
 use App\Models\Demand\TenderSnapshotItem;
 use App\Models\Demand\TenderSnapshotItemRequirement;

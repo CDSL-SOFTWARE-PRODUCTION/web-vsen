@@ -5,7 +5,7 @@ namespace App\Filament\Ops\Resources\MasterData;
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\MasterData\ProductFamilyResource\Pages;
 use App\Filament\Ops\Resources\MasterData\ProductFamilyResource\RelationManagers\CanonicalProductsRelationManager;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Knowledge\MedicalDeviceDeclaration;
 use App\Models\Knowledge\ProductFamily;
 use App\Support\Ops\FilamentAccess;

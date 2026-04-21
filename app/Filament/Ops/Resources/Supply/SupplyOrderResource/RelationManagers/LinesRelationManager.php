@@ -2,7 +2,7 @@
 
 namespace App\Filament\Ops\Resources\Supply\SupplyOrderResource\RelationManagers;
 
-use App\Filament\Ops\Support\CanonicalProductSelect;
+use App\Filament\Ops\Forms\CanonicalProductSelect;
 use App\Models\Ops\Partner;
 use App\Support\Currency\CurrencyConverter;
 use App\Support\Currency\CurrencyFormatter;

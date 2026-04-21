@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Ops\Support;
+namespace App\Filament\Ops\Forms;
 
 use App\Filament\Ops\Resources\MasterData\CanonicalProductResource;
 use App\Filament\Ops\Resources\MasterData\PriceListResource;

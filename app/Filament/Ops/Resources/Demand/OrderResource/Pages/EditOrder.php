@@ -3,7 +3,7 @@
 namespace App\Filament\Ops\Resources\Demand\OrderResource\Pages;
 
 use App\Filament\Ops\Resources\Demand\OrderResource;
-use App\Filament\Ops\Resources\Support\HasDemandFlowSubheading;
+use App\Filament\Ops\Resources\Base\HasDemandFlowSubheading;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Contracts\Support\Htmlable;

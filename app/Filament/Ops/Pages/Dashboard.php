@@ -21,11 +21,12 @@ class Dashboard extends BaseDashboard
 
     public static function shouldRegisterNavigation(): bool
     {
-        if (FilamentAccess::isMasterDataSteward()) {
-            return false;
-        }
+        return ! FilamentAccess::isFounder();
+    }
 
-        return parent::shouldRegisterNavigation();
+    public static function getNavigationLabel(): string
+    {
+        return __('ops.dashboard.navigation');
     }
 
     public function getTitle(): string|Htmlable
@@ -43,10 +44,6 @@ class Dashboard extends BaseDashboard
      */
     public function getWidgets(): array
     {
-        if (FilamentAccess::isMasterDataSteward()) {
-            return [];
-        }
-
         return [
             OpsExecutionAndRiskKpiWidget::class,
             OrdersCreatedTrendChartWidget::class,

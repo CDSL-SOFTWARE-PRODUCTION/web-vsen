@@ -18,16 +18,6 @@ class ProcessReturnOrderService
     public function handle(int $returnOrderId, ?int $actorUserId = null): ProcessReturnOrderResult
     {
         $returnOrder = ReturnOrder::query()->with('lines')->findOrFail($returnOrderId);
-        // #region agent log
-        @file_get_contents('http://127.0.0.1:7271/ingest/c3f87a09-8801-4c97-9286-e3072a8d15fd', false, stream_context_create([
-            'http' => [
-                'method' => 'POST',
-                'header' => "Content-Type: application/json\r\nX-Debug-Session-Id: dd6099\r\n",
-                'content' => json_encode(['sessionId' => 'dd6099', 'runId' => 'phaseAtoC', 'hypothesisId' => 'H7', 'location' => 'ProcessReturnOrderService.php:handle:entry', 'message' => 'Process return order requested', 'data' => ['return_order_id' => $returnOrder->id, 'lines_count' => $returnOrder->lines->count()], 'timestamp' => round(microtime(true) * 1000)]),
-                'timeout' => 1,
-            ],
-        ]));
-        // #endregion
 
         $result = DB::transaction(function () use ($returnOrder): ProcessReturnOrderResult {
             $restocked = 0;

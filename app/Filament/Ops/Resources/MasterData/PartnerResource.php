@@ -4,7 +4,7 @@ namespace App\Filament\Ops\Resources\MasterData;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\MasterData\PartnerResource\Pages;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Ops\Partner;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;

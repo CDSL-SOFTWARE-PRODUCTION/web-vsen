@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FounderDigestExportController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -38,6 +39,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/founder-digest-export', [FounderDigestExportController::class, 'show'])
+        ->name('ops.founder.digest-export');
 });
 
 Route::get('/language/{locale}', function ($locale) {
@@ -52,20 +56,6 @@ Route::middleware('auth')->prefix('ops')->group(function () {
     Route::get('/demand', function () {
         return redirect('/ops/demand-workspace', 302);
     });
-
-    Route::get('/orders/{path?}', function (?string $path = null) {
-        $targetPath = '/ops/demand/orders'.($path !== null && $path !== '' ? '/'.$path : '');
-        $queryString = request()->getQueryString();
-
-        return redirect($queryString !== null ? $targetPath.'?'.$queryString : $targetPath, 302);
-    })->where('path', '.*');
-
-    Route::get('/contracts/{path?}', function (?string $path = null) {
-        $targetPath = '/ops/demand/contracts'.($path !== null && $path !== '' ? '/'.$path : '');
-        $queryString = request()->getQueryString();
-
-        return redirect($queryString !== null ? $targetPath.'?'.$queryString : $targetPath, 302);
-    })->where('path', '.*');
 });
 
 require __DIR__.'/auth.php';

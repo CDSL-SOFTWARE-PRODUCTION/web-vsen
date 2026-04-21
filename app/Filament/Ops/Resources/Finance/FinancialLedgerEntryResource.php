@@ -4,7 +4,7 @@ namespace App\Filament\Ops\Resources\Finance;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Finance\FinancialLedgerEntryResource\Pages;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Filament\Ops\Resources\Demand\ContractResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\FinancialLedgerEntry;

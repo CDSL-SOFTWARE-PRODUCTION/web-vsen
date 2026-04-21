@@ -18,7 +18,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // Admin_PM (Founder) có quyền truy cập toàn bộ hệ thống
+        // Admin_PM: quản trị + vận hành đầy đủ các portal.
         if ($this->role === 'Admin_PM') {
             return true;
         }
@@ -36,7 +36,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
                 'Kho',
                 'KeToan',
                 'Admin_PM',
-            ]);
+                'Founder',
+            ], true);
         }
 
         if ($panel->getId() === 'data-steward') {

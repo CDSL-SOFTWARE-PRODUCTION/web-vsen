@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Ops\Resources\Support;
+namespace App\Filament\Ops\Resources\Base;
 
 use Illuminate\Support\HtmlString;
 

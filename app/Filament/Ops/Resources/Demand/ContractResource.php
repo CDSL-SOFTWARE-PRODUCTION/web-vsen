@@ -8,7 +8,7 @@ use App\Domain\Execution\GateOverrideService;
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Demand\ContractResource\Pages;
 use App\Filament\Ops\Resources\Demand\ContractResource\RelationManagers\ItemsRelationManager;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Ops\Contract;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;

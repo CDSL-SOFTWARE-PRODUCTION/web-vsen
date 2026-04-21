@@ -6,7 +6,7 @@
 
 ## Layered flexibility & SSOT (Ops)
 
-**Ma trận chi tiết `C-*` ↔ code:** [`doc/ops_constraints_matrix.md`](ops_constraints_matrix.md).
+**Ma trận `C-*` ↔ runtime:** gate `warn` / `hard` trong [`config/ops.php`](../config/ops.php); đánh giá trong code (`GateEvaluator`, domain services); override có audit (`GateOverrideService`).
 
 ### Layer 1 — explore (Excel / export)
 

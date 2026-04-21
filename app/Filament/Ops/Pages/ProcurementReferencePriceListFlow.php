@@ -3,7 +3,7 @@
 namespace App\Filament\Ops\Pages;
 
 use App\Filament\Ops\Resources\MasterData\PriceListResource;
-use App\Filament\Ops\Support\PriceListItemFilament;
+use App\Filament\Ops\Forms\PriceListItemFilament;
 use App\Models\Demand\PriceList;
 use App\Models\Demand\PriceListItem;
 use App\Models\Ops\Partner;

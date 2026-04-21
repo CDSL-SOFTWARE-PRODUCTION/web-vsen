@@ -4,7 +4,7 @@ namespace App\Filament\Ops\Resources\Delivery;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Delivery\DeliveryRouteResource\Pages;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Ops\DeliveryRoute;
 use App\Models\Ops\Vehicle;
 use Filament\Forms;

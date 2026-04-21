@@ -20,7 +20,7 @@ class ImportBidOpeningCommand extends Command
         {--plan= : Plan number override}
         {--source_system=muasamcong : Source system code}
         {--opened_at= : Opened timestamp override}
-        {--version=1 : Session version}
+        {--session-version=1 : Bid opening session version (integer, default 1)}
         {--create-snapshot : Create tender snapshot anchor when missing}';
 
     protected $description = 'Import bid opening matrix into sidecar tables (sessions + lines).';
@@ -57,7 +57,7 @@ class ImportBidOpeningCommand extends Command
             ? (string) $this->option('plan')
             : (string) ($rows[0]['source_plan_no'] ?? $rows[0]['plan_no'] ?? '');
         $openedAt = $this->normalizeDateTime((string) ($this->option('opened_at') ?? ($rows[0]['opened_at'] ?? '')));
-        $sessionVersion = max(1, (int) $this->option('version'));
+        $sessionVersion = max(1, (int) $this->option('session-version'));
 
         $session = DB::transaction(function () use (
             $sourceSystem,

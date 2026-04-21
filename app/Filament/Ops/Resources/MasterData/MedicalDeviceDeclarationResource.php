@@ -6,7 +6,7 @@ use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\MasterData\MedicalDeviceDeclarationResource\Pages;
 use App\Filament\Ops\Resources\MasterData\MedicalDeviceDeclarationResource\RelationManagers\CanonicalProductsRelationManager;
 use App\Filament\Ops\Resources\MasterData\MedicalDeviceDeclarationResource\RelationManagers\DocumentsRelationManager;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Knowledge\MedicalDeviceDeclaration;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;

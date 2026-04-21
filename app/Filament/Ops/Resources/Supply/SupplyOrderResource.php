@@ -10,7 +10,7 @@ use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Demand\OrderResource;
 use App\Filament\Ops\Resources\Supply\SupplyOrderResource\Pages;
 use App\Filament\Ops\Resources\Supply\SupplyOrderResource\RelationManagers\LinesRelationManager;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\LegalEntity;
 use App\Models\Supply\SupplyOrder;
 use Filament\Forms;

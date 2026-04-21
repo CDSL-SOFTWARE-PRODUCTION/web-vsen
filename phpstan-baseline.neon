@@ -1,0 +1,667 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Strict comparison using \=\=\= between non\-empty\-list\<string\|null\> and array\{\} will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Console/Commands/ImportBidOpeningCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$scheduled_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Contracts/ContractRiskService.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Domain\\Contracts\\ContractRiskService\:\:computeItemRisk\(\) expects App\\Models\\Ops\\ContractItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Domain/Contracts/ContractRiskService.php
+
+		-
+			message: '#^Parameter \#2 \$contract of method App\\Domain\\Demand\\OrderConstraintChecks\:\:assertConfirmContractCreditLimit\(\) expects App\\Models\\Ops\\Contract, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Domain/Demand/ConfirmContractCommandService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$items\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromBidOpeningSessionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$winning_bidder_identifier\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromBidOpeningSessionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$winning_bidder_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromBidOpeningSessionService.php
+
+		-
+			message: '#^Parameter \#1 \$groupBy of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: string\)\|list\<Closure\|string\>\|string, Closure\(App\\Models\\Demand\\BidOpeningLine\)\: string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromBidOpeningSessionService.php
+
+		-
+			message: '#^Parameter \#3 \$lotLines of method App\\Domain\\Demand\\CreateOrderFromBidOpeningSessionService\:\:selectLineForLot\(\) expects Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Demand\\BidOpeningLine\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromBidOpeningSessionService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>quantity_awarded" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromBidOpeningSessionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromSnapshotCommandService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromSnapshotCommandService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity_awarded\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromSnapshotCommandService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/CreateOrderFromSnapshotCommandService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/OrderConstraintChecks.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$priceListItem\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/OrderConstraintChecks.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/OrderConstraintChecks.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/OrderConstraintChecks.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/OrderTransitionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$priceListItem\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/OrderTransitionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Demand/OrderTransitionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$delivery_route_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Execution/GateEvaluator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Execution/GateEvaluator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$vehicle_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Execution/GateEvaluator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Execution/GenerateExecutionPlanService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Execution/GenerateExecutionPlanService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity_awarded\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Execution/GenerateExecutionPlanService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$spec_committed_raw\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Execution/GenerateExecutionPlanService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tender_item_ref\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Execution/GenerateExecutionPlanService.php
+
+		-
+			message: '#^Parameter \#1 \$order of method App\\Domain\\Demand\\OrderContractProjectionUpdater\:\:syncFromOrder\(\) expects App\\Models\\Demand\\Order, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Domain/Execution/GenerateExecutionPlanService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$legal_entity_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Finance/IssueInvoiceService.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Domain/Finance/MilestoneAgingService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$canonical_product_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Domain/Supply/GenerateSupplyOrderFromOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Domain/Supply/GenerateSupplyOrderFromOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Domain/Supply/GenerateSupplyOrderFromOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/GenerateSupplyOrderFromOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/GenerateSupplyOrderFromOrderService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:bidOpeningSessions\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Domain/Supply/GenerateSupplyOrderFromOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$condition\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/ProcessReturnOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$item_name\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Domain/Supply/ProcessReturnOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/ProcessReturnOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$warehouse_code\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Domain/Supply/ProcessReturnOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$canonical_product_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/ReceiveSupplyOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/ReceiveSupplyOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$item_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Domain/Supply/ReceiveSupplyOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$received_qty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/ReceiveSupplyOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shortage_qty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/ReceiveSupplyOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$contracts\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/ReserveInventoryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$canonical_product_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/SupplyOrderGateService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price_deviation_pct\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/SupplyOrderGateService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_partner_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Domain/Supply/SupplyOrderGateService.php
+
+		-
+			message: '#^Parameter \#1 \$parameters of static method Filament\\Resources\\Pages\\Page\:\:getUrl\(\) expects array\<string, mixed\>, array\<int, int\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Cms/Resources/CmsProductResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$declaration_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/DataSteward/Pages/DocumentVaultWorkspace.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/DataSteward/Pages/DocumentVaultWorkspace.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sku\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/DataSteward/Pages/DocumentVaultWorkspace.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Filament/DataSteward/Pages/DocumentVaultWorkspace.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Knowledge\\CanonicalProductDocument\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Filament/DataSteward/Pages/DocumentVaultWorkspace.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Knowledge\\MedicalDeviceDeclarationDocument\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Filament/DataSteward/Pages/DocumentVaultWorkspace.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>declaration_number" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/DataSteward/Pages/DocumentVaultWorkspace.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sku" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/DataSteward/Pages/DocumentVaultWorkspace.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Forms/PriceListItemFilament.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Filament/Ops/Pages/GatePipeline.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Ops\\Pages\\ProcurementReferencePriceListFlow\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Filament/Ops/Pages/ProcurementReferencePriceListFlow.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supply_order_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Pages/SupplyOrderLineSupplierQuotes.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>supply_order_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Ops/Pages/SupplyOrderLineSupplierQuotes.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Ops\\Pages\\SupplySelectionAnalysis\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Demand\\PriceListItem\:\:\$partner_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Demand\\PriceListItem\:\:\$supplier_partner_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$item_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shortage_qty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_partner_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: string, Closure\(App\\Models\\Supply\\SupplyOrderLine\)\: string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Parameter \#1 \$line of method App\\Filament\\Ops\\Pages\\SupplySelectionAnalysis\:\:quoteKeyForLineLookup\(\) expects App\\Models\\Supply\\SupplyOrderLine, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sku" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Ops/Pages/SupplySelectionAnalysis.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:items\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Filament/Ops/Resources/Demand/OrderResource/RelationManagers/ItemsRelationManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$source_notify_no\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Resources/Demand/TenderLineRequirementResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>source_notify_no" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Ops/Resources/Demand/TenderLineRequirementResource.php
+
+		-
+			message: '#^Cannot access property \$base_currency on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Ops/Resources/Finance/ExchangeRateResource/Pages/EditExchangeRate.php
+
+		-
+			message: '#^Cannot access property \$id on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Ops/Resources/Finance/ExchangeRateResource/Pages/EditExchangeRate.php
+
+		-
+			message: '#^Cannot access property \$quote_currency on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Ops/Resources/Finance/ExchangeRateResource/Pages/EditExchangeRate.php
+
+		-
+			message: '#^Cannot access property \$id on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Ops/Resources/Finance/InvoiceResource/Pages/ViewInvoice.php
+
+		-
+			message: '#^Cannot access property \$status on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Ops/Resources/Finance/InvoiceResource/Pages/ViewInvoice.php
+
+		-
+			message: '#^Cannot access property \$total_amount on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Ops/Resources/Finance/InvoiceResource/Pages/ViewInvoice.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Resources/Inventory/InventoryReservationResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Resources/Inventory/InventoryReservationResource.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Filament/Ops/Resources/Inventory/InventoryReservationResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>order_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Ops/Resources/Inventory/InventoryReservationResource.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:each\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\|string\)\: mixed, Closure\(App\\Models\\Knowledge\\CanonicalProduct\)\: bool given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Filament/Ops/Resources/MasterData/CanonicalProductResource.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: app/Filament/Ops/Resources/MasterData/CanonicalProductResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Resources/MasterData/CanonicalProductResource/RelationManagers/LinkedPriceListItemsRelationManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price_list_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Resources/MasterData/CanonicalProductResource/RelationManagers/LinkedPriceListItemsRelationManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$medicalDeviceDeclaration\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Resources/MasterData/CanonicalProductResource/RelationManagers/ProductDocumentsRelationManager.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:items\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Ops/Resources/MasterData/PriceListResource/Pages/EditPriceList.php
+
+		-
+			message: '#^Parameter \#2 \$owner of static method App\\Filament\\Ops\\Forms\\PriceListItemFilament\:\:configureRelationTable\(\) expects App\\Models\\Demand\\PriceList, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Ops/Resources/MasterData/PriceListResource/RelationManagers/PriceListItemsRelationManager.php
+
+		-
+			message: '#^Parameter \#2 \$owner of static method App\\Filament\\Ops\\Forms\\PriceListItemFilament\:\:itemForm\(\) expects App\\Models\\Demand\\PriceList, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Ops/Resources/MasterData/PriceListResource/RelationManagers/PriceListItemsRelationManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Ops/Resources/Supply/SupplyOrderResource.php
+
+		-
+			message: '#^PHPDoc type array\<string, int\|string\|null\>\|int\|string of property App\\Filament\\Ops\\Widgets\\OpsStatsOverviewWidget\:\:\$columnSpan is not covariant with PHPDoc type array\<string, int\|null\>\|int\|string of overridden property Filament\\Widgets\\StatsOverviewWidget\:\:\$columnSpan\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Filament/Ops/Widgets/OpsStatsOverviewWidget.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{label\: string\|null, file_path\: string\|null, external_url\: string\|null, mime_type\: string\|null, file_size_bytes\: int\<0, max\>\|null\}, Closure\(App\\Models\\Demand\\TenderSnapshotAttachment\)\: array\{label\: string\|null, file_path\: string\|null, external_url\: string\|null, mime_type\: string\|null, file_size_bytes\: int\<0, max\>\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Demand/TenderSnapshot.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{line_no\: int\<0, max\>, name\: string, uom\: string\|null, quantity_awarded\: numeric\-string&uppercase\-string, tender_item_ref\: string\|null, brand\: string\|null, manufacturer\: string\|null, origin_country\: string\|null, manufacture_year\: int\<0, max\>\|null, spec_committed_raw\: string\|null, project_site\: string\|null, delivery_earliest_rule\: string\|null, delivery_latest_rule\: string\|null, other_requirements_raw\: string\|null\}, Closure\(App\\Models\\Demand\\TenderSnapshotItem\)\: array\{line_no\: int\<0, max\>, name\: string, uom\: string\|null, quantity_awarded\: numeric\-string&uppercase\-string, tender_item_ref\: string\|null, brand\: string\|null, manufacturer\: string\|null, origin_country\: string\|null, manufacture_year\: int\<0, max\>\|null, spec_committed_raw\: string\|null, project_site\: string\|null, delivery_earliest_rule\: string\|null, delivery_latest_rule\: string\|null, other_requirements_raw\: string\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Demand/TenderSnapshot.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isLocked\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Models/Demand/TenderSnapshotAttachment.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isLocked\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Models/Demand/TenderSnapshotItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$device_risk_class\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Knowledge/CanonicalProductDocument.php
+
+		-
+			message: '#^Method App\\Models\\Ops\\ExchangeRate\:\:scopeEffectiveAtOrBefore\(\) should return Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Ops\\ExchangeRate\> but returns Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Ops/ExchangeRate.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed~''Admin_PM'' and ''Admin_PM'' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Class App\\Database\\Query\\Grammars\\AccentInsensitivePostgresGrammar constructor invoked with 0 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Providers/AppServiceProvider.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Schema\\ForeignIdColumnDefinition\:\:nullOnDelete\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/migrations/2026_04_16_090000_create_ops_contract_execution_tables.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: database/seeders/DatabaseSeeder.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 1
+			path: database/seeders/OpsHueMilkAwardedDemoSeeder.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Console\\Command\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: database/seeders/OpsHueMilkAwardedDemoSeeder.php

@@ -4,7 +4,7 @@ namespace App\Filament\Ops\Resources\Demand;
 
 use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Demand\DocumentResource\Pages;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\ContractItem;
 use App\Models\Ops\Document;

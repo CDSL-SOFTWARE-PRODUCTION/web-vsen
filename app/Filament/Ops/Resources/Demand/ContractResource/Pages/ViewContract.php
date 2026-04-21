@@ -3,7 +3,7 @@
 namespace App\Filament\Ops\Resources\Demand\ContractResource\Pages;
 
 use App\Filament\Ops\Resources\Demand\ContractResource;
-use App\Filament\Ops\Resources\Support\HasDemandFlowSubheading;
+use App\Filament\Ops\Resources\Base\HasDemandFlowSubheading;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Contracts\Support\Htmlable;
 

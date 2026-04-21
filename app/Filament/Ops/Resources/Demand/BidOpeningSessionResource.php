@@ -7,7 +7,7 @@ use App\Filament\Ops\Concerns\HasOpsNavigationGroup;
 use App\Filament\Ops\Resources\Demand\BidOpeningSessionResource\Pages;
 use App\Filament\Ops\Resources\Demand\BidOpeningSessionResource\RelationManagers\AwardOutcomesRelationManager;
 use App\Filament\Ops\Resources\Demand\BidOpeningSessionResource\RelationManagers\LinesRelationManager;
-use App\Filament\Ops\Resources\Support\OpsResource;
+use App\Filament\Ops\Resources\Base\OpsResource;
 use App\Models\Demand\BidOpeningSession;
 use App\Models\Demand\TenderSnapshot;
 use App\Support\Ops\FilamentAccess;
