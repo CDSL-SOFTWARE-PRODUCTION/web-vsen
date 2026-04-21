@@ -4,6 +4,37 @@
 
 ---
 
+## Layered flexibility & SSOT (Ops)
+
+**Ma trận chi tiết `C-*` ↔ code:** [`doc/ops_constraints_matrix.md`](ops_constraints_matrix.md).
+
+### Layer 1 — explore (Excel / export)
+
+- Phân tích sâu (pivot, what-if) dùng **CSV export** từ màn Ops (ví dụ Supplier selection analysis), rồi mở trong Excel.
+- **Quyết định chốt** (NCC, giá, trạng thái đơn, ledger) phải qua **DB** và validate/transform trong domain — không lưu “công thức lạ” không kiểm soát (FVTPP).
+
+### Layer 2 — optional (preset, template)
+
+- **Ma trận so sánh NCC:** bộ lọc (highlight, ẩn NCC, thứ tự cột) được **lưu trong session** giữa các lần mở trang (`shouldPersistTableFiltersInSession` trên [`SupplySelectionAnalysis`](../app/Filament/Ops/Pages/SupplySelectionAnalysis.php)).
+- **Template đơn mua / saved view đa user:** backlog; khi cần scale — có thể thêm bảng preset JSON hoặc master template; generate/copy qua [`GenerateSupplyOrderFromOrderService`](../app/Domain/Supply/GenerateSupplyOrderFromOrderService.php).
+
+### Layer 3 — governance
+
+- Gate `warn` / `hard` trong [`config/ops.php`](../config/ops.php); override có audit ([`GateOverrideService`](../app/Domain/Execution/GateOverrideService.php)); ledger; snapshot immutable; [`AuditLog`](../app/Filament/Ops/Resources/System/AuditLogResource.php).
+
+### Grid / công thức trong trình duyệt
+
+- Chỉ đầu tư khi có **metric** nghiệp vụ (lỗi nhập, paste hàng loạt, thời gian). Mặc định: **export-first**.
+
+### Drift blueprint vs code
+
+- [`system_architecture.md`](system_architecture.md) và bảng *Đối chiếu blueprint vs codebase* dưới đây là **mục tiêu / phạm vi**; không phải mọi màn đã ship 100%.
+- Khi app custom lệch mô tả: **cập nhật guide hoặc `model/`** (một SSOT) rồi mới bổ sung code — tránh ba nguồn mâu thuẫn.
+- **Đối chiếu tự động:** `python3 scripts/audit_doc_model_consistency.py` (ERD ↔ `entities.yaml`, tham chiếu `C-*` trong doc ↔ `constraints.yaml`).
+- **State runtime ↔ canonical:** [`model/order_state_mapping.yaml`](../model/order_state_mapping.yaml) + [`OrderState`](../app/Domain/Demand/OrderState.php); test [`OrderStateMappingConsistencyTest`](../tests/Unit/Domain/OrderStateMappingConsistencyTest.php).
+
+---
+
 ## North Star — trạng thái đối chiếu repo
 
 Tài liệu này chốt **5 điều kiện** hoàn thành Business OS (đối chiếu phần **Implementation Roadmap** ngay sau đây) và ghi **gap** còn lại tại thời điểm cập nhật.

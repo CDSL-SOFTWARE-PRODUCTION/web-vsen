@@ -3,6 +3,7 @@
 namespace App\Filament\Ops\Resources\MasterData\CanonicalProductResource\RelationManagers;
 
 use App\Filament\Ops\Resources\MasterData\PriceListResource;
+use App\Support\Currency\CurrencyFormatter;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -38,7 +39,10 @@ class LinkedPriceListItemsRelationManager extends RelationManager
                     ->limit(48),
                 Tables\Columns\TextColumn::make('unit_price')
                     ->label(__('ops.resources.price_list.item_fields.unit_price'))
-                    ->numeric(decimalPlaces: 2),
+                    ->formatStateUsing(fn ($state, Model $record): string => CurrencyFormatter::formatUnitPriceOrLegacy(
+                        is_numeric($state) ? (float) $state : null,
+                        is_string($record->currency) ? $record->currency : null
+                    )),
                 Tables\Columns\TextColumn::make('currency')
                     ->label(__('ops.resources.price_list.item_fields.currency')),
             ])

@@ -5,6 +5,8 @@ namespace App\Filament\Ops\Pages;
 use App\Models\Ops\Partner;
 use App\Models\Supply\SupplyOrderLine;
 use App\Models\Supply\SupplyOrderLineSupplierQuote;
+use App\Support\Currency\CurrencyFormatter;
+use App\Support\Currency\SupportedCurrencies;
 use App\Support\Ops\FilamentAccess;
 use Filament\Actions\Action;
 use Filament\Forms;
@@ -17,6 +19,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rule;
 
 class SupplyOrderLineSupplierQuotes extends Page implements HasTable
 {
@@ -101,8 +104,8 @@ class SupplyOrderLineSupplierQuotes extends Page implements HasTable
                     ->sortable(),
                 Tables\Columns\TextColumn::make('unit_price')
                     ->label(__('ops.supply_selection_analysis.line_quotes.col_unit_price'))
-                    ->formatStateUsing(fn ($state): string => is_numeric($state)
-                        ? number_format((float) $state, 4, '.', ',')
+                    ->formatStateUsing(fn ($state, SupplyOrderLineSupplierQuote $record): string => is_numeric($state)
+                        ? CurrencyFormatter::formatUnitPriceOrLegacy((float) $state, $record->currency_code)
                         : '')
                     ->alignEnd(),
                 Tables\Columns\TextColumn::make('note')
@@ -166,21 +169,19 @@ class SupplyOrderLineSupplierQuotes extends Page implements HasTable
                 ->preload()
                 ->required()
                 ->rules([
-                    function (string $attribute, $value, \Closure $fail) use ($lineId, $editing): void {
-                        if (! is_numeric($value)) {
-                            return;
-                        }
-                        $query = SupplyOrderLineSupplierQuote::query()
-                            ->where('supply_order_line_id', $lineId)
-                            ->where('partner_id', (int) $value);
-                        if ($editing !== null) {
-                            $query->where('id', '!=', $editing->id);
-                        }
-                        if ($query->exists()) {
-                            $fail(__('ops.supply_selection_analysis.line_quotes.duplicate_supplier'));
-                        }
-                    },
+                    Rule::unique('supply_order_line_supplier_quotes', 'partner_id')
+                        ->where('supply_order_line_id', $lineId)
+                        ->ignore($editing?->id),
+                ])
+                ->validationMessages([
+                    'unique' => __('ops.supply_selection_analysis.line_quotes.duplicate_supplier'),
                 ]),
+            Forms\Components\Select::make('currency_code')
+                ->label(__('ops.supply_selection_analysis.line_quotes.field_currency'))
+                ->options(SupportedCurrencies::selectOptions())
+                ->required()
+                ->default('VND')
+                ->rules([Rule::in(SupportedCurrencies::codes())]),
             Forms\Components\TextInput::make('unit_price')
                 ->label(__('ops.supply_selection_analysis.line_quotes.field_unit_price'))
                 ->numeric()

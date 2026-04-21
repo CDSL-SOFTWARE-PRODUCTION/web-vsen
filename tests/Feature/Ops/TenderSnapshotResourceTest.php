@@ -1,14 +1,15 @@
 <?php
 
-use App\Filament\Ops\Resources\TenderSnapshotResource;
 use App\Domain\Execution\GenerateExecutionPlanService;
-use App\Models\Ops\Contract;
+use App\Filament\Ops\Resources\Demand\TenderSnapshotResource;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
 use App\Models\Demand\TenderSnapshotAttachment;
 use App\Models\Demand\TenderSnapshotItem;
+use App\Models\Ops\Contract;
 use App\Models\User;
 use Filament\Facades\Filament;
+
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
@@ -140,4 +141,3 @@ it('keeps generate execution plan idempotent for locked snapshot', function () {
         ->and(Contract::query()->where('tender_snapshot_id', $snapshot->id)->count())->toBe(1)
         ->and(Order::query()->where('tender_snapshot_id', $snapshot->id)->count())->toBe(1);
 });
-

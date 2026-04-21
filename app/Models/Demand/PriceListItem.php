@@ -16,9 +16,14 @@ class PriceListItem extends Model
         'price_list_id',
         'canonical_product_id',
         'product_name',
+        'uom',
+        'supplier_sku',
         'unit_price',
         'min_qty',
         'currency',
+        'notes',
+        'lead_time_days',
+        'inco_term',
     ];
 
     protected function casts(): array
@@ -26,8 +31,9 @@ class PriceListItem extends Model
         return [
             'price_list_id' => 'integer',
             'canonical_product_id' => 'integer',
-            'unit_price' => 'decimal:2',
+            'unit_price' => 'decimal:4',
             'min_qty' => 'integer',
+            'lead_time_days' => 'integer',
         ];
     }
 

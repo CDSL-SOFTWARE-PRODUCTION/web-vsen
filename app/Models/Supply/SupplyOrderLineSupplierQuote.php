@@ -12,6 +12,7 @@ class SupplyOrderLineSupplierQuote extends Model
         'supply_order_line_id',
         'partner_id',
         'unit_price',
+        'currency_code',
         'note',
     ];
 
@@ -21,6 +22,7 @@ class SupplyOrderLineSupplierQuote extends Model
             'supply_order_line_id' => 'integer',
             'partner_id' => 'integer',
             'unit_price' => 'decimal:4',
+            'currency_code' => 'string',
         ];
     }
 

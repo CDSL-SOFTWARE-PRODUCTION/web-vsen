@@ -3,27 +3,33 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Operational gate enforcement
+    | Operational gate enforcement (Layer 3 governance)
     |--------------------------------------------------------------------------
-    | warn: collect warnings on transitions; hard: throw before state change.
+    | Each value: "warn" (collect warnings; transition may proceed) or "hard" (block).
+    | Map to model/constraints.yaml C-* IDs via OrderConstraintChecks, GateEvaluator, etc.
+    | Progressive constraint: start with warn in production; promote to hard when stable.
     |
-    | confirm_fulfillment — Order transition ConfirmFulfillment (delivery + acceptance proof).
-    | invoice_payment_milestone — Issue invoice: payment milestone checklist via GateEvaluator
-    |   (fulfillment proof is always required regardless of this setting).
+    | Key                          | Related C-* / behavior
+    | ---------------------------- | -------------------------------------------------
+    | confirm_fulfillment          | Fulfillment proof + acceptance (states.yaml guard)
+    | invoice_payment_milestone    | C-FIN-001 adjacency via GateEvaluator pre-payment
+    | award_tender_required_docs   | C-ORD-001 (tender docs before AwardTender path)
+    | confirm_contract_hd_ky       | C-ORD-003 (HD_KY document)
+    | confirm_contract_credit_limit| C-ORD-003 (credit vs order total)
+    | confirm_contract_cert_crosscheck | C-ORD-002 proxy (CO-CQ / certs)
+    | confirm_contract_negative_margin | C-ORD-006 (negative margin warn)
+    | close_contract_required_docs | C-ORD-004 (closing docs)
+    | delivery_gps_compliance      | C-DEL-002 (GPS vs expected)
     */
     'gates' => [
         'confirm_fulfillment' => env('OPS_GATE_CONFIRM_FULFILLMENT', 'warn'),
         'invoice_payment_milestone' => env('OPS_GATE_INVOICE_PAYMENT_MILESTONE', 'warn'),
-        // C-ORD-001: DOC_HSMT, DOC_HSDT, BL_DU_THAU before AwardTender (from SubmitTender)
         'award_tender_required_docs' => env('OPS_GATE_AWARD_TENDER_DOCS', 'warn'),
-        // C-ORD-003: HD_KY + credit limit (credit limit uses confirm_contract_credit_limit)
         'confirm_contract_hd_ky' => env('OPS_GATE_CONFIRM_CONTRACT_HD_KY', 'warn'),
         'confirm_contract_credit_limit' => env('OPS_GATE_CONFIRM_CONTRACT_CREDIT_LIMIT', 'warn'),
         'confirm_contract_cert_crosscheck' => env('OPS_GATE_CONFIRM_CONTRACT_CERT', 'warn'),
         'confirm_contract_negative_margin' => env('OPS_GATE_CONFIRM_CONTRACT_MARGIN', 'warn'),
-        // C-ORD-004
         'close_contract_required_docs' => env('OPS_GATE_CLOSE_CONTRACT_DOCS', 'warn'),
-        // C-DEL-002
         'delivery_gps_compliance' => env('OPS_GATE_DELIVERY_GPS', 'warn'),
     ],
 

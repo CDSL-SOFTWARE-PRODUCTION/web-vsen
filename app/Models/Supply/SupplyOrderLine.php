@@ -69,8 +69,8 @@ class SupplyOrderLine extends Model
             'supplier_partner_id' => 'integer',
             'supplier_suggestion_source' => 'string',
             'supplier_selection_mode' => 'string',
-            'planned_unit_price' => 'decimal:2',
-            'reference_unit_price' => 'decimal:2',
+            'planned_unit_price' => 'decimal:4',
+            'reference_unit_price' => 'decimal:4',
             'price_deviation_pct' => 'decimal:4',
             'price_deviation_flag' => 'boolean',
         ];

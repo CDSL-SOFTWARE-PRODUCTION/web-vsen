@@ -3,6 +3,8 @@
 namespace App\Filament\Ops\Resources\Demand\OrderResource\RelationManagers;
 
 use App\Filament\Ops\Support\CanonicalProductSelect;
+use App\Support\Currency\CurrencyConverter;
+use App\Support\Currency\CurrencyFormatter;
 use App\Support\Ops\FilamentAccess;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -142,7 +144,9 @@ class ItemsRelationManager extends RelationManager
                     ->searchable(),
                 Tables\Columns\TextColumn::make('unit_price')
                     ->label(__('ops.order_items.unit_price'))
-                    ->money('VND', locale: 'vi')
+                    ->formatStateUsing(fn ($state): string => is_numeric($state)
+                        ? CurrencyFormatter::formatUnitPrice((float) $state, CurrencyConverter::legacyDefault())
+                        : '-')
                     ->visible(fn (): bool => FilamentAccess::canSeeOrderLineUnitPrice()),
             ])
             ->headerActions([

@@ -4,6 +4,9 @@ namespace App\Filament\Ops\Resources\Supply\SupplyOrderResource\RelationManagers
 
 use App\Filament\Ops\Support\CanonicalProductSelect;
 use App\Models\Ops\Partner;
+use App\Support\Currency\CurrencyConverter;
+use App\Support\Currency\CurrencyFormatter;
+use App\Support\Supply\ProcurementQuantityFormatter;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -59,7 +62,9 @@ class LinesRelationManager extends RelationManager
                 ->dehydrateStateUsing(fn ($state) => self::normalizeQuantityInputState($state)),
             Forms\Components\TextInput::make('planned_unit_price')
                 ->label(__('ops.supply_order.lines.fields.planned_unit_price'))
-                ->numeric(),
+                ->numeric()
+                ->step(0.0001)
+                ->minValue(0),
             Forms\Components\TextInput::make('reference_unit_price')
                 ->label(__('ops.supply_order.lines.fields.reference_unit_price'))
                 ->numeric()
@@ -83,15 +88,25 @@ class LinesRelationManager extends RelationManager
                     ->label(__('ops.supply_order.lines.columns.supplier_partner'))
                     ->placeholder('-')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('required_qty')
+                    ->label(__('ops.supply_order.lines.columns.required_qty'))
+                    ->formatStateUsing(fn ($state): string => ProcurementQuantityFormatter::formatDisplay($state)),
+                Tables\Columns\TextColumn::make('available_qty')
+                    ->label(__('ops.supply_order.lines.columns.available_qty'))
+                    ->formatStateUsing(fn ($state): string => ProcurementQuantityFormatter::formatDisplay($state)),
                 Tables\Columns\TextColumn::make('shortage_qty')
                     ->label(__('ops.supply_order.lines.columns.shortage_qty'))
-                    ->formatStateUsing(fn ($state): string => self::formatQuantity($state)),
+                    ->formatStateUsing(fn ($state): string => ProcurementQuantityFormatter::formatDisplay($state)),
                 Tables\Columns\TextColumn::make('planned_unit_price')
                     ->label(__('ops.supply_order.lines.columns.planned_unit_price'))
-                    ->money('VND'),
+                    ->formatStateUsing(fn ($state): string => is_numeric($state)
+                        ? CurrencyFormatter::formatUnitPrice($state, CurrencyConverter::legacyDefault())
+                        : '-'),
                 Tables\Columns\TextColumn::make('reference_unit_price')
                     ->label(__('ops.supply_order.lines.columns.reference_unit_price'))
-                    ->money('VND')
+                    ->formatStateUsing(fn ($state): string => is_numeric($state)
+                        ? CurrencyFormatter::formatUnitPrice($state, CurrencyConverter::legacyDefault())
+                        : '-')
                     ->placeholder('-'),
                 Tables\Columns\IconColumn::make('price_deviation_flag')
                     ->label(__('ops.supply_order.lines.columns.price_deviation_flag'))
@@ -103,22 +118,6 @@ class LinesRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make(),
             ]);
-    }
-
-    private static function formatQuantity($state): string
-    {
-        if (! is_numeric($state)) {
-            return (string) $state;
-        }
-
-        $number = (float) $state;
-        if (fmod($number, 1.0) === 0.0) {
-            return number_format($number, 0, ',', '.');
-        }
-
-        $formatted = number_format($number, 3, ',', '.');
-
-        return rtrim(rtrim($formatted, '0'), ',');
     }
 
     private static function normalizeQuantityInputState($state): string

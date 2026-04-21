@@ -5,6 +5,7 @@ namespace App\Domain\Demand;
 use App\Domain\Audit\AuditLogService;
 use App\Domain\Execution\FulfillmentReadiness;
 use App\Models\Demand\Order;
+use App\Models\Demand\PriceList;
 use App\Models\Ops\Contract;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -19,7 +20,7 @@ class OrderTransitionService
 
     public function transition(Order $order, string $command, ?int $actorUserId = null): OrderTransitionResult
     {
-        $order->loadMissing(['items.priceListItem', 'contracts.documents', 'contracts.issues', 'contracts.deliveries']);
+        $order->loadMissing(['items.priceListItem.priceList', 'contracts.documents', 'contracts.issues', 'contracts.deliveries']);
         $fromState = $order->state;
         $toState = $this->resolveNextState($command, $fromState);
         $contract = $order->contracts()->first();
@@ -113,6 +114,11 @@ class OrderTransitionService
             $thresholdPercent = (float) config('ops.price_list_deviation_warn_percent', 10);
             foreach ($order->items as $item) {
                 if ($item->priceListItem === null || $item->unit_price === null) {
+                    continue;
+                }
+
+                $list = $item->priceListItem->priceList;
+                if ($list instanceof PriceList && $list->list_scope === PriceList::LIST_SCOPE_PROCUREMENT) {
                     continue;
                 }
 
