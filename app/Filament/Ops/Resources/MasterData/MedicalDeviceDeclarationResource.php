@@ -65,7 +65,8 @@ class MedicalDeviceDeclarationResource extends OpsResource
 
     public static function canViewAny(): bool
     {
-        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL)
+            || FilamentAccess::canAccessDataStewardPanel();
     }
 
     public static function form(Form $form): Form

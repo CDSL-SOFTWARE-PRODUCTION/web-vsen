@@ -8,7 +8,10 @@ namespace App\Support\Ops;
 final class FilamentAccess
 {
     /** @var list<string> Roles allowed into the Ops panel (see User::canAccessPanel). */
-    public const ROLES_OPS_PANEL = ['Admin_PM', 'Sale', 'MuaHang', 'Kho', 'KeToan', 'DuLieuNen'];
+    public const ROLES_OPS_PANEL = ['Admin_PM', 'Sale', 'MuaHang', 'Kho', 'KeToan'];
+
+    /** @var list<string> Roles allowed into the Data Steward panel. */
+    public const ROLES_DATA_STEWARD_PANEL = ['Admin_PM', 'DuLieuNen'];
 
     /**
      * Master-data focus: minimal sidebar + custom home (see MasterDataHome, OpsResource).
@@ -20,6 +23,11 @@ final class FilamentAccess
     public static function isMasterDataSteward(): bool
     {
         return self::allowRoles(self::ROLES_MASTER_DATA_STEWARD);
+    }
+
+    public static function canAccessDataStewardPanel(): bool
+    {
+        return self::allowRoles(self::ROLES_DATA_STEWARD_PANEL);
     }
 
     /** @var list<string> */

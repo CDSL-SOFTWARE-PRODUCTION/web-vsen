@@ -490,6 +490,20 @@ Khi `model/states.yaml` đã reconcile với runtime, ma trận `C-*` đã có e
 
 Ánh xạ hành trình trong section **Hành trình Người dùng & Phân Quyền** (cuối file) sang việc làm cụ thể trong app (Filament Ops, policy, slice dọc). Ưu tiên **sau** khi North Star logic ổn (phần đầu file này).
 
+### Data Steward Workspace (tuần đầu rollout)
+
+Khi tách entrypoint riêng cho role `DuLieuNen`, theo dõi cố định 3 chỉ số để quyết định có mở rộng phase 2 hay không:
+
+- **Time-to-complete:** thời gian hoàn tất một tác vụ chuẩn (ví dụ: tạo hồ sơ công bố + gắn SKU + cập nhật chứng từ).
+- **Completion rate:** tỷ lệ tác vụ hoàn tất không cần hỗ trợ trực tiếp từ Admin/Dev.
+- **Confusion points:** điểm dừng/hỏi lại lặp lại trên 5 màn chính (Dashboard, Declaration, SKU, Requirement Mapping, Document Vault).
+
+Ngưỡng gợi ý để qua phase 2:
+
+- Time-to-complete giảm theo tuần (không tăng sau mỗi vòng sửa UI).
+- Completion rate đạt >= 80% trong nhóm pilot nội bộ.
+- Confusion points tập trung <= 2 cụm chính để xử lý dứt điểm trước khi mở role mới.
+
 ## Ma trận quyền
 
 | Mục doc | Hiện trạng | Việc tiếp |

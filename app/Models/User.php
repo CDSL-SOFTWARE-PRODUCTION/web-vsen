@@ -36,7 +36,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
                 'Kho',
                 'KeToan',
                 'Admin_PM',
+            ]);
+        }
+
+        if ($panel->getId() === 'data-steward') {
+            return in_array($this->role, [
                 'DuLieuNen',
+                'Admin_PM',
             ]);
         }
 

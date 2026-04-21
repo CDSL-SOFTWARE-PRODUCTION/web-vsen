@@ -7,6 +7,7 @@ use App\Filament\Ops\Resources\MasterData\RequirementResource\Pages;
 use App\Filament\Ops\Resources\Support\OpsResource;
 use App\Models\Knowledge\Requirement;
 use App\Support\Ops\FilamentAccess;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
@@ -40,9 +41,19 @@ class RequirementResource extends OpsResource
         return __('ops.resources.requirement.navigation');
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        if (Filament::getCurrentPanel()?->getId() === 'data-steward') {
+            return false;
+        }
+
+        return parent::shouldRegisterNavigation();
+    }
+
     public static function canViewAny(): bool
     {
-        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL);
+        return FilamentAccess::allowRoles(FilamentAccess::ROLES_OPS_PANEL)
+            || FilamentAccess::canAccessDataStewardPanel();
     }
 
     public static function form(Form $form): Form
