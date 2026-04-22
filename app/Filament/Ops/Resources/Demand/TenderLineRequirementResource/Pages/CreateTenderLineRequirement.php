@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Demand\TenderLineRequirementResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsCreateRecord;
 use App\Filament\Ops\Resources\Demand\TenderLineRequirementResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateTenderLineRequirement extends CreateRecord
+class CreateTenderLineRequirement extends OpsCreateRecord
 {
     protected static string $resource = TenderLineRequirementResource::class;
 }

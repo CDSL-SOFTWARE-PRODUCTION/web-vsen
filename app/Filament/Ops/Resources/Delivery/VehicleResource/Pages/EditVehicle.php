@@ -2,18 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Delivery\VehicleResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsEditRecord;
 use App\Filament\Ops\Resources\Delivery\VehicleResource;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 
-class EditVehicle extends EditRecord
+class EditVehicle extends OpsEditRecord
 {
     protected static string $resource = VehicleResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

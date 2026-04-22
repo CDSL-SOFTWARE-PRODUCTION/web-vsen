@@ -2,7 +2,6 @@
 
 return [
     'nav_groups' => [
-        'master_data' => 'Master data',
         'system' => 'System',
     ],
     'clusters' => [
@@ -12,7 +11,6 @@ return [
         'supply' => 'Supply & procurement',
         'demand' => 'Demand & contract',
         'delivery' => 'Delivery & logistics',
-        'system' => 'System',
     ],
     'common' => [
         'contract' => 'Contract',
@@ -73,11 +71,9 @@ return [
             'generate_sku_action' => 'Generate SKU from facets',
             'generate_sku_success' => 'SKU updated.',
             'generate_sku_empty_facets' => 'Add at least one facet key/value before generating SKU.',
-            'section_media' => 'Product images (URLs)',
             'tab_identity' => 'Identity',
             'tab_facets' => 'Facets & SKU',
             'tab_media' => 'Image',
-            'relation_group_catalog' => 'Aliases, requirements & documents',
             'relation_group_aliases' => 'Aliases / naming',
             'relation_group_compliance' => 'SKU compliance',
             'fields' => [
@@ -143,7 +139,6 @@ return [
             'relation_dissociate_sku' => 'Remove from declaration',
             'relation_dissociate_bulk' => 'Remove from declaration (selected)',
             'relation_open_full_edit' => 'Open full product form',
-            'relation_documents' => 'Declaration dossier documents',
         ],
         'partner' => [
             'navigation' => 'Partners',
@@ -263,7 +258,6 @@ return [
                 'inco_term' => 'Incoterm',
                 'notes' => 'Notes',
             ],
-            'inco_term_unknown' => '—',
             'create_subheading' => 'Step 1: save the list header (partner/supplier, procurement scope, Active status, valid dates). Step 2: open the «Reference price lines» tab — that is where you enter unit prices per SKU or product label for that supplier.',
             'edit_subheading_empty_items' => 'No price lines yet: use the «Reference price lines» tab below to add SKU/unit prices. The supply matrix can pull from here when supplier + SKU (or label) match, in addition to manual per-line quotes on the supply order.',
             'tooltips' => [
@@ -321,7 +315,6 @@ return [
             'code' => 'Code',
             'name' => 'Name',
             'type' => 'Type',
-            'plural_short' => 'Certifications',
             'master_rule_helper' => 'Master rule used to attach compliance requirements to SKUs.',
         ],
         'product_alias' => [
@@ -337,11 +330,8 @@ return [
             'actions' => [
                 'create' => 'Add SKU document',
             ],
-            'document_group' => 'Document group',
             'device_class_reference' => 'Medical device class (reference)',
             'device_class_reference_helper' => 'Inherited from the declaration linked to this SKU; no re-entry needed.',
-            'device_class' => 'Medical device class (dossier)',
-            'device_class_helper' => 'Business rule: classes A and B — permanent dossier; classes C and D — registration valid for 5 years (capture licence expiry when applicable).',
             'class_a' => 'Class A — permanent dossier',
             'class_b' => 'Class B — permanent dossier',
             'class_c' => 'Class C — 5-year validity',
@@ -428,7 +418,6 @@ return [
         ],
     ],
     'order' => [
-        'subheading' => 'Demand orders tied to bid-award snapshots and awarded legal entities.',
         'section' => [
             'order_info' => 'Order info',
         ],
@@ -474,7 +463,6 @@ return [
         ],
     ],
     'contract' => [
-        'subheading' => 'Execution contracts linked to demand orders and documents.',
         'section' => [
             'contract_info' => 'Contract info',
         ],
@@ -655,7 +643,6 @@ return [
         'required_delivery_timeline' => 'Required delivery timeline',
         'proposed_delivery_timeline' => 'Bidder proposed timeline',
         'canonical_product' => 'Canonical SKU',
-        'canonical_product_helper' => 'Search by item name or SKU. Options are shown as: Item name (size/spec) — SKU.',
         'procurement_status' => 'Procurement status',
         'procurement_status_options' => [
             'pending' => 'Pending',
@@ -739,7 +726,6 @@ return [
         ],
         'fields' => [
             'supply_order_code' => 'Supply order code',
-            'supplier_partner' => 'Supplier',
             'supplier_partner_helper' => 'Optional default supplier for this order. If each SKU is sourced from a different supplier, assign supplier per line below.',
             'blocked_reason' => 'Blocked reason',
         ],
@@ -760,11 +746,6 @@ return [
         'lines' => [
             'fields' => [
                 'canonical_product' => 'Canonical SKU',
-                'supplier_partner' => 'Supplier',
-                'supplier_suggestion_source' => 'Supplier suggestion source',
-                'supplier_suggestion_source_helper' => 'Shows which input source was used for the initial supplier suggestion (bidder identifier or bidder name).',
-                'supplier_selection_mode' => 'Supplier selection mode',
-                'supplier_selection_mode_helper' => 'Indicates whether the current supplier is auto-suggested by the system or manually overridden by a user.',
                 'item_name' => 'Item name',
                 'required_qty' => 'Required qty',
                 'available_qty' => 'Available qty',
@@ -775,8 +756,6 @@ return [
             'columns' => [
                 'canonical_product' => 'SKU',
                 'supplier_partner' => 'Supplier',
-                'supplier_suggestion_source' => 'Supplier suggestion source',
-                'supplier_selection_mode' => 'Supplier selection mode',
                 'item_name' => 'Item name',
                 'required_qty' => 'Required',
                 'available_qty' => 'Available',
@@ -785,14 +764,6 @@ return [
                 'reference_unit_price' => 'Reference price',
                 'price_deviation_flag' => 'Price deviation',
                 'status' => 'Status',
-            ],
-            'suggestion_sources' => [
-                'bidder_identifier' => 'Bidder identifier',
-                'bidder_name' => 'Bidder name',
-            ],
-            'selection_modes' => [
-                'auto_suggested' => 'Auto-suggested',
-                'manual_override' => 'Manual override',
             ],
         ],
     ],
@@ -824,8 +795,6 @@ return [
         'navigation' => 'Supplier selection analysis',
         'title' => 'Supplier selection analysis',
         'subheading' => 'Dedicated screen to track suggestion source and whether supplier choices were manually overridden.',
-        'unknown' => 'Unknown',
-        'empty' => 'No data available for analysis.',
         'metrics' => [
             'total' => 'Total supply lines',
             'auto_suggested' => 'Auto-suggested',
@@ -865,18 +834,11 @@ return [
             'matrix_csv' => 'Export comparison (CSV)',
             'empty' => 'Select a supply order with lines and at least one visible supplier to export.',
         ],
-        'filters' => [
-            'selection_mode' => 'Filter by selection mode',
-            'suggestion_source' => 'Filter by suggestion source',
-        ],
         'compare' => [
             'section_title' => 'Select supply order to analyze',
             'section_desc' => 'Compare by purchase data: products inside the selected supply order and suppliers that have quoted/been selected for those SKUs. If a line has no canonical product, the app can match the line name to price list item names (case-insensitive, collapsed whitespace).',
             'data_sources_callout' => 'Each matrix cell follows one priority rule: manual quote on the line first, then the reference catalog (supplier + SKU/label, within validity), then prices inferred from other lines with the same SKU. The «Reference price lists (SSOT)» button opens the catalog; lot-specific quotes still live on the per-line quote page.',
-            'result_title' => 'Supply-order comparison matrix',
-            'result_desc' => 'Data comes from supply-order lines. Comparison prices are resolved in priority order: manual per-line quotes (if any), planned unit price / reference price list by SKU + supplier (only active lists within valid_from / valid_to), and historical supply lines for the same SKU.',
             'matrix_title' => 'Supplier comparison by SKU in supply order',
-            'order' => 'Supply order code',
             'supply_order' => 'Supply order code',
             'matrix_highlight' => 'Matrix highlight',
             'matrix_highlight_none' => 'Plain (no emphasis)',
@@ -884,7 +846,6 @@ return [
             'matrix_highlight_column_lowest' => 'Lowest order total (column, converted to base)',
             'matrix_highlight_fastest' => 'Fastest delivery (shortest effective lead time: partner vs. price list lines, column)',
             'hide_suppliers' => 'Hide suppliers',
-            'hide_suppliers_placeholder' => 'Pick suppliers to remove from the matrix',
             'hide_suppliers_hint' => 'Tick suppliers to hide. Changes apply immediately after you close the filter panel.',
             'supplier_order' => 'Column order',
             'supplier_order_name' => 'Name A–Z',
@@ -892,26 +853,18 @@ return [
             'supplier_order_lead_asc' => 'Lead time (short → long)',
             'pick_supply_order_first' => 'Select a supply order code to start supplier comparison.',
             'selected_supply_order' => 'Selected supply order',
-            'summary_line_count' => 'Lines in comparison',
-            'summary_supplier_count' => 'Suppliers in scope',
-            'summary_quoted_lines' => 'Lines with quote data',
-            'summary_unquoted_lines' => 'Lines missing quote data',
             'term_unknown' => 'N/A',
             'lead_days_short' => ':days d lead',
-            'empty_for_supply_order' => 'This supply order does not have enough SKU/supplier price data for comparison yet.',
             'col_no' => 'No.',
             'col_product_name' => 'Product name',
             'col_order_line' => 'Order line',
             'col_sku' => 'SKU',
             'col_qty' => 'Purchase qty',
             'col_qty_tooltip' => 'Shown as a rounded integer. Line totals still use the stored quantity (which may include fractional precision internally).',
-            'unit_price_short' => 'UP',
-            'total_short' => 'Total',
             'grand_total' => 'Grand total',
             'grand_total_unavailable' => 'Unavailable (missing FX rate)',
             'currency_gap_warning' => 'Some lines use a currency without a resolvable rate (FX table or config/currency.php / env). Best-supplier highlighting and column totals may be suppressed.',
             'currency_gap_link' => 'Open Exchange rates (FX) to add a rate or effective time.',
-            'subcol_picture' => 'Picture',
             'subcol_unit_price' => 'Unit price',
             'subcol_unit_price_currency' => 'per source',
             'subcol_total' => 'Total',
@@ -920,22 +873,6 @@ return [
             'export_col_best_supplier_id' => 'Best supplier ID',
             'export_col_best_supplier' => 'Best supplier',
             'export_col_currency' => 'Currency',
-        ],
-        'sections' => [
-            'overview' => 'Overview',
-            'overview_desc' => 'Aggregated metrics across all supply order lines in the system.',
-            'selection_mode' => 'Breakdown by selection mode',
-            'suggestion_source' => 'Breakdown by suggestion source',
-            'recent_lines' => 'Recent lines',
-            'recent_lines_desc' => 'Most recently updated 120 supply order lines for detailed inspection.',
-        ],
-        'table' => [
-            'supply_order' => 'Supply order',
-            'sku' => 'SKU',
-            'supplier' => 'Supplier',
-            'suggestion_source' => 'Suggestion source',
-            'selection_mode' => 'Selection mode',
-            'updated_at' => 'Updated at',
         ],
     ],
     'financial_ledger' => [
@@ -1137,8 +1074,6 @@ return [
     'demand_workspace' => [
         'navigation' => 'Demand & contracts',
         'title' => 'Demand & contracts',
-        'subheading_ops' => 'Shortcuts to lists and tools; what each role needs is driven by permissions.',
-        'subheading_manager' => 'Monitor demand, contracts, and Gate Pipeline as leadership needs.',
         'section' => [
             'quick_start' => 'Quick access',
             'quick_start_description' => 'Open frequently used lists and screens.',
@@ -1280,14 +1215,6 @@ return [
             'confusion_points' => 'Confusion points: where users stop and ask for clarification.',
         ],
     ],
-    'admin_overview' => [
-        'section' => [
-            'portals_heading' => 'Other portals',
-            'portals_description' => 'Master data and marketing content live outside day-to-day Ops.',
-        ],
-        'link_data_steward' => 'Data Steward',
-        'link_cms' => 'CMS',
-    ],
     'founder_work_card' => [
         'section' => [
             'card' => 'Work card',
@@ -1316,19 +1243,7 @@ return [
     'dashboard' => [
         'navigation' => 'Operations console',
         'title' => 'Operations overview',
-        'subheading' => 'KPI strips (grouped metrics), then trend charts, then inventory — fewer boxes, same numbers.',
-        'bid_intelligence' => [
-            'heading' => 'Bid intelligence',
-            'description' => 'Sidecar data layer for competition analysis and win-probability modeling.',
-            'total_sessions' => 'Opening sessions',
-            'total_sessions_desc' => 'Total sessions recorded.',
-            'total_lines' => 'Matrix rows',
-            'total_lines_desc' => 'Total bidder x lot rows.',
-            'avg_bidders' => 'Avg bidders per session',
-            'avg_bidders_desc' => 'Average value of total_bidders.',
-            'award_updates_30d' => 'Award updates (30d)',
-            'award_updates_30d_desc' => 'Award result rows updated in the last 30 days.',
-        ],
+        'subheading' => 'Four at-a-glance KPI strips (execution, demand, milestones, receivables/ledger). Charts and inventory depth are on their own pages.',
         'kpi_strip' => [
             'execution_risk_heading' => 'Execution & contract risk',
             'execution_risk_description' => 'Issue backlog and traffic-light contract counts in one strip.',
@@ -1339,33 +1254,9 @@ return [
             'debt_ledger_heading' => 'Receivables & ledger movement',
             'debt_ledger_description' => 'Portfolio aging and ledger totals; plus 30-day inflow/outflow for admins.',
         ],
-        'charts' => [
-            'orders_heading' => 'Orders created (last 14 days)',
-            'orders_description' => 'Daily count of new orders — demand activity over time.',
-            'orders_series' => 'New orders',
-            'ledger_heading' => 'Ledger inflow vs outflow (last 14 days)',
-            'ledger_description' => 'Sum of positive amounts (inflow) vs absolute negative amounts (outflow) per day — same source as the financial ledger.',
-            'inflow' => 'Inflow',
-            'outflow' => 'Outflow',
-        ],
         'sections' => [
-            'execution_issues' => 'Execution issues',
-            'execution_issues_desc' => 'Open work items: overdue, critical severity, and total open.',
-            'execution_contracts' => 'Contract portfolio (risk)',
-            'execution_contracts_desc' => 'Traffic-light counts across all contracts — drill down for detail.',
-            'demand' => 'Demand (sales)',
-            'demand_desc' => 'Orders that are still active in the workflow.',
             'supply' => 'Supply & procurement',
             'supply_desc' => 'Purchase orders: totals and what likely needs buyer follow-up.',
-            'milestones' => 'Payment milestones',
-            'milestones_desc' => 'Collection readiness and blocked milestones in the near window.',
-            'finance_cash' => 'Liquidity snapshot (next 14 days)',
-            'finance_cash_desc' => 'Three independent numbers: planned cash events, milestone amounts due in the window, and total allocated budget across all contracts (not a forecast reconciliation).',
-            'finance_ar' => 'Receivables & ledger (portfolio)',
-            'finance_ar_desc' => 'Overdue milestone exposure and ledger inflow totals — use detail screens for drill-down.',
-            'finance_ledger' => 'Ledger movement (last 30 days)',
-            'finance_ledger_desc' => 'Recorded inflows vs outflows in the financial ledger (audit trail, not bank balance).',
-            'inventory' => 'Inventory',
         ],
     ],
     'widgets' => [
@@ -1439,15 +1330,6 @@ return [
         'founder' => [
             'inflow_30d' => 'Ledger inflow 30d',
             'outflow_30d' => 'Ledger outflow 30d',
-        ],
-        'rop' => [
-            'table_title' => 'ROP — lots below threshold (C-INV-004)',
-            'model_label' => 'Lot',
-            'plural_model_label' => 'Lots',
-            'col_item' => 'Item',
-            'col_wh' => 'Warehouse',
-            'col_qty' => 'Available qty',
-            'empty' => 'No lots below configured ROP threshold.',
         ],
         'milestones' => [
             'blocked_7d' => [

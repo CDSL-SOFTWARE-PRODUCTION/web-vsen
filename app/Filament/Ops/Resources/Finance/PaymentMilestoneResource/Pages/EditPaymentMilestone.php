@@ -2,18 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Finance\PaymentMilestoneResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsEditRecord;
 use App\Filament\Ops\Resources\Finance\PaymentMilestoneResource;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 
-class EditPaymentMilestone extends EditRecord
+class EditPaymentMilestone extends OpsEditRecord
 {
     protected static string $resource = PaymentMilestoneResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Delivery\DeliveryRouteResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsCreateRecord;
 use App\Filament\Ops\Resources\Delivery\DeliveryRouteResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateDeliveryRoute extends CreateRecord
+class CreateDeliveryRoute extends OpsCreateRecord
 {
     protected static string $resource = DeliveryRouteResource::class;
 }

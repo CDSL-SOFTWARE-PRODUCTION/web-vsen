@@ -2,18 +2,10 @@
 
 namespace App\Filament\Cms\Resources\CmsProductResource\Pages;
 
+use App\Filament\Cms\Resources\Base\Pages\CmsEditRecord;
 use App\Filament\Cms\Resources\CmsProductResource;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 
-class EditCmsProduct extends EditRecord
+class EditCmsProduct extends CmsEditRecord
 {
     protected static string $resource = CmsProductResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

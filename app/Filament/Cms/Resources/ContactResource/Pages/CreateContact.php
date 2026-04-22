@@ -2,11 +2,10 @@
 
 namespace App\Filament\Cms\Resources\ContactResource\Pages;
 
+use App\Filament\Cms\Resources\Base\Pages\CmsCreateRecord;
 use App\Filament\Cms\Resources\ContactResource;
-use Filament\Actions;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateContact extends CreateRecord
+class CreateContact extends CmsCreateRecord
 {
     protected static string $resource = ContactResource::class;
 }

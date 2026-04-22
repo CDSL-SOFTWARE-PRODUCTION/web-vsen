@@ -2,18 +2,10 @@
 
 namespace App\Filament\Cms\Resources\QuoteRequestResource\Pages;
 
+use App\Filament\Cms\Resources\Base\Pages\CmsEditRecord;
 use App\Filament\Cms\Resources\QuoteRequestResource;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 
-class EditQuoteRequest extends EditRecord
+class EditQuoteRequest extends CmsEditRecord
 {
     protected static string $resource = QuoteRequestResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

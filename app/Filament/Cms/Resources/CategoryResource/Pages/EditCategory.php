@@ -2,18 +2,10 @@
 
 namespace App\Filament\Cms\Resources\CategoryResource\Pages;
 
+use App\Filament\Cms\Resources\Base\Pages\CmsEditRecord;
 use App\Filament\Cms\Resources\CategoryResource;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 
-class EditCategory extends EditRecord
+class EditCategory extends CmsEditRecord
 {
     protected static string $resource = CategoryResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

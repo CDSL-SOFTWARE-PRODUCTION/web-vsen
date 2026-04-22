@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Demand\DocumentResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsCreateRecord;
 use App\Filament\Ops\Resources\Demand\DocumentResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateDocument extends CreateRecord
+class CreateDocument extends OpsCreateRecord
 {
     protected static string $resource = DocumentResource::class;
 }

@@ -2,18 +2,10 @@
 
 namespace App\Filament\Cms\Resources\ArticleResource\Pages;
 
+use App\Filament\Cms\Resources\Base\Pages\CmsListRecords;
 use App\Filament\Cms\Resources\ArticleResource;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 
-class ListArticles extends ListRecords
+class ListArticles extends CmsListRecords
 {
     protected static string $resource = ArticleResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

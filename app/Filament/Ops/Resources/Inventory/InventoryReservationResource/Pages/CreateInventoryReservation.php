@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Inventory\InventoryReservationResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsCreateRecord;
 use App\Filament\Ops\Resources\Inventory\InventoryReservationResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateInventoryReservation extends CreateRecord
+class CreateInventoryReservation extends OpsCreateRecord
 {
     protected static string $resource = InventoryReservationResource::class;
 }

@@ -2,19 +2,11 @@
 
 namespace App\Filament\Ops\Resources\Demand\OrderResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsEditRecord;
 use App\Filament\Ops\Resources\Demand\OrderResource;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 
-class EditOrder extends EditRecord
+class EditOrder extends OpsEditRecord
 {
     protected static string $resource = OrderResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 }
 

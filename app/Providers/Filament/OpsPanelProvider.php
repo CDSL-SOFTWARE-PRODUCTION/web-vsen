@@ -3,13 +3,10 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Ops\Pages\Dashboard as OpsDashboard;
-use App\Filament\Ops\Widgets\LedgerInflowOutflowChartWidget;
 use App\Filament\Ops\Widgets\OpsDebtAndLedgerKpiWidget;
 use App\Filament\Ops\Widgets\OpsDemandAndSupplyKpiWidget;
 use App\Filament\Ops\Widgets\OpsExecutionAndRiskKpiWidget;
 use App\Filament\Ops\Widgets\OpsMilestonesAndLiquidityKpiWidget;
-use App\Filament\Ops\Widgets\OrdersCreatedTrendChartWidget;
-use App\Filament\Ops\Widgets\RopLowStockTableWidget;
 use App\Http\Middleware\FilamentAuthenticateRedirectToLogin;
 use App\Http\Middleware\SetLocale;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -26,7 +23,6 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class OpsPanelProvider extends PanelProvider
@@ -36,7 +32,7 @@ class OpsPanelProvider extends PanelProvider
         return $panel
             ->id('ops')
             ->path('ops')
-            ->homeUrl(fn (): string => OpsDashboard::getUrl())
+            ->homeUrl(fn (): string => route('dashboard'))
             ->profile()
             ->darkMode(true, false)
             ->maxContentWidth(MaxWidth::Full)
@@ -53,12 +49,9 @@ class OpsPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Ops/Widgets'), for: 'App\\Filament\\Ops\\Widgets')
             ->widgets([
                 OpsExecutionAndRiskKpiWidget::class,
-                OrdersCreatedTrendChartWidget::class,
-                LedgerInflowOutflowChartWidget::class,
                 OpsDemandAndSupplyKpiWidget::class,
                 OpsMilestonesAndLiquidityKpiWidget::class,
                 OpsDebtAndLedgerKpiWidget::class,
-                RopLowStockTableWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -100,17 +93,7 @@ class OpsPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::user-menu.before',
-                fn (): string => Blade::render('
-                    <div class="flex items-center gap-x-3 mr-3">
-                        <a href="{{ route(\'language.switch\', [\'locale\' => \'vi\']) }}" class="text-sm font-medium {{ app()->getLocale() === \'vi\' ? \'text-primary-600 underline dark:text-primary-400\' : \'text-gray-500 dark:text-gray-400\' }}">
-                            VI
-                        </a>
-                        <span class="text-gray-300 dark:text-gray-600">|</span>
-                        <a href="{{ route(\'language.switch\', [\'locale\' => \'en\']) }}" class="text-sm font-medium {{ app()->getLocale() === \'en\' ? \'text-primary-600 underline dark:text-primary-400\' : \'text-gray-500 dark:text-gray-400\' }}">
-                            EN
-                        </a>
-                    </div>
-                '),
+                fn (): string => PanelLocaleSwitcher::render(),
             )
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,

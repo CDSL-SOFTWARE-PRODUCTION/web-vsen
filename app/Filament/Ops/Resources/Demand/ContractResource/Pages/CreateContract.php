@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Demand\ContractResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsCreateRecord;
 use App\Filament\Ops\Resources\Demand\ContractResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateContract extends CreateRecord
+class CreateContract extends OpsCreateRecord
 {
     protected static string $resource = ContractResource::class;
 }

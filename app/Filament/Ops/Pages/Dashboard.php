@@ -2,16 +2,11 @@
 
 namespace App\Filament\Ops\Pages;
 
-use Filament\Actions\Action;
-use App\Filament\Ops\Widgets\BidIntelligenceKpiWidget;
-use App\Filament\Ops\Widgets\OpsAdminPortalShortcutsWidget;
-use App\Filament\Ops\Widgets\LedgerInflowOutflowChartWidget;
 use App\Filament\Ops\Widgets\OpsDebtAndLedgerKpiWidget;
 use App\Filament\Ops\Widgets\OpsDemandAndSupplyKpiWidget;
 use App\Filament\Ops\Widgets\OpsExecutionAndRiskKpiWidget;
 use App\Filament\Ops\Widgets\OpsMilestonesAndLiquidityKpiWidget;
-use App\Filament\Ops\Widgets\OrdersCreatedTrendChartWidget;
-use App\Filament\Ops\Widgets\RopLowStockTableWidget;
+use Filament\Actions\Action;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Widgets\Widget;
 use Illuminate\Contracts\Support\Htmlable;
@@ -54,20 +49,15 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
-            OpsAdminPortalShortcutsWidget::class,
             OpsExecutionAndRiskKpiWidget::class,
-            OrdersCreatedTrendChartWidget::class,
-            LedgerInflowOutflowChartWidget::class,
             OpsDemandAndSupplyKpiWidget::class,
             OpsMilestonesAndLiquidityKpiWidget::class,
             OpsDebtAndLedgerKpiWidget::class,
-            BidIntelligenceKpiWidget::class,
-            RopLowStockTableWidget::class,
         ];
     }
 
     /**
-     * Single column: full-width KPI strips and charts (matches compact SaaS dashboard layouts).
+     * One column so each KPI strip stays full width; charts and deep tables live on their own screens.
      *
      * @return int | string | array<string, int | string | null>
      */

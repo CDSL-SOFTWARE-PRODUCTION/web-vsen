@@ -2,18 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Demand\DocumentResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsListRecords;
 use App\Filament\Ops\Resources\Demand\DocumentResource;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 
-class ListDocuments extends ListRecords
+class ListDocuments extends OpsListRecords
 {
     protected static string $resource = DocumentResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

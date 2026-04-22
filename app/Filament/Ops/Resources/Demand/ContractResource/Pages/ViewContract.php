@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Demand\ContractResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsViewRecord;
 use App\Filament\Ops\Resources\Demand\ContractResource;
-use Filament\Resources\Pages\ViewRecord;
 
-class ViewContract extends ViewRecord
+class ViewContract extends OpsViewRecord
 {
     protected static string $resource = ContractResource::class;
 }

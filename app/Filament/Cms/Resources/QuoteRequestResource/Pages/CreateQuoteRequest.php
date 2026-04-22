@@ -2,11 +2,10 @@
 
 namespace App\Filament\Cms\Resources\QuoteRequestResource\Pages;
 
+use App\Filament\Cms\Resources\Base\Pages\CmsCreateRecord;
 use App\Filament\Cms\Resources\QuoteRequestResource;
-use Filament\Actions;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateQuoteRequest extends CreateRecord
+class CreateQuoteRequest extends CmsCreateRecord
 {
     protected static string $resource = QuoteRequestResource::class;
 }

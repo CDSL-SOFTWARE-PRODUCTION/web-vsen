@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\System\AuditLogResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsViewRecord;
 use App\Filament\Ops\Resources\System\AuditLogResource;
-use Filament\Resources\Pages\ViewRecord;
 
-class ViewAuditLog extends ViewRecord
+class ViewAuditLog extends OpsViewRecord
 {
     protected static string $resource = AuditLogResource::class;
 }

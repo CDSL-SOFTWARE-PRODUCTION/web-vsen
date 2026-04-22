@@ -2,18 +2,10 @@
 
 namespace App\Filament\Cms\Resources\QuoteRequestResource\Pages;
 
+use App\Filament\Cms\Resources\Base\Pages\CmsListRecords;
 use App\Filament\Cms\Resources\QuoteRequestResource;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 
-class ListQuoteRequests extends ListRecords
+class ListQuoteRequests extends CmsListRecords
 {
     protected static string $resource = QuoteRequestResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

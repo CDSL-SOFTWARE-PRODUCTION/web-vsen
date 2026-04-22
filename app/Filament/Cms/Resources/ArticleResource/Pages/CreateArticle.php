@@ -2,11 +2,10 @@
 
 namespace App\Filament\Cms\Resources\ArticleResource\Pages;
 
+use App\Filament\Cms\Resources\Base\Pages\CmsCreateRecord;
 use App\Filament\Cms\Resources\ArticleResource;
-use Filament\Actions;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateArticle extends CreateRecord
+class CreateArticle extends CmsCreateRecord
 {
     protected static string $resource = ArticleResource::class;
 }

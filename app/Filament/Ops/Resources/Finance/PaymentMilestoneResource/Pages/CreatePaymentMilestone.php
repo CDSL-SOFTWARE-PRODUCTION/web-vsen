@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Finance\PaymentMilestoneResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsCreateRecord;
 use App\Filament\Ops\Resources\Finance\PaymentMilestoneResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreatePaymentMilestone extends CreateRecord
+class CreatePaymentMilestone extends OpsCreateRecord
 {
     protected static string $resource = PaymentMilestoneResource::class;
 }

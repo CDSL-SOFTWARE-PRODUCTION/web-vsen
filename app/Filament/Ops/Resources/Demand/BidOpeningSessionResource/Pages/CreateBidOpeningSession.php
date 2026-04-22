@@ -2,10 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Demand\BidOpeningSessionResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsCreateRecord;
 use App\Filament\Ops\Resources\Demand\BidOpeningSessionResource;
-use Filament\Resources\Pages\CreateRecord;
 
-class CreateBidOpeningSession extends CreateRecord
+class CreateBidOpeningSession extends OpsCreateRecord
 {
     protected static string $resource = BidOpeningSessionResource::class;
 }

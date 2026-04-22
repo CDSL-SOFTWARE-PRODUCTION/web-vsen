@@ -2,18 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Inventory\StockTransferResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsListRecords;
 use App\Filament\Ops\Resources\Inventory\StockTransferResource;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 
-class ListStockTransfers extends ListRecords
+class ListStockTransfers extends OpsListRecords
 {
     protected static string $resource = StockTransferResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

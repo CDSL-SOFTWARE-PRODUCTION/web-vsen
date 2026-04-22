@@ -2,18 +2,10 @@
 
 namespace App\Filament\Ops\Resources\MasterData\ProductFamilyResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsEditRecord;
 use App\Filament\Ops\Resources\MasterData\ProductFamilyResource;
-use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 
-class EditProductFamily extends EditRecord
+class EditProductFamily extends OpsEditRecord
 {
     protected static string $resource = ProductFamilyResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

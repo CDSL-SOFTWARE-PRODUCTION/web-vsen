@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Http\Middleware\FilamentAuthenticateRedirectToLogin;
+use App\Http\Middleware\SetLocale;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -25,6 +26,7 @@ class CmsPanelProvider extends PanelProvider
         return $panel
             ->id('cms')
             ->path('cms')
+            ->homeUrl(fn (): string => route('dashboard'))
             ->profile()
             ->colors([
                 'primary' => Color::Amber,
@@ -43,7 +45,7 @@ class CmsPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
-                \App\Http\Middleware\SetLocale::class,
+                SetLocale::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
@@ -56,17 +58,7 @@ class CmsPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::user-menu.before',
-                fn (): string => \Illuminate\Support\Facades\Blade::render('
-                    <div class="flex items-center gap-x-3 mr-3">
-                        <a href="{{ route(\'language.switch\', [\'locale\' => \'vi\']) }}" class="text-sm font-medium {{ app()->getLocale() === \'vi\' ? \'text-primary-600 underline\' : \'text-gray-500\' }}">
-                            VI
-                        </a>
-                        <span class="text-gray-300">|</span>
-                        <a href="{{ route(\'language.switch\', [\'locale\' => \'en\']) }}" class="text-sm font-medium {{ app()->getLocale() === \'en\' ? \'text-primary-600 underline\' : \'text-gray-500\' }}">
-                            EN
-                        </a>
-                    </div>
-                '),
+                fn (): string => PanelLocaleSwitcher::render(),
             );
     }
 }

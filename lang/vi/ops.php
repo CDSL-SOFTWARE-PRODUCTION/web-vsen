@@ -2,7 +2,6 @@
 
 return [
     'nav_groups' => [
-        'master_data' => 'Dữ liệu nền',
         'system' => 'Hệ thống',
     ],
     'clusters' => [
@@ -12,7 +11,6 @@ return [
         'supply' => 'Cung ứng & mua sắm',
         'demand' => 'Nhu cầu & hợp đồng',
         'delivery' => 'Giao hàng & logistics',
-        'system' => 'Hệ thống',
     ],
     'common' => [
         'contract' => 'Hợp đồng',
@@ -73,11 +71,9 @@ return [
             'generate_sku_action' => 'Sinh SKU từ đặc tính',
             'generate_sku_success' => 'Đã cập nhật mã SKU.',
             'generate_sku_empty_facets' => 'Thêm ít nhất một cặp tên/giá trị trong Đặc tính (facet) trước khi sinh SKU.',
-            'section_media' => 'Ảnh sản phẩm (URL, nhiều ảnh)',
             'tab_identity' => 'Thông tin chính',
             'tab_facets' => 'Đặc tính & SKU',
             'tab_media' => 'Ảnh',
-            'relation_group_catalog' => 'Alias, chứng nhận & tài liệu',
             'relation_group_aliases' => 'Tên gọi / mô tả',
             'relation_group_compliance' => 'Tuân thủ hồ sơ SKU',
             'fields' => [
@@ -143,7 +139,6 @@ return [
             'relation_dissociate_sku' => 'Gỡ khỏi hồ sơ',
             'relation_dissociate_bulk' => 'Gỡ khỏi hồ sơ (đã chọn)',
             'relation_open_full_edit' => 'Mở form đầy đủ',
-            'relation_documents' => 'Tài liệu hồ sơ công bố',
         ],
         'partner' => [
             'navigation' => 'Đối tác',
@@ -263,7 +258,6 @@ return [
                 'inco_term' => 'Điều kiện giao (Incoterm)',
                 'notes' => 'Ghi chú',
             ],
-            'inco_term_unknown' => '—',
             'create_subheading' => 'Bước 1: lưu thông tin bảng (đối tác/NCC, phạm vi mua, trạng thái Hiệu lực, khoảng ngày). Bước 2: sau khi lưu, mở tab «Dòng giá tham chiếu» — đó mới là chỗ nhập đơn giá theo SKU hoặc tên hàng cho từng NCC.',
             'edit_subheading_empty_items' => 'Chưa có dòng giá: dùng tab «Dòng giá tham chiếu» bên dưới để thêm SKU/đơn giá. Ma trận chọn NCC có thể lấy giá từ đây khi khớp NCC + SKU (hoặc tên), bên cạnh báo giá nhập tay theo từng dòng đơn mua.',
             'tooltips' => [
@@ -321,7 +315,6 @@ return [
             'code' => 'Mã',
             'name' => 'Tên',
             'type' => 'Loại',
-            'plural_short' => 'Chứng chỉ',
             'master_rule_helper' => 'Master rule dùng để gắn cho SKU.',
         ],
         'product_alias' => [
@@ -337,11 +330,8 @@ return [
             'actions' => [
                 'create' => 'Thêm tài liệu SKU',
             ],
-            'document_group' => 'Nhóm giấy tờ',
             'device_class_reference' => 'Phân hạng TBYT (tham chiếu)',
             'device_class_reference_helper' => 'Tự lấy từ Hồ sơ công bố TBYT đã gắn với SKU; không cần nhập lại.',
-            'device_class' => 'Phân hạng TBYT (hồ sơ)',
-            'device_class_helper' => 'Theo thiết lập nghiệp vụ: nhóm A và B — hồ sơ vĩnh viễn; nhóm C và D — hiệu lực đăng ký 5 năm (ghi nhận ngày hết hạn khi có giấy phép).',
             'class_a' => 'Nhóm A — hồ sơ vĩnh viễn',
             'class_b' => 'Nhóm B — hồ sơ vĩnh viễn',
             'class_c' => 'Nhóm C — hiệu lực 5 năm',
@@ -428,7 +418,6 @@ return [
         ],
     ],
     'order' => [
-        'subheading' => 'Đơn hàng nhu cầu gắn với kết quả chọn thầu và pháp nhân trúng thầu.',
         'section' => [
             'order_info' => 'Thông tin đơn hàng',
         ],
@@ -474,7 +463,6 @@ return [
         ],
     ],
     'contract' => [
-        'subheading' => 'Hợp đồng thực thi liên kết với đơn hàng nhu cầu và chứng từ.',
         'section' => [
             'contract_info' => 'Thông tin hợp đồng',
         ],
@@ -655,7 +643,6 @@ return [
         'required_delivery_timeline' => 'Tiến độ cung cấp hàng hóa',
         'proposed_delivery_timeline' => 'Tiến độ nhà thầu đề xuất',
         'canonical_product' => 'SKU chuẩn hóa',
-        'canonical_product_helper' => 'Tìm theo tên hàng hoặc mã SKU. Danh sách hiển thị theo dạng: Tên hàng (quy cách/kích cỡ) — SKU.',
         'procurement_status' => 'Trạng thái mua hàng',
         'procurement_status_options' => [
             'pending' => 'Chờ mua',
@@ -739,7 +726,6 @@ return [
         ],
         'fields' => [
             'supply_order_code' => 'Mã đơn mua',
-            'supplier_partner' => 'Nhà cung cấp',
             'supplier_partner_helper' => 'Tùy chọn nhà cung cấp mặc định cho toàn đơn. Nếu mỗi SKU mua khác nhà cung cấp, khai báo ở từng dòng hàng bên dưới.',
             'blocked_reason' => 'Lý do bị chặn',
         ],
@@ -760,11 +746,6 @@ return [
         'lines' => [
             'fields' => [
                 'canonical_product' => 'SKU chuẩn hóa',
-                'supplier_partner' => 'Nhà cung cấp',
-                'supplier_suggestion_source' => 'Nguồn gợi ý NCC',
-                'supplier_suggestion_source_helper' => 'Hiển thị nguồn hệ thống dùng để gợi ý NCC ban đầu (mã định danh hoặc tên nhà thầu từ dữ liệu đầu vào).',
-                'supplier_selection_mode' => 'Cách chọn NCC',
-                'supplier_selection_mode_helper' => 'Cho biết NCC hiện tại do hệ thống tự gợi ý hay đã được người dùng đổi thủ công.',
                 'item_name' => 'Tên hàng',
                 'required_qty' => 'Số lượng cần',
                 'available_qty' => 'Số lượng sẵn có',
@@ -775,8 +756,6 @@ return [
             'columns' => [
                 'canonical_product' => 'SKU',
                 'supplier_partner' => 'Nhà cung cấp',
-                'supplier_suggestion_source' => 'Nguồn gợi ý NCC',
-                'supplier_selection_mode' => 'Cách chọn NCC',
                 'item_name' => 'Tên hàng',
                 'required_qty' => 'Cần',
                 'available_qty' => 'Sẵn có',
@@ -785,14 +764,6 @@ return [
                 'reference_unit_price' => 'Giá tham chiếu',
                 'price_deviation_flag' => 'Lệch giá',
                 'status' => 'Trạng thái',
-            ],
-            'suggestion_sources' => [
-                'bidder_identifier' => 'Mã định danh nhà thầu',
-                'bidder_name' => 'Tên nhà thầu',
-            ],
-            'selection_modes' => [
-                'auto_suggested' => 'Theo gợi ý hệ thống',
-                'manual_override' => 'Người dùng đổi thủ công',
             ],
         ],
     ],
@@ -824,8 +795,6 @@ return [
         'navigation' => 'Phân tích chọn NCC',
         'title' => 'Phân tích chọn nhà cung cấp',
         'subheading' => 'Màn hình chuyên theo dõi nguồn gợi ý và việc người dùng có đổi NCC thủ công hay không.',
-        'unknown' => 'Chưa xác định',
-        'empty' => 'Chưa có dữ liệu để phân tích.',
         'metrics' => [
             'total' => 'Tổng dòng đơn mua',
             'auto_suggested' => 'Theo gợi ý hệ thống',
@@ -865,18 +834,11 @@ return [
             'matrix_csv' => 'Xuất ma trận so sánh (CSV)',
             'empty' => 'Chọn mã đơn mua có dòng hàng và ít nhất một NCC hiển thị để xuất.',
         ],
-        'filters' => [
-            'selection_mode' => 'Lọc theo cách chọn',
-            'suggestion_source' => 'Lọc theo nguồn gợi ý',
-        ],
         'compare' => [
             'section_title' => 'Chọn mã đơn mua để phân tích',
             'section_desc' => 'So sánh theo dữ liệu đơn mua: mỗi sản phẩm trong mã đơn mua và các nhà cung cấp đã từng báo giá/được chọn cho SKU đó. Nếu dòng chưa map canonical, hệ thống có thể khớp tên dòng với cột tên trong Bảng giá (chuẩn hóa chữ thường và khoảng trắng).',
             'data_sources_callout' => 'Mỗi ô ma trận chỉ theo một quy tắc ưu tiên: báo giá nhập tay trên dòng đơn trước, rồi tới bảng giá tham chiếu (NCC + SKU/tên, trong hiệu lực), cuối cùng là giá suy từ dòng đơn khác cùng SKU. Nút «Bảng giá tham chiếu (SSOT)» mở kho catalog; báo giá theo lô vẫn nhập ở trang báo giá theo dòng.',
-            'result_title' => 'Ma trận so sánh theo đơn mua',
-            'result_desc' => 'Nguồn dữ liệu lấy từ dòng đơn mua. Giá so sánh lần lượt ưu tiên: báo giá nhập tay theo dòng (nếu có), đơn giá mua dự kiến / bảng giá tham chiếu theo SKU + NCC (chỉ bảng Hiệu lực và trong khoảng hiệu lực từ/đến), và lịch sử đơn mua cùng SKU.',
             'matrix_title' => 'So sánh nhà cung cấp theo SKU trong mã đơn mua',
-            'order' => 'Mã đơn mua',
             'supply_order' => 'Mã đơn mua',
             'matrix_highlight' => 'Làm nổi bật ma trận',
             'matrix_highlight_none' => 'Không nhấn mạnh',
@@ -884,7 +846,6 @@ return [
             'matrix_highlight_column_lowest' => 'Tổng đơn rẻ nhất (cả cột, quy đổi VND)',
             'matrix_highlight_fastest' => 'Giao nhanh nhất (lead time hiệu dụng: đối tác vs. dòng bảng giá, cả cột)',
             'hide_suppliers' => 'Ẩn nhà cung cấp',
-            'hide_suppliers_placeholder' => 'Chọn NCC cần ẩn khỏi ma trận',
             'hide_suppliers_hint' => 'Tick các NCC cần ẩn khỏi ma trận. Đóng panel filter sau khi chọn để áp dụng.',
             'supplier_order' => 'Thứ tự cột',
             'supplier_order_name' => 'Tên A–Z',
@@ -892,26 +853,18 @@ return [
             'supplier_order_lead_asc' => 'Lead time (ngắn → dài)',
             'pick_supply_order_first' => 'Chọn một mã đơn mua để bắt đầu phân tích so sánh nhà cung cấp.',
             'selected_supply_order' => 'Đơn mua đang phân tích',
-            'summary_line_count' => 'Số dòng cần so sánh',
-            'summary_supplier_count' => 'Số nhà cung cấp',
-            'summary_quoted_lines' => 'Dòng có dữ liệu giá',
-            'summary_unquoted_lines' => 'Dòng chưa có dữ liệu giá',
             'term_unknown' => 'N/A',
             'lead_days_short' => ':days ngày giao',
-            'empty_for_supply_order' => 'Mã đơn mua này chưa có dữ liệu so sánh phù hợp (SKU hoặc NCC/giá).',
             'col_no' => 'STT',
             'col_product_name' => 'Tên sản phẩm',
             'col_order_line' => 'Dòng hàng',
             'col_sku' => 'SKU',
             'col_qty' => 'SL cần mua',
             'col_qty_tooltip' => 'Hiển thị số nguyên (làm tròn). Thành tiền dòng vẫn tính theo số lượng lưu trong hệ thống (có thể có phần thập phân nội bộ).',
-            'unit_price_short' => 'ĐG',
-            'total_short' => 'Tổng',
             'grand_total' => 'Tổng cộng',
             'grand_total_unavailable' => 'Không tính được (thiếu tỷ giá)',
             'currency_gap_warning' => 'Một số dòng dùng loại tiền chưa có tỷ giá (bảng Tỷ giá FX hoặc config/currency.php / biến môi trường). Hệ thống không gắn “NCC tốt nhất” và có thể không hiển thị tổng cột.',
             'currency_gap_link' => 'Mở Tỷ giá (FX) để nhập tỷ giá hoặc thời điểm hiệu lực.',
-            'subcol_picture' => 'Hình',
             'subcol_unit_price' => 'Đơn giá',
             'subcol_unit_price_currency' => 'theo nguồn',
             'subcol_total' => 'Thành tiền',
@@ -920,22 +873,6 @@ return [
             'export_col_best_supplier_id' => 'Mã NCC tốt nhất',
             'export_col_best_supplier' => 'NCC tốt nhất (hệ thống)',
             'export_col_currency' => 'Loại tiền',
-        ],
-        'sections' => [
-            'overview' => 'Tổng quan',
-            'overview_desc' => 'Số liệu tổng hợp trên toàn bộ dòng đơn mua hiện có trong hệ thống.',
-            'selection_mode' => 'Phân bố theo cách chọn NCC',
-            'suggestion_source' => 'Phân bố theo nguồn gợi ý',
-            'recent_lines' => 'Dòng gần nhất',
-            'recent_lines_desc' => 'Danh sách 120 dòng đơn mua cập nhật gần đây để kiểm tra chi tiết.',
-        ],
-        'table' => [
-            'supply_order' => 'Mã đơn mua',
-            'sku' => 'SKU',
-            'supplier' => 'Nhà cung cấp',
-            'suggestion_source' => 'Nguồn gợi ý',
-            'selection_mode' => 'Cách chọn',
-            'updated_at' => 'Cập nhật lúc',
         ],
     ],
     'financial_ledger' => [
@@ -1137,8 +1074,6 @@ return [
     'demand_workspace' => [
         'navigation' => 'Nhu cầu & Hợp đồng',
         'title' => 'Nhu cầu & Hợp đồng',
-        'subheading_ops' => 'Đường tắt tới danh sách và công cụ liên quan; quyền và vai trò quyết định màn nào cần dùng.',
-        'subheading_manager' => 'Theo dõi nhu cầu, hợp đồng và Gate Pipeline theo nhu cầu điều hành.',
         'section' => [
             'quick_start' => 'Truy cập nhanh',
             'quick_start_description' => 'Mở danh sách hoặc màn hình thường dùng.',
@@ -1280,14 +1215,6 @@ return [
             'confusion_points' => 'Confusion points: số điểm dừng/hỏi lại ở mỗi màn chính.',
         ],
     ],
-    'admin_overview' => [
-        'section' => [
-            'portals_heading' => 'Các portal khác',
-            'portals_description' => 'Các portal vận hành hằng ngày',
-        ],
-        'link_data_steward' => 'Data Steward',
-        'link_cms' => 'CMS',
-    ],
     'founder_work_card' => [
         'section' => [
             'card' => 'Thẻ việc',
@@ -1316,19 +1243,7 @@ return [
     'dashboard' => [
         'navigation' => 'Bảng điều khiển vận hành',
         'title' => 'Bảng điều khiển vận hành',
-        'subheading' => 'Trên cùng là các nhóm chỉ số, giữa là biểu đồ xu hướng, dưới là bảng tồn kho cảnh báo — bố cục gọn hơn, nội dung số liệu không đổi.',
-        'bid_intelligence' => [
-            'heading' => 'Dữ liệu mở thầu (phân tích)',
-            'description' => 'Bảng đếm riêng phục vụ theo dõi cạnh tranh và đánh giá xác suất — bổ sung cho luồng vận hành chính, không thay thế chứng từ.',
-            'total_sessions' => 'Phiên mở thầu',
-            'total_sessions_desc' => 'Tổng số phiên mở thầu đã lưu trong hệ thống.',
-            'total_lines' => 'Dòng bảng giá mở thầu',
-            'total_lines_desc' => 'Tổng số dòng (nhà thầu × gói hàng) trong các phiên.',
-            'avg_bidders' => 'Nhà thầu trung bình / phiên',
-            'avg_bidders_desc' => 'Trung bình số nhà thầu tham dự mỗi phiên (tính từ trường tổng số nhà thầu của phiên).',
-            'award_updates_30d' => 'Kết quả cập nhật 30 ngày',
-            'award_updates_30d_desc' => 'Số dòng kết quả trúng/thầu được cập nhật trong 30 ngày gần đây.',
-        ],
+        'subheading' => 'Bốn dải chỉ số tổng quan (thực thi & rủi ro, nhu cầu–cung, mốc thanh toán & thanh khoản, công nợ & sổ cái). Biểu đồ và chi tiết tồn kho xem tại màn hình chuyên sâu.',
         'kpi_strip' => [
             'execution_risk_heading' => 'Thực thi & rủi ro hợp đồng',
             'execution_risk_description' => 'Số vấn đề thực thi đang mở và số hợp đồng theo mức cảnh báo (đỏ / vàng / xanh) — hiển thị trên một hàng.',
@@ -1339,33 +1254,9 @@ return [
             'debt_ledger_heading' => 'Công nợ & sổ cái',
             'debt_ledger_description' => 'Mốc trễ hạn, tổng tiền các mốc trễ, tổng thu đã ghi sổ, và tổng thu/chi 30 ngày.',
         ],
-        'charts' => [
-            'orders_heading' => 'Đơn hàng tạo mới (14 ngày)',
-            'orders_description' => 'Số đơn mới theo ngày — hoạt động nhu cầu theo thời gian.',
-            'orders_series' => 'Đơn mới',
-            'ledger_heading' => 'Thu & chi trên sổ cái (14 ngày)',
-            'ledger_description' => 'Theo từng ngày: cộng các khoản ghi thu (số dương) và cộng các khoản ghi chi (lấy giá trị tuyệt đối của số âm) — cùng nguồn với danh mục bút toán sổ cái.',
-            'inflow' => 'Thu',
-            'outflow' => 'Chi',
-        ],
         'sections' => [
-            'execution_issues' => 'Vấn đề thực thi',
-            'execution_issues_desc' => 'Việc đang mở: quá hạn, mức nghiêm trọng, và tổng đang mở.',
-            'execution_contracts' => 'Danh mục hợp đồng (rủi ro)',
-            'execution_contracts_desc' => 'Đếm theo đèn giao thông trên toàn bộ hợp đồng — vào danh sách để xem chi tiết.',
-            'demand' => 'Nhu cầu (kinh doanh)',
-            'demand_desc' => 'Đơn hàng còn trong luồng xử lý (chưa đóng / chưa hủy).',
             'supply' => 'Cung ứng & mua hàng',
             'supply_desc' => 'Đơn mua: tổng quan và việc cần buyer xử lý.',
-            'milestones' => 'Mốc thanh toán',
-            'milestones_desc' => 'Mốc đủ điều kiện thu tiền và mốc còn kẹt checklist trong các khung ngày gần đây.',
-            'finance_cash' => 'Thanh khoản (14 ngày tới)',
-            'finance_cash_desc' => 'Ba chỉ số khác nhau: chi dự kiến theo lịch, tổng tiền mốc đến hạn trong 14 ngày tới, và tổng ngân sách đã giao trên toàn bộ hợp đồng (mỗi số một ý nghĩa — không cộng thành một dòng đối soát).',
-            'finance_ar' => 'Công nợ & sổ cái (toàn danh mục)',
-            'finance_ar_desc' => 'Số mốc trễ, tổng tiền trễ và tổng thu đã ghi nhận — bấm vào để xem chi tiết từng dòng.',
-            'finance_ledger' => 'Biến động sổ cái (30 ngày)',
-            'finance_ledger_desc' => 'Tổng thu và tổng chi đã ghi sổ (hồ sơ nội bộ, không phải số dư tài khoản ngân hàng).',
-            'inventory' => 'Tồn kho',
         ],
     ],
     'widgets' => [
@@ -1424,15 +1315,6 @@ return [
         'founder' => [
             'inflow_30d' => 'Tổng thu ghi sổ (30 ngày)',
             'outflow_30d' => 'Tổng chi ghi sổ (30 ngày)',
-        ],
-        'rop' => [
-            'table_title' => 'Tồn kho — lô sắp hết (dưới ngưỡng cảnh báo C-INV-004)',
-            'model_label' => 'Lô hàng',
-            'plural_model_label' => 'Lô hàng',
-            'col_item' => 'Hàng',
-            'col_wh' => 'Kho',
-            'col_qty' => 'Tồn khả dụng',
-            'empty' => 'Không có lô nào dưới ngưỡng ROP cấu hình.',
         ],
         'ar' => [
             'migration_pending' => 'Chạy php artisan migrate để cập nhật schema',

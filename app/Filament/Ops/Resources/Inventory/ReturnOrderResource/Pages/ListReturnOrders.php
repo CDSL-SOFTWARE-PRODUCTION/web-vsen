@@ -2,18 +2,10 @@
 
 namespace App\Filament\Ops\Resources\Inventory\ReturnOrderResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsListRecords;
 use App\Filament\Ops\Resources\Inventory\ReturnOrderResource;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 
-class ListReturnOrders extends ListRecords
+class ListReturnOrders extends OpsListRecords
 {
     protected static string $resource = ReturnOrderResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }

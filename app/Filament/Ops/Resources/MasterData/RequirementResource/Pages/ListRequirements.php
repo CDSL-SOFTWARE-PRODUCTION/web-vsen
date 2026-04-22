@@ -2,18 +2,10 @@
 
 namespace App\Filament\Ops\Resources\MasterData\RequirementResource\Pages;
 
+use App\Filament\Ops\Resources\Base\Pages\OpsListRecords;
 use App\Filament\Ops\Resources\MasterData\RequirementResource;
-use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 
-class ListRequirements extends ListRecords
+class ListRequirements extends OpsListRecords
 {
     protected static string $resource = RequirementResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\CreateAction::make(),
-        ];
-    }
 }
