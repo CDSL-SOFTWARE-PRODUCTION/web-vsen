@@ -5,7 +5,6 @@ use App\Models\Cms\Category;
 use App\Models\User;
 use App\Filament\Cms\Resources\CmsProductResource;
 use App\Filament\Cms\Resources\CmsProductResource\Pages\ListCmsProducts;
-use App\Filament\Cms\Resources\CmsProductResource\Pages\CreateCmsProduct;
 use Filament\Facades\Filament;
 use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
@@ -38,8 +37,9 @@ it('can create a product', function () {
     $category = Category::factory()->create();
     actingAs($admin);
 
-    livewire(CreateCmsProduct::class)
-        ->fillForm([
+    livewire(ListCmsProducts::class)
+        ->mountAction('create')
+        ->setActionData([
             'sku' => 'SKU-001',
             'name' => 'Epic Product',
             'slug' => 'epic-product',
@@ -48,8 +48,8 @@ it('can create a product', function () {
             'price' => '99.99',
             'is_active' => true,
         ])
-        ->call('create')
-        ->assertHasNoFormErrors();
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
 
     $this->assertDatabaseHas('products', [
         'sku' => 'SKU-001',
@@ -63,13 +63,14 @@ describe('Product Negative Tests', function () {
         $admin = User::factory()->create(['role' => 'Admin_PM']);
         actingAs($admin);
 
-        livewire(CreateCmsProduct::class)
-            ->fillForm([
+        livewire(ListCmsProducts::class)
+            ->mountAction('create')
+            ->setActionData([
                 'name' => 'Product No SKU',
                 'slug' => 'product-no-sku',
             ])
-            ->call('create')
-            ->assertHasFormErrors(['sku' => 'required']);
+            ->callMountedAction()
+            ->assertHasActionErrors(['sku' => 'required']);
     });
 
     it('fails when SKU is duplicate', function () {
@@ -78,14 +79,15 @@ describe('Product Negative Tests', function () {
         
         actingAs($admin);
 
-        livewire(CreateCmsProduct::class)
-            ->fillForm([
+        livewire(ListCmsProducts::class)
+            ->mountAction('create')
+            ->setActionData([
                 'sku' => 'SKU-DUP',
                 'name' => 'Product Duplicate',
                 'slug' => 'product-duplicate',
             ])
-            ->call('create')
-            ->assertHasFormErrors(['sku' => 'unique']);
+            ->callMountedAction()
+            ->assertHasActionErrors(['sku' => 'unique']);
     });
 });
 

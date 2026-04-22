@@ -182,9 +182,7 @@ class CmsProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->recordUrl(
-                fn (CmsProduct $record): string => Pages\EditCmsProduct::getUrl([$record->id]),
-            )
+
             ->columns([
                 Tables\Columns\ImageColumn::make('images')
                     ->label(__('Images'))

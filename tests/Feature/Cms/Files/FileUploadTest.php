@@ -2,7 +2,7 @@
 
 use App\Models\User;
 use App\Filament\Cms\Resources\ArticleResource\Pages\CreateArticle;
-use App\Filament\Cms\Resources\CmsProductResource\Pages\CreateCmsProduct;
+use App\Filament\Cms\Resources\CmsProductResource\Pages\ListCmsProducts;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Filament\Facades\Filament;
@@ -34,10 +34,11 @@ it('blocks non-image files in Product images', function () {
 
     $file = UploadedFile::fake()->create('document.pdf', 500);
 
-    livewire(CreateCmsProduct::class)
-        ->set('data.images', [$file])
-        ->call('create')
-        ->assertHasFormErrors(['images']);
+    livewire(ListCmsProducts::class)
+        ->mountAction('create')
+        ->setActionData(['images' => [$file]])
+        ->callMountedAction()
+        ->assertHasActionErrors(['images']);
 });
 
 it('can upload multiple valid images to Product', function () {
@@ -48,17 +49,18 @@ it('can upload multiple valid images to Product', function () {
     $file1 = UploadedFile::fake()->image('image1.jpg');
     $file2 = UploadedFile::fake()->image('image2.jpg');
 
-    livewire(CreateCmsProduct::class)
-        ->fillForm([
+    livewire(ListCmsProducts::class)
+        ->mountAction('create')
+        ->setActionData([
             'sku' => 'SKU-001',
             'name' => 'Product with Images',
             'slug' => 'product-with-images',
             'category_id' => $category->id,
             'is_active' => true,
+            'images' => [$file1, $file2],
         ])
-        ->set('data.images', [$file1, $file2])
-        ->call('create')
-        ->assertHasNoFormErrors();
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
 
     // Verify files were "saved" to fake storage
     $product = \App\Models\Cms\CmsProduct::where('sku', 'SKU-001')->first();

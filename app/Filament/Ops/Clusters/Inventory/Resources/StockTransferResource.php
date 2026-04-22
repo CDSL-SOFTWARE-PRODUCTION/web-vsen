@@ -86,8 +86,6 @@ class StockTransferResource extends OpsResource
     {
         return [
             'index' => Pages\ListStockTransfers::route('/'),
-            'create' => Pages\CreateStockTransfer::route('/create'),
-            'edit' => Pages\EditStockTransfer::route('/{record}/edit'),
         ];
     }
 }

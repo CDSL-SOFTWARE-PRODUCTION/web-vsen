@@ -1,6 +1,6 @@
 <?php
 
-use App\Filament\Ops\Resources\System\FounderWorkCardResource;
+use App\Filament\Ops\Clusters\System\Resources\FounderWorkCardResource;
 use App\Models\User;
 use Filament\Facades\Filament;
 

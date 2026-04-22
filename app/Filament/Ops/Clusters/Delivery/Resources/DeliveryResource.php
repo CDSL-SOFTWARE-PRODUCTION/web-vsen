@@ -139,8 +139,6 @@ class DeliveryResource extends OpsResource
     {
         return [
             'index' => Pages\ListDeliveries::route('/'),
-            'create' => Pages\CreateDelivery::route('/create'),
-            'edit' => Pages\EditDelivery::route('/{record}/edit'),
         ];
     }
 

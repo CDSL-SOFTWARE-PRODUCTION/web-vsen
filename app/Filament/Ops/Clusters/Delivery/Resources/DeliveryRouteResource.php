@@ -87,8 +87,6 @@ class DeliveryRouteResource extends OpsResource
     {
         return [
             'index' => Pages\ListDeliveryRoutes::route('/'),
-            'create' => Pages\CreateDeliveryRoute::route('/create'),
-            'edit' => Pages\EditDeliveryRoute::route('/{record}/edit'),
         ];
     }
 

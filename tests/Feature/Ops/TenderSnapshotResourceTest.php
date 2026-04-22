@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\Execution\GenerateExecutionPlanService;
-use App\Filament\Ops\Resources\Demand\TenderSnapshotResource;
+use App\Filament\Ops\Clusters\Demand\Resources\TenderSnapshotResource;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
 use App\Models\Demand\TenderSnapshotAttachment;
