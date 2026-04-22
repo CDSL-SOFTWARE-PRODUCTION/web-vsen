@@ -11,6 +11,11 @@ use Illuminate\Contracts\Support\Htmlable;
  */
 class OrdersCreatedTrendChartWidget extends ChartWidget
 {
+    /**
+     * @var view-string
+     */
+    protected static string $view = 'filament.ops.widgets.chart-widget';
+
     protected static ?int $sort = 15;
 
     protected static ?string $maxHeight = '260px';

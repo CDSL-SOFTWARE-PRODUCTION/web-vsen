@@ -33,15 +33,15 @@ composer dev
 
 ---
 
-## 🔐 Cổng đăng nhập Filament (portal)
+## 🔐 Đăng nhập & portal Filament
 
-Ứng dụng có **ba panel Filament** riêng đường dẫn; mỗi panel có trang đăng nhập riêng (cùng bảng `users`, khác URL). Thay `{APP_URL}` bằng URL app (ví dụ `http://localhost:8000`).
+**Đăng nhập dùng chung:** `{APP_URL}/login` (Breeze/Inertia). Sau khi đăng nhập, người dùng được chuyển tới hub `/dashboard` (chọn portal Filament). Thay `{APP_URL}` bằng URL app (ví dụ `http://localhost:8000`).
 
-| Portal | Đường dẫn | Trang đăng nhập | Vai trò được phép (theo `User::canAccessPanel`) |
-|--------|-----------|------------------|--------------------------------------------------|
-| **CMS** | `{APP_URL}/cms` | `{APP_URL}/cms/login` | `Admin_PM` |
-| **Ops** (console vận hành / admin nghiệp vụ) | `{APP_URL}/ops` | `{APP_URL}/ops/login` | `Sale`, `MuaHang`, `Kho`, `KeToan`, `Admin_PM` |
-| **Data Steward** (dữ liệu nền / master data) | `{APP_URL}/data-steward` | `{APP_URL}/data-steward/login` | `DuLieuNen`, `Admin_PM` |
+| Portal | Đường dẫn | Vai trò được phép (theo `User::canAccessPanel`) |
+|--------|-----------|--------------------------------------------------|
+| **CMS** | `{APP_URL}/cms` | `Admin_PM` |
+| **Ops** (console vận hành / admin nghiệp vụ) | `{APP_URL}/ops` | `Sale`, `MuaHang`, `Kho`, `KeToan`, `Admin_PM`, `Founder` |
+| **Data Steward** (dữ liệu nền / master data) | `{APP_URL}/data-steward` | `DuLieuNen`, `Admin_PM` |
 
 **Lưu ý:** User có `role = Admin_PM` được phép vào mọi panel. User `DuLieuNen` chỉ dùng portal **Data Steward** (không vào Ops). Chi tiết cấu hình panel: `app/Providers/Filament/*PanelProvider.php` và `app/Models/User.php`.
 

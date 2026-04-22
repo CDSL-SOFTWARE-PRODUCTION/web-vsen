@@ -2,9 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Ops\Pages\AdminPmOverview;
 use App\Filament\Ops\Pages\Dashboard as OpsDashboard;
-use App\Filament\Ops\Pages\FounderInbox;
 use App\Filament\Ops\Widgets\LedgerInflowOutflowChartWidget;
 use App\Filament\Ops\Widgets\OpsDebtAndLedgerKpiWidget;
 use App\Filament\Ops\Widgets\OpsDemandAndSupplyKpiWidget;
@@ -12,10 +10,8 @@ use App\Filament\Ops\Widgets\OpsExecutionAndRiskKpiWidget;
 use App\Filament\Ops\Widgets\OpsMilestonesAndLiquidityKpiWidget;
 use App\Filament\Ops\Widgets\OrdersCreatedTrendChartWidget;
 use App\Filament\Ops\Widgets\RopLowStockTableWidget;
-use App\Http\Middleware\RestrictFounderOpsToInboxSurface;
+use App\Http\Middleware\FilamentAuthenticateRedirectToLogin;
 use App\Http\Middleware\SetLocale;
-use App\Support\Ops\FilamentAccess;
-use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -40,18 +36,7 @@ class OpsPanelProvider extends PanelProvider
         return $panel
             ->id('ops')
             ->path('ops')
-            ->homeUrl(function (): string {
-                if (FilamentAccess::isFounder()) {
-                    return FounderInbox::getUrl(panel: 'ops');
-                }
-
-                if (FilamentAccess::isAdminPm()) {
-                    return AdminPmOverview::getUrl();
-                }
-
-                return OpsDashboard::getUrl();
-            })
-            ->login()
+            ->homeUrl(fn (): string => OpsDashboard::getUrl())
             ->profile()
             ->darkMode(true, false)
             ->maxContentWidth(MaxWidth::Full)
@@ -88,8 +73,7 @@ class OpsPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
-                RestrictFounderOpsToInboxSurface::class,
+                FilamentAuthenticateRedirectToLogin::class,
             ], isPersistent: true)
             ->navigationGroups([
                 NavigationGroup::make(__('ops.clusters.demand'))

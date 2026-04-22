@@ -2,7 +2,9 @@
 
 namespace App\Filament\Ops\Pages;
 
+use Filament\Actions\Action;
 use App\Filament\Ops\Widgets\BidIntelligenceKpiWidget;
+use App\Filament\Ops\Widgets\OpsAdminPortalShortcutsWidget;
 use App\Filament\Ops\Widgets\LedgerInflowOutflowChartWidget;
 use App\Filament\Ops\Widgets\OpsDebtAndLedgerKpiWidget;
 use App\Filament\Ops\Widgets\OpsDemandAndSupplyKpiWidget;
@@ -10,7 +12,6 @@ use App\Filament\Ops\Widgets\OpsExecutionAndRiskKpiWidget;
 use App\Filament\Ops\Widgets\OpsMilestonesAndLiquidityKpiWidget;
 use App\Filament\Ops\Widgets\OrdersCreatedTrendChartWidget;
 use App\Filament\Ops\Widgets\RopLowStockTableWidget;
-use App\Support\Ops\FilamentAccess;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Widgets\Widget;
 use Illuminate\Contracts\Support\Htmlable;
@@ -18,11 +19,6 @@ use Illuminate\Contracts\Support\Htmlable;
 class Dashboard extends BaseDashboard
 {
     protected static bool $isDiscovered = false;
-
-    public static function shouldRegisterNavigation(): bool
-    {
-        return ! FilamentAccess::isFounder();
-    }
 
     public static function getNavigationLabel(): string
     {
@@ -36,7 +32,20 @@ class Dashboard extends BaseDashboard
 
     public function getSubheading(): string|Htmlable|null
     {
-        return __('ops.dashboard.subheading');
+        return null;
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('dashboardInfo')
+                ->label('Thông tin')
+                ->icon('heroicon-m-information-circle')
+                ->iconButton()
+                ->color('gray')
+                ->tooltip(__('ops.dashboard.subheading'))
+                ->action(static fn (): null => null),
+        ];
     }
 
     /**
@@ -45,6 +54,7 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            OpsAdminPortalShortcutsWidget::class,
             OpsExecutionAndRiskKpiWidget::class,
             OrdersCreatedTrendChartWidget::class,
             LedgerInflowOutflowChartWidget::class,

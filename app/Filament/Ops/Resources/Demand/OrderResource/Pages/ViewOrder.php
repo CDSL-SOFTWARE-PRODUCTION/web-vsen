@@ -7,23 +7,14 @@ use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Demand\ConfirmFulfillmentCommandService;
 use App\Domain\Demand\StartExecutionCommandService;
 use App\Filament\Ops\Resources\Demand\OrderResource;
-use App\Filament\Ops\Resources\Base\HasDemandFlowSubheading;
 use App\Models\Demand\Order;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
-use Illuminate\Contracts\Support\Htmlable;
 
 class ViewOrder extends ViewRecord
 {
-    use HasDemandFlowSubheading;
-
     protected static string $resource = OrderResource::class;
-
-    public function getSubheading(): string|Htmlable|null
-    {
-        return $this->demandFlowSubheading(__('ops.flow.step_1_chip'), __('ops.order.flow_hint'));
-    }
 
     protected function getHeaderActions(): array
     {

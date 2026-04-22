@@ -18,7 +18,7 @@ beforeEach(function () {
 describe('CMS Access Control', function () {
     
     it('redirects guests to login', function ($url) {
-        get($url)->assertRedirect('/cms/login');
+        get($url)->assertRedirect(route('login'));
     })->with([
         fn() => ArticleResource::getUrl(),
         fn() => CategoryResource::getUrl(),

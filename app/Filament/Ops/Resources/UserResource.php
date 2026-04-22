@@ -47,7 +47,8 @@ class UserResource extends OpsResource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
-                            ->autocomplete('off'),
+                            ->autocomplete('off')
+                            ->dehydrateStateUsing(fn (?string $state): string => strtolower(trim((string) $state))),
                         Forms\Components\TextInput::make('password')
                             ->password()
                             ->required(fn (string $operation): bool => $operation === 'create')
@@ -67,12 +68,6 @@ class UserResource extends OpsResource
                             ])
                             ->required()
                             ->native(false),
-                        Forms\Components\Select::make('legal_entity_id')
-                            ->label(__('ops.user.legal_entity'))
-                            ->relationship('legalEntity', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->nullable(),
                     ])->columns(2),
             ]);
     }

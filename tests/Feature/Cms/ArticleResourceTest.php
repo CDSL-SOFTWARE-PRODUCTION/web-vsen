@@ -15,7 +15,7 @@ beforeEach(function () {
 
 it('redirects guest from cms articles', function () {
     get(ArticleResource::getUrl())
-        ->assertRedirect('/cms/login');
+        ->assertRedirect(route('login'));
 });
 
 it('allows admin to access article list', function () {

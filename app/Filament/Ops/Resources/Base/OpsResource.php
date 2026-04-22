@@ -2,7 +2,6 @@
 
 namespace App\Filament\Ops\Resources\Base;
 
-use App\Support\Ops\FilamentAccess;
 use Filament\Resources\Resource;
 
 /**
@@ -10,12 +9,4 @@ use Filament\Resources\Resource;
  */
 abstract class OpsResource extends Resource
 {
-    public static function shouldRegisterNavigation(): bool
-    {
-        if (FilamentAccess::isFounder()) {
-            return false;
-        }
-
-        return parent::shouldRegisterNavigation();
-    }
 }

@@ -5,10 +5,9 @@ namespace App\Filament\Ops\Widgets;
 use App\Models\Demand\AwardOutcome;
 use App\Models\Demand\BidOpeningLine;
 use App\Models\Demand\BidOpeningSession;
-use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
-class BidIntelligenceKpiWidget extends StatsOverviewWidget
+class BidIntelligenceKpiWidget extends OpsStatsOverviewWidget
 {
     protected static ?int $sort = 40;
 

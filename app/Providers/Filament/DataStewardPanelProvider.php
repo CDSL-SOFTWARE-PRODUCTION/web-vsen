@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\FilamentAuthenticateRedirectToLogin;
 use App\Filament\DataSteward\Pages\DataStewardDashboard;
 use App\Filament\DataSteward\Pages\DocumentVaultWorkspace;
 use App\Filament\DataSteward\Pages\RequirementMappingWorkspace;
@@ -9,7 +10,6 @@ use App\Filament\Ops\Resources\MasterData\CanonicalProductResource;
 use App\Filament\Ops\Resources\MasterData\MedicalDeviceDeclarationResource;
 use App\Filament\Ops\Resources\MasterData\RequirementResource;
 use App\Http\Middleware\SetLocale;
-use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -32,7 +32,6 @@ class DataStewardPanelProvider extends PanelProvider
             ->id('data-steward')
             ->path('data-steward')
             ->homeUrl(fn (): string => DataStewardDashboard::getUrl())
-            ->login()
             ->profile()
             ->darkMode(true, false)
             ->colors([
@@ -61,7 +60,7 @@ class DataStewardPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                FilamentAuthenticateRedirectToLogin::class,
             ])
             ->renderHook(
                 'panels::user-menu.before',

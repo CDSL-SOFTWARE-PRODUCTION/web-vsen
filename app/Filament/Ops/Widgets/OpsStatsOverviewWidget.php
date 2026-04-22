@@ -12,6 +12,11 @@ use Filament\Widgets\StatsOverviewWidget;
 abstract class OpsStatsOverviewWidget extends StatsOverviewWidget
 {
     /**
+     * @var view-string
+     */
+    protected static string $view = 'filament.ops.widgets.stats-overview-widget';
+
+    /**
      * @var int | string | array<string, int | string | null>
      */
     protected int|string|array $columnSpan = 'full';

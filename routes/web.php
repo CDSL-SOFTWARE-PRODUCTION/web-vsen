@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\ArticleController;
+use App\Support\Auth\FilamentPortalDirectory;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\FounderDigestExportController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -32,7 +32,12 @@ Route::post('/webhooks/bank-virtual-account', BankVirtualAccountWebhookControlle
     ->name('webhooks.bank.virtual_account');
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Dashboard', [
+        'portals' => FilamentPortalDirectory::portalsFor(auth()->user()),
+        'hubTitle' => __('portal.hub_title'),
+        'hubIntro' => __('portal.hub_intro'),
+        'noPortals' => __('portal.no_portals'),
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -40,8 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/founder-digest-export', [FounderDigestExportController::class, 'show'])
-        ->name('ops.founder.digest-export');
 });
 
 Route::get('/language/{locale}', function ($locale) {
@@ -53,6 +56,8 @@ Route::get('/language/{locale}', function ($locale) {
 })->name('language.switch');
 
 Route::middleware('auth')->prefix('ops')->group(function () {
+    Route::redirect('/admin-pm-overview', '/ops', 301);
+
     Route::get('/demand', function () {
         return redirect('/ops/demand-workspace', 302);
     });

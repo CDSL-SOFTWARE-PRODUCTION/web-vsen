@@ -11,6 +11,11 @@ use Illuminate\Contracts\Support\Htmlable;
  */
 class LedgerInflowOutflowChartWidget extends ChartWidget
 {
+    /**
+     * @var view-string
+     */
+    protected static string $view = 'filament.ops.widgets.chart-widget';
+
     protected static ?int $sort = 16;
 
     protected static ?string $maxHeight = '280px';

@@ -624,7 +624,6 @@ return [
         ],
     ],
     'user' => [
-        'legal_entity' => 'Legal entity',
         'section' => [
             'user_details' => 'User details',
         ],
@@ -1282,68 +1281,24 @@ return [
         ],
     ],
     'admin_overview' => [
-        'navigation' => 'Founder overview',
-        'title' => 'Founder overview',
-        'subheading' => 'Entry points to workspaces and the full console — without scanning the entire sidebar first.',
         'section' => [
             'portals_heading' => 'Other portals',
             'portals_description' => 'Master data and marketing content live outside day-to-day Ops.',
-            'ops_console_heading' => 'Full operations console (Ops)',
-            'ops_console_description' => 'KPI strips, charts, and consolidated signals — use when you need depth.',
         ],
         'link_data_steward' => 'Data Steward',
         'link_cms' => 'CMS',
-        'link_full_dashboard' => 'Open full operations KPI dashboard',
-    ],
-    'founder_inbox' => [
-        'navigation' => 'Decisions inbox',
-        'title' => 'Founder decisions inbox',
-        'subheading' => 'Today’s digest and work cards — no need to learn the full operations model.',
-        'digest' => [
-            'signature_heading' => 'Needs signature / approval',
-            'signature_description' => 'Items waiting for your sign-off.',
-            'reply_heading' => 'Needs your reply',
-            'reply_description' => 'Your team is blocked on your guidance.',
-            'overdue_heading' => 'Overdue',
-            'overdue_description' => 'Open cards past their deadline.',
-        ],
-        'cards_heading' => 'Work cards',
-        'cards_description' => 'Bitrix-style tasks assigned to you; source-of-truth data stays in the operations layer.',
-        'empty' => 'No work cards yet. Admin_PM can add cards under Ops → System → Founder work cards.',
-        'card' => [
-            'assignee' => 'Owner: :name',
-            'due' => 'Due: :at',
-            'overdue_badge' => 'Overdue',
-            'attachment' => 'Attachment',
-            'attachment_n' => 'File :n',
-            'lane' => [
-                'signature' => 'Signature lane',
-                'reply' => 'Reply lane',
-                'general' => 'General',
-            ],
-        ],
-        'actions' => [
-            'digest_export' => 'Print-friendly export (save as PDF)',
-        ],
-        'digest_export' => [
-            'document_title' => 'Founder inbox digest',
-            'heading' => 'Founder inbox digest',
-            'table' => [
-                'title' => 'Title',
-                'assignee' => 'Owner',
-                'due' => 'Due',
-                'lane' => 'Lane',
-                'summary' => 'Summary',
-            ],
-            'print_hint' => 'Tip: use your browser’s Print dialog → Save as PDF.',
-        ],
     ],
     'founder_work_card' => [
         'section' => [
             'card' => 'Work card',
         ],
+        'digest_lane' => [
+            'signature' => 'Signature lane',
+            'reply' => 'Reply lane',
+            'general' => 'General',
+        ],
         'fields' => [
-            'founder_user' => 'Founder account (inbox)',
+            'founder_user' => 'Founder account',
             'title' => 'Title',
             'summary' => 'Short description',
             'assignee_label' => 'Owner (display label)',
@@ -1359,7 +1314,7 @@ return [
         ],
     ],
     'dashboard' => [
-        'navigation' => 'Operations KPIs (full)',
+        'navigation' => 'Operations console',
         'title' => 'Operations overview',
         'subheading' => 'KPI strips (grouped metrics), then trend charts, then inventory — fewer boxes, same numbers.',
         'bid_intelligence' => [
@@ -1378,7 +1333,7 @@ return [
             'execution_risk_heading' => 'Execution & contract risk',
             'execution_risk_description' => 'Issue backlog and traffic-light contract counts in one strip.',
             'demand_supply_heading' => 'Demand & supply',
-            'demand_supply_description' => 'Open orders (for sales roles) and purchase-order workload together.',
+            'demand_supply_description' => 'Open sales orders alongside purchase orders and tender-line mapping to canonical SKUs.',
             'milestones_liquidity_heading' => 'Milestones & liquidity (14 days)',
             'milestones_liquidity_description' => 'Blocked / ready milestones and the three liquidity reference figures.',
             'debt_ledger_heading' => 'Receivables & ledger movement',

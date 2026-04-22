@@ -109,9 +109,9 @@ class FounderWorkCardResource extends OpsResource
                         Forms\Components\Select::make('digest_lane')
                             ->label(__('ops.founder_work_card.fields.digest_lane'))
                             ->options([
-                                FounderWorkCard::LANE_SIGNATURE => __('ops.founder_inbox.card.lane.signature'),
-                                FounderWorkCard::LANE_REPLY => __('ops.founder_inbox.card.lane.reply'),
-                                FounderWorkCard::LANE_GENERAL => __('ops.founder_inbox.card.lane.general'),
+                                FounderWorkCard::LANE_SIGNATURE => __('ops.founder_work_card.digest_lane.signature'),
+                                FounderWorkCard::LANE_REPLY => __('ops.founder_work_card.digest_lane.reply'),
+                                FounderWorkCard::LANE_GENERAL => __('ops.founder_work_card.digest_lane.general'),
                             ])
                             ->required()
                             ->native(false),
@@ -139,9 +139,9 @@ class FounderWorkCardResource extends OpsResource
                     ->label(__('ops.founder_work_card.fields.digest_lane'))
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        FounderWorkCard::LANE_SIGNATURE => __('ops.founder_inbox.card.lane.signature'),
-                        FounderWorkCard::LANE_REPLY => __('ops.founder_inbox.card.lane.reply'),
-                        default => __('ops.founder_inbox.card.lane.general'),
+                        FounderWorkCard::LANE_SIGNATURE => __('ops.founder_work_card.digest_lane.signature'),
+                        FounderWorkCard::LANE_REPLY => __('ops.founder_work_card.digest_lane.reply'),
+                        default => __('ops.founder_work_card.digest_lane.general'),
                     }),
                 Tables\Columns\TextColumn::make('assignee_label')
                     ->toggleable(),
@@ -159,9 +159,9 @@ class FounderWorkCardResource extends OpsResource
                 Tables\Filters\SelectFilter::make('digest_lane')
                     ->label(__('ops.founder_work_card.fields.digest_lane'))
                     ->options([
-                        FounderWorkCard::LANE_SIGNATURE => __('ops.founder_inbox.card.lane.signature'),
-                        FounderWorkCard::LANE_REPLY => __('ops.founder_inbox.card.lane.reply'),
-                        FounderWorkCard::LANE_GENERAL => __('ops.founder_inbox.card.lane.general'),
+                        FounderWorkCard::LANE_SIGNATURE => __('ops.founder_work_card.digest_lane.signature'),
+                        FounderWorkCard::LANE_REPLY => __('ops.founder_work_card.digest_lane.reply'),
+                        FounderWorkCard::LANE_GENERAL => __('ops.founder_work_card.digest_lane.general'),
                     ]),
                 Tables\Filters\SelectFilter::make('status')
                     ->label(__('ops.founder_work_card.fields.status'))

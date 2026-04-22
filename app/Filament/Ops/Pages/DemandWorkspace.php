@@ -46,15 +46,6 @@ class DemandWorkspace extends Page
         return __('ops.demand_workspace.title');
     }
 
-    public function getSubheading(): string|Htmlable|null
-    {
-        if (FilamentAccess::allowRoles(['Admin_PM', 'KeToan'])) {
-            return __('ops.demand_workspace.subheading_manager');
-        }
-
-        return __('ops.demand_workspace.subheading_ops');
-    }
-
     /**
      * @return array{
      *   primaryFlow:list<array{title:string,description:string,action:string,url:string,info:?string}>,

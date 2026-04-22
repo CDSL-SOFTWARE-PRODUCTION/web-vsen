@@ -23,13 +23,6 @@ final class FilamentAccess
         return self::allowRoles(self::ROLES_ADMIN_ONLY);
     }
 
-    public static function isFounder(): bool
-    {
-        $user = auth()->user();
-
-        return $user !== null && $user->role === 'Founder';
-    }
-
     /** Data Steward primary role — hide certain Ops shortcuts in favour of the steward panel. */
     public static function isMasterDataSteward(): bool
     {

@@ -3,22 +3,13 @@
 namespace App\Filament\Ops\Resources\Demand\OrderResource\Pages;
 
 use App\Filament\Ops\Resources\Demand\OrderResource;
-use App\Filament\Ops\Resources\Base\HasDemandFlowSubheading;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Contracts\Support\Htmlable;
 
 class CreateOrder extends CreateRecord
 {
-    use HasDemandFlowSubheading;
-
     protected static string $resource = OrderResource::class;
-
-    public function getSubheading(): string|Htmlable|null
-    {
-        return $this->demandFlowSubheading(__('ops.flow.step_1_chip'), __('ops.order.flow_hint'));
-    }
 
     /**
      * @param  array<string, mixed>  $data

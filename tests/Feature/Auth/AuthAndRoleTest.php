@@ -2,33 +2,32 @@
 
 use App\Models\User;
 use Filament\Facades\Filament;
-use Filament\Pages\Auth\Login;
+use Illuminate\Support\Facades\URL;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
-use function Pest\Livewire\livewire;
+use function Pest\Laravel\post;
 
 dataset('panelAccessMatrix', [
     ['Admin_PM', 'cms', true],
     ['Admin_PM', 'ops', true],
-    ['Sale',     'cms', false],
-    ['Sale',     'ops', true],
-    ['Kho',      'cms', false],
-    ['Kho',      'ops', true],
-    ['KeToan',   'cms', false],
-    ['KeToan',   'ops', true],
-    ['MuaHang',  'cms', false],
-    ['MuaHang',  'ops', true],
-    ['user',     'cms', false],
-    ['user',     'ops', false],
+    ['Sale', 'cms', false],
+    ['Sale', 'ops', true],
+    ['Kho', 'cms', false],
+    ['Kho', 'ops', true],
+    ['KeToan', 'cms', false],
+    ['KeToan', 'ops', true],
+    ['MuaHang', 'cms', false],
+    ['MuaHang', 'ops', true],
+    ['user', 'cms', false],
+    ['user', 'ops', false],
 ]);
 
 it('enforces panel access matrix correctly', function (string $role, string $panelId, bool $shouldHaveAccess) {
     $user = User::factory()->create(['role' => $role]);
-    
-    // Some panel access methods use the current panel from the facade.
+
     Filament::setCurrentPanel(Filament::getPanel($panelId));
-    
-    $url = '/' . Filament::getPanel($panelId)->getPath();
+
+    $url = '/'.Filament::getPanel($panelId)->getPath();
 
     $request = actingAs($user)->get($url);
 
@@ -39,60 +38,112 @@ it('enforces panel access matrix correctly', function (string $role, string $pan
     }
 })->with('panelAccessMatrix');
 
-it('can login to CMS panel with correct credentials', function () {
-    $admin = User::factory()->create([
-        'role' => 'Admin_PM',
-        'password' => bcrypt('test-password'),
-    ]);
+it('redirects guests from filament panels to central login', function (string $path) {
+    get($path)->assertRedirect(route('login'));
+})->with([
+    '/cms',
+    '/ops',
+    '/data-steward',
+]);
 
-    Filament::setCurrentPanel(Filament::getPanel('cms'));
-
-    get('/cms/login')->assertOk();
-
-    livewire(Login::class)
-        ->fillForm([
-            'email' => $admin->email,
-            'password' => 'test-password',
-        ])
-        ->call('authenticate')
-        ->assertHasNoFormErrors()
-        ->assertRedirect('/cms');
-
-    $this->assertAuthenticatedAs($admin);
-});
-
-it('can login to OPS panel with correct credentials', function () {
+it('authenticates via central login and lands on dashboard hub for Sale', function () {
     $saleUser = User::factory()->create([
         'role' => 'Sale',
         'password' => bcrypt('test-password'),
     ]);
 
-    Filament::setCurrentPanel(Filament::getPanel('ops'));
-
-    get('/ops/login')->assertOk();
-
-    livewire(Login::class)
-        ->fillForm([
-            'email' => $saleUser->email,
-            'password' => 'test-password',
-        ])
-        ->call('authenticate')
-        ->assertHasNoFormErrors()
-        ->assertRedirect('/ops');
+    post('/login', [
+        'email' => $saleUser->email,
+        'password' => 'test-password',
+    ])->assertRedirect('/dashboard');
 
     $this->assertAuthenticatedAs($saleUser);
 });
 
-it('fails login with invalid password', function () {
-    $user = User::factory()->create();
-    
-    Filament::setCurrentPanel(Filament::getPanel('cms'));
+it('authenticates Admin_PM via central login and lands on dashboard hub', function () {
+    $admin = User::factory()->create([
+        'role' => 'Admin_PM',
+        'password' => bcrypt('test-password'),
+    ]);
 
-    livewire(Login::class)
-        ->fillForm([
-            'email' => $user->email,
-            'password' => 'wrong-password',
+    post('/login', [
+        'email' => $admin->email,
+        'password' => 'test-password',
+    ])->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($admin);
+});
+
+it('authenticates DuLieuNen via central login and lands on dashboard hub', function () {
+    $user = User::factory()->create([
+        'role' => 'DuLieuNen',
+        'password' => bcrypt('test-password'),
+    ]);
+
+    post('/login', [
+        'email' => $user->email,
+        'password' => 'test-password',
+    ])->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($user);
+});
+
+it('uses inertia location when logging in from an inertia request', function () {
+    $saleUser = User::factory()->create([
+        'role' => 'Sale',
+        'password' => bcrypt('test-password'),
+    ]);
+
+    $this->withHeaders(['X-Inertia' => 'true'])
+        ->post('/login', [
+            'email' => $saleUser->email,
+            'password' => 'test-password',
         ])
-        ->call('authenticate')
-        ->assertHasFormErrors(['email']);
+        ->assertStatus(409)
+        ->assertHeader('X-Inertia-Location', URL::to('/dashboard'));
+
+    $this->assertAuthenticatedAs($saleUser);
+});
+
+it('honors dashboard intended url for DuLieuNen', function () {
+    $user = User::factory()->create([
+        'role' => 'DuLieuNen',
+        'password' => bcrypt('test-password'),
+    ]);
+
+    $this->withSession(['url.intended' => url('/dashboard')])
+        ->post('/login', [
+            'email' => $user->email,
+            'password' => 'test-password',
+        ])
+        ->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($user);
+});
+
+it('authenticates Founder via central login and lands on dashboard hub', function () {
+    $user = User::factory()->create([
+        'role' => 'Founder',
+        'password' => bcrypt('test-password'),
+    ]);
+
+    post('/login', [
+        'email' => $user->email,
+        'password' => 'test-password',
+    ])->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($user);
+});
+
+it('fails login with invalid password', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('correct-password'),
+    ]);
+
+    post('/login', [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ])->assertSessionHasErrors('email');
+
+    $this->assertGuest();
 });

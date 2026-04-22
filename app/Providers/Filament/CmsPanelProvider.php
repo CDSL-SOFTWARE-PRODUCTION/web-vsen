@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Http\Middleware\Authenticate;
+use App\Http\Middleware\FilamentAuthenticateRedirectToLogin;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -25,7 +25,6 @@ class CmsPanelProvider extends PanelProvider
         return $panel
             ->id('cms')
             ->path('cms')
-            ->login()
             ->profile()
             ->colors([
                 'primary' => Color::Amber,
@@ -53,7 +52,7 @@ class CmsPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                FilamentAuthenticateRedirectToLogin::class,
             ])
             ->renderHook(
                 'panels::user-menu.before',

@@ -1,12 +1,4 @@
 <x-filament-panels::page>
-    <x-filament::section compact>
-        <div class="flex flex-wrap items-center gap-2">
-            <x-filament::badge color="primary">{{ __('ops.flow.step_1_chip') }}</x-filament::badge>
-            <x-filament::badge color="gray">{{ __('ops.flow.step_2_chip') }}</x-filament::badge>
-            <x-filament::badge color="warning">{{ __('ops.demand_workspace.cards.gate_pipeline.title') }}</x-filament::badge>
-        </div>
-    </x-filament::section>
-
     <x-filament::section
         :heading="__('ops.demand_workspace.section.quick_start')"
         :description="__('ops.demand_workspace.section.quick_start_description')"
