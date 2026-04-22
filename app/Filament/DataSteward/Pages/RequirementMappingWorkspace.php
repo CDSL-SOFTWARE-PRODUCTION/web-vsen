@@ -2,8 +2,8 @@
 
 namespace App\Filament\DataSteward\Pages;
 
-use App\Filament\Ops\Resources\MasterData\CanonicalProductResource;
-use App\Filament\Ops\Resources\MasterData\RequirementResource;
+use App\Filament\Ops\Clusters\MasterData\Resources\CanonicalProductResource;
+use App\Filament\Ops\Clusters\MasterData\Resources\RequirementResource;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Support\Ops\FilamentAccess;
 use Filament\Pages\Page;

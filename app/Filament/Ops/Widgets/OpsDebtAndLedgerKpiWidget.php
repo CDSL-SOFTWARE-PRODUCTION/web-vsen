@@ -3,7 +3,7 @@
 namespace App\Filament\Ops\Widgets;
 
 use App\Domain\Finance\MilestoneAgingService;
-use App\Filament\Ops\Resources\Finance\FinancialLedgerEntryResource;
+use App\Filament\Ops\Clusters\Finance\Resources\FinancialLedgerEntryResource;
 use App\Models\Ops\FinancialLedgerEntry;
 use App\Models\Ops\PaymentMilestone;
 use Filament\Widgets\StatsOverviewWidget\Stat;

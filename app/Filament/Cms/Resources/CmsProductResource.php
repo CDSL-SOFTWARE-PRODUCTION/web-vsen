@@ -264,8 +264,6 @@ class CmsProductResource extends Resource
     {
         return [
             'index' => Pages\ListCmsProducts::route('/'),
-            'create' => Pages\CreateCmsProduct::route('/create'),
-            'edit' => Pages\EditCmsProduct::route('/{record}/edit'),
         ];
     }
 }

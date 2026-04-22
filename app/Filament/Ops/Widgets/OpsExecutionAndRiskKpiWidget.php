@@ -2,8 +2,8 @@
 
 namespace App\Filament\Ops\Widgets;
 
-use App\Filament\Ops\Resources\Demand\ContractResource;
-use App\Filament\Ops\Resources\Demand\ExecutionIssueResource;
+use App\Filament\Ops\Clusters\Demand\Resources\ContractResource;
+use App\Filament\Ops\Clusters\Demand\Resources\ExecutionIssueResource;
 use App\Models\Ops\Contract;
 use App\Models\Ops\ExecutionIssue;
 use Filament\Widgets\StatsOverviewWidget\Stat;

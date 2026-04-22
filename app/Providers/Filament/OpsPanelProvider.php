@@ -41,8 +41,9 @@ class OpsPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Indigo,
             ])
-            ->discoverResources(in: app_path('Filament/Ops/Resources'), for: 'App\\Filament\\Ops\\Resources')
-            ->discoverPages(in: app_path('Filament/Ops/Pages'), for: 'App\\Filament\\Ops\\Pages')
+            ->discoverClusters(in: app_path('Filament/Ops/Clusters'), for: 'App\\Filament\\Ops\\Clusters')
+            ->discoverResources(in: app_path('Filament/Ops/Clusters'), for: 'App\\Filament\\Ops\\Clusters')
+            ->discoverPages(in: app_path('Filament/Ops/Clusters'), for: 'App\\Filament\\Ops\\Clusters')
             ->pages([
                 OpsDashboard::class,
             ])

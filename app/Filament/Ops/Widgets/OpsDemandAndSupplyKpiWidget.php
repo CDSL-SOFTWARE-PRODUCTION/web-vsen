@@ -2,8 +2,8 @@
 
 namespace App\Filament\Ops\Widgets;
 
-use App\Filament\Ops\Resources\Demand\OrderResource;
-use App\Filament\Ops\Resources\Supply\SupplyOrderResource;
+use App\Filament\Ops\Clusters\Demand\Resources\OrderResource;
+use App\Filament\Ops\Clusters\Supply\Resources\SupplyOrderResource;
 use App\Models\Demand\BidOpeningLine;
 use App\Models\Demand\Order;
 use App\Models\Supply\SupplyOrder;

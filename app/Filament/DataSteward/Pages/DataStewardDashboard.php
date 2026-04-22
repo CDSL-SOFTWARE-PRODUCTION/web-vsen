@@ -2,8 +2,8 @@
 
 namespace App\Filament\DataSteward\Pages;
 
-use App\Filament\Ops\Resources\MasterData\CanonicalProductResource;
-use App\Filament\Ops\Resources\MasterData\MedicalDeviceDeclarationResource;
+use App\Filament\Ops\Clusters\MasterData\Resources\CanonicalProductResource;
+use App\Filament\Ops\Clusters\MasterData\Resources\MedicalDeviceDeclarationResource;
 use App\Models\Knowledge\CanonicalProduct;
 use App\Models\Knowledge\CanonicalProductDocument;
 use App\Models\Knowledge\MedicalDeviceDeclaration;

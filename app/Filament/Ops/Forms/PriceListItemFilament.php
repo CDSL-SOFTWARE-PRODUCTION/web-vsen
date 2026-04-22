@@ -2,8 +2,8 @@
 
 namespace App\Filament\Ops\Forms;
 
-use App\Filament\Ops\Resources\MasterData\CanonicalProductResource;
-use App\Filament\Ops\Resources\MasterData\PriceListResource;
+use App\Filament\Ops\Clusters\MasterData\Resources\CanonicalProductResource;
+use App\Filament\Ops\Clusters\MasterData\Resources\PriceListResource;
 use App\Models\Demand\PriceList;
 use App\Models\Demand\PriceListItem;
 use App\Support\Currency\CurrencyConverter;
