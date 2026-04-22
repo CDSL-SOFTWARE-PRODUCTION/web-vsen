@@ -22,6 +22,8 @@ class PriceListResource extends OpsResource
 {
     protected static ?string $model = PriceList::class;
 
+    protected static ?string $cluster = MasterDataCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';

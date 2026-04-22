@@ -20,6 +20,8 @@ class VehicleResource extends OpsResource
 {
     protected static ?string $model = Vehicle::class;
 
+    protected static ?string $cluster = DeliveryCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?int $navigationSort = 1;

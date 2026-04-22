@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\Inventory\Resources\ReturnOrderResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\InventoryCluster;
+
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -11,6 +15,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReturnLinesRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = InventoryCluster::class;
     protected static string $relationship = 'lines';
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string

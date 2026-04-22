@@ -23,6 +23,8 @@ class InventoryLotResource extends OpsResource
 {
     protected static ?string $model = InventoryLot::class;
 
+    protected static ?string $cluster = InventoryCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-cube-transparent';

@@ -20,6 +20,8 @@ class AuditLogResource extends OpsResource
 {
     protected static ?string $model = AuditLog::class;
 
+    protected static ?string $cluster = SystemCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';

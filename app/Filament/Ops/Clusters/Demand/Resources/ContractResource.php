@@ -27,7 +27,7 @@ class ContractResource extends OpsResource
 {
     protected static ?string $model = Contract::class;
 
-    protected static ?string $slug = 'demand/contracts';
+    protected static ?string $cluster = DemandCluster::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 

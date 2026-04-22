@@ -24,6 +24,8 @@ class BidOpeningSessionResource extends OpsResource
 {
     protected static ?string $model = BidOpeningSession::class;
 
+    protected static ?string $cluster = DemandCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';

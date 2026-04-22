@@ -2,6 +2,8 @@
 
 namespace App\Filament\Ops\Clusters\Supply\Pages;
 
+use Filament\Pages\SubNavigationPosition;
+
 use App\Filament\Ops\Clusters\SupplyCluster;
 
 use App\Filament\Ops\Widgets\SupplySelectionOverviewWidget;
@@ -40,6 +42,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SupplySelectionAnalysis extends Page implements HasForms, HasTable
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = SupplyCluster::class;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -1346,6 +1352,7 @@ class SupplySelectionAnalysis extends Page implements HasForms, HasTable
                             Summarizer::make()
                                 ->using(fn (): ?float => $this->getSupplierGrandTotals()[$supplierId] ?? null)
                                 ->formatStateUsing(function ($state) use ($supplierId): string {
+
                                     $highlightColumnFooter = in_array($this->matrixHighlightMode(), ['column_lowest_total', 'fastest_delivery'], true)
                                         && $this->matrixHighlightedSupplierId() === $supplierId;
                                     $inner = '';

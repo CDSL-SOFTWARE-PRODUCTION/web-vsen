@@ -24,6 +24,8 @@ class DeliveryResource extends OpsResource
 {
     protected static ?string $model = Delivery::class;
 
+    protected static ?string $cluster = DeliveryCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';

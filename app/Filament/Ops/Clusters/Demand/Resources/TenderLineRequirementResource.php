@@ -21,6 +21,8 @@ class TenderLineRequirementResource extends OpsResource
 {
     protected static ?string $model = TenderSnapshotItemRequirement::class;
 
+    protected static ?string $cluster = DemandCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-link';

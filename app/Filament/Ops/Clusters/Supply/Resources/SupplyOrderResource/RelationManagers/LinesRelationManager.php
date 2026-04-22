@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\Supply\Resources\SupplyOrderResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\SupplyCluster;
+
 use App\Filament\Ops\Forms\CanonicalProductSelect;
 use App\Models\Ops\Partner;
 use App\Support\Currency\CurrencyConverter;
@@ -15,6 +19,10 @@ use Filament\Tables\Table;
 
 class LinesRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = SupplyCluster::class;
     protected static string $relationship = 'lines';
 
     public function form(Form $form): Form

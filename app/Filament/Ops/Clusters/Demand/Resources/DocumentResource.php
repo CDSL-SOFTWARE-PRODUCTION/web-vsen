@@ -22,6 +22,8 @@ class DocumentResource extends OpsResource
 {
     protected static ?string $model = Document::class;
 
+    protected static ?string $cluster = DemandCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-folder-open';

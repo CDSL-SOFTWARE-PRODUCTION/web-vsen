@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\Inventory\Resources\InventoryLotResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\InventoryCluster;
+
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -10,6 +14,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class LedgersRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = InventoryCluster::class;
     protected static string $relationship = 'ledgers';
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string

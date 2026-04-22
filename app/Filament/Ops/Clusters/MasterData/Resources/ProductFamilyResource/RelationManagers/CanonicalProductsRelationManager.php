@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\MasterData\Resources\ProductFamilyResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\MasterDataCluster;
+
 use App\Filament\Ops\Clusters\MasterData\Resources\CanonicalProductResource;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,6 +16,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 class CanonicalProductsRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = MasterDataCluster::class;
     protected static string $relationship = 'canonicalProducts';
 
     public function form(Form $form): Form

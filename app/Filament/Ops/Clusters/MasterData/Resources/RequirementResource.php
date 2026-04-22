@@ -20,6 +20,8 @@ class RequirementResource extends OpsResource
 {
     protected static ?string $model = Requirement::class;
 
+    protected static ?string $cluster = MasterDataCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-check-badge';

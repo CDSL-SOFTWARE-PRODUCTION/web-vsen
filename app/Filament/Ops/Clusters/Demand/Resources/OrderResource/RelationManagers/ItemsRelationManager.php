@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\Demand\Resources\OrderResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\DemandCluster;
+
 use App\Filament\Ops\Forms\CanonicalProductSelect;
 use App\Support\Currency\CurrencyConverter;
 use App\Support\Currency\CurrencyFormatter;
@@ -15,6 +19,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ItemsRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = DemandCluster::class;
     protected static string $relationship = 'items';
 
     public function form(Form $form): Form

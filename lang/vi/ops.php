@@ -1072,7 +1072,7 @@ return [
         'flow_step_3' => 'Cần facet / ảnh / alias: mở Sản phẩm chuẩn hóa → sửa đầy đủ.',
     ],
     'demand_workspace' => [
-        'navigation' => 'Nhu cầu & Hợp đồng',
+        'navigation' => 'Lộ trình thực thi',
         'title' => 'Nhu cầu & Hợp đồng',
         'section' => [
             'quick_start' => 'Truy cập nhanh',

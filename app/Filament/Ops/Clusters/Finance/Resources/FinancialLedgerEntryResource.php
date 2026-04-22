@@ -20,6 +20,8 @@ class FinancialLedgerEntryResource extends OpsResource
 {
     protected static ?string $model = FinancialLedgerEntry::class;
 
+    protected static ?string $cluster = FinanceCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';

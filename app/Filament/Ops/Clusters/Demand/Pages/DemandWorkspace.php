@@ -2,6 +2,8 @@
 
 namespace App\Filament\Ops\Clusters\Demand\Pages;
 
+use Filament\Pages\SubNavigationPosition;
+
 use App\Filament\Ops\Clusters\DemandCluster;
 
 use App\Filament\Ops\Clusters\Demand\Resources\ContractResource;
@@ -13,6 +15,10 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class DemandWorkspace extends Page
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = DemandCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-map';
 
     protected static string $view = 'filament.ops.pages.demand-workspace';

@@ -18,6 +18,8 @@ use Filament\Tables\Table;
 class PartnerResource extends OpsResource
 {
     protected static ?string $model = Partner::class;
+    
+    protected static ?string $cluster = MasterDataCluster::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 

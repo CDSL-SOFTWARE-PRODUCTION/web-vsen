@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Clusters\Demand\Resources\OrderResource\Pages;
 
+
 use App\Domain\Demand\CloseContractCommandService;
 use App\Domain\Demand\ConfirmContractCommandService;
 use App\Domain\Demand\ConfirmFulfillmentCommandService;
@@ -14,6 +15,7 @@ use Filament\Resources\Pages\ViewRecord;
 
 class ViewOrder extends ViewRecord
 {
+
     protected static string $resource = OrderResource::class;
 
     protected function getHeaderActions(): array

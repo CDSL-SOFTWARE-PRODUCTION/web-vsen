@@ -21,6 +21,8 @@ class MedicalDeviceDeclarationResource extends OpsResource
 {
     protected static ?string $model = MedicalDeviceDeclaration::class;
 
+    protected static ?string $cluster = MasterDataCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';

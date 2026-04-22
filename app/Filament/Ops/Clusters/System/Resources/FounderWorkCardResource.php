@@ -22,7 +22,7 @@ class FounderWorkCardResource extends OpsResource
 {
     protected static ?string $model = FounderWorkCard::class;
 
-    protected static ?string $slug = 'system/founder-work-cards';
+    protected static ?string $cluster = SystemCluster::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 

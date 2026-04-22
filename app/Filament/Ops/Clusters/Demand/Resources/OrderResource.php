@@ -34,7 +34,7 @@ class OrderResource extends OpsResource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $slug = 'demand/orders';
+    protected static ?string $cluster = DemandCluster::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 

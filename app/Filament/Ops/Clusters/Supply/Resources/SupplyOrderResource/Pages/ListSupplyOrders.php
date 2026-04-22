@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Clusters\Supply\Resources\SupplyOrderResource\Pages;
 
+
 use App\Filament\Ops\Clusters\Supply\Resources\SupplyOrderResource;
 use App\Filament\Ops\Widgets\SupplyOrderStatsWidget;
 use App\Models\Supply\SupplyOrder;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListSupplyOrders extends ListRecords
 {
+
     protected static string $resource = SupplyOrderResource::class;
 
     /**

@@ -59,8 +59,8 @@ Route::middleware('auth')->prefix('ops')->group(function () {
     Route::redirect('/admin-pm-overview', '/ops', 301);
 
     Route::get('/demand', function () {
-        return redirect('/ops/demand-workspace', 302);
-    });
+        return redirect()->route('filament.ops.demand.pages.demand-workspace');
+    })->name('filament.ops.demand');
 });
 
 require __DIR__.'/auth.php';

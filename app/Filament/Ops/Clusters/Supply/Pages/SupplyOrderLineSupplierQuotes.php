@@ -2,6 +2,8 @@
 
 namespace App\Filament\Ops\Clusters\Supply\Pages;
 
+use Filament\Pages\SubNavigationPosition;
+
 use App\Filament\Ops\Clusters\SupplyCluster;
 
 use App\Models\Ops\Partner;
@@ -25,6 +27,10 @@ use Illuminate\Validation\Rule;
 
 class SupplyOrderLineSupplierQuotes extends Page implements HasTable
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = SupplyCluster::class;
     use InteractsWithTable;
 
     protected static string $routePath = '/supply-order-line-supplier-quotes/{supply_order_line}';

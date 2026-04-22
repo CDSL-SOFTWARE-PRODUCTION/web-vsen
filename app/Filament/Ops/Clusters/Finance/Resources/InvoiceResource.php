@@ -21,6 +21,8 @@ class InvoiceResource extends OpsResource
 {
     protected static ?string $model = Invoice::class;
 
+    protected static ?string $cluster = FinanceCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';

@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\Demand\Resources\BidOpeningSessionResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\DemandCluster;
+
 use App\Models\Demand\TenderSnapshot;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -11,6 +15,10 @@ use Filament\Tables\Table;
 
 class AwardOutcomesRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = DemandCluster::class;
     protected static string $relationship = 'awardOutcomes';
 
     public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string

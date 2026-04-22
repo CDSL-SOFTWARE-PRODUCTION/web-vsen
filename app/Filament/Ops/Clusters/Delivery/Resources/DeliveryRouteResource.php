@@ -21,6 +21,8 @@ class DeliveryRouteResource extends OpsResource
 {
     protected static ?string $model = DeliveryRoute::class;
 
+    protected static ?string $cluster = DeliveryCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?int $navigationSort = 2;

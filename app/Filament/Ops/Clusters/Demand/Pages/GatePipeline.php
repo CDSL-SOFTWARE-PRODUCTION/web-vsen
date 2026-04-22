@@ -2,6 +2,8 @@
 
 namespace App\Filament\Ops\Clusters\Demand\Pages;
 
+use Filament\Pages\SubNavigationPosition;
+
 use App\Filament\Ops\Clusters\DemandCluster;
 
 use App\Domain\Execution\GateEvaluator;
@@ -16,6 +18,10 @@ use Illuminate\Support\Arr;
 
 class GatePipeline extends Page
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = DemandCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
     protected static string $view = 'filament.ops.pages.gate-pipeline';

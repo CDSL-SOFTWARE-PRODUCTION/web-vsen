@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\MasterData\Resources\MedicalDeviceDeclarationResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\MasterDataCluster;
+
 use App\Filament\Ops\Clusters\MasterData\Resources\CanonicalProductResource;
 use App\Models\Knowledge\ProductFamily;
 use Filament\Forms;
@@ -14,6 +18,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class CanonicalProductsRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = MasterDataCluster::class;
     protected static string $relationship = 'canonicalProducts';
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string

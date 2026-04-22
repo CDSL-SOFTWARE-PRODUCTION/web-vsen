@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Clusters\Demand\Resources\OrderResource\Pages;
 
+
 use App\Filament\Ops\Clusters\Demand\Resources\OrderResource;
 use App\Models\Demand\Order;
 use App\Models\Demand\TenderSnapshot;
@@ -9,6 +10,7 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateOrder extends CreateRecord
 {
+
     protected static string $resource = OrderResource::class;
 
     /**

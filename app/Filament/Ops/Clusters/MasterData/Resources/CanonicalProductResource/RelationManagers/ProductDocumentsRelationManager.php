@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\MasterData\Resources\CanonicalProductResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\MasterDataCluster;
+
 use App\Support\Knowledge\MedicalDeviceDocumentType;
 use App\Support\Knowledge\MedicalDeviceDossierClass;
 use Filament\Forms;
@@ -13,6 +17,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductDocumentsRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = MasterDataCluster::class;
     protected static string $relationship = 'documents';
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
@@ -50,6 +58,7 @@ class ProductDocumentsRelationManager extends RelationManager
                 ->hintIconTooltip(function (): ?string {
                     $class = $this->resolveDeviceClass();
                     if (MedicalDeviceDossierClass::isPermanent($class)) {
+
                         return __('ops.resources.canonical_product_documents.expiry_helper_ab');
                     }
                     if (MedicalDeviceDossierClass::hasFiveYearCycle($class)) {

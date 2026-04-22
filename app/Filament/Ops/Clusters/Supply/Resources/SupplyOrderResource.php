@@ -28,6 +28,8 @@ class SupplyOrderResource extends OpsResource
 {
     protected static ?string $model = SupplyOrder::class;
 
+    protected static ?string $cluster = SupplyCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox';

@@ -2,12 +2,14 @@
 
 namespace App\Filament\Ops\Clusters\MasterData\Resources\PriceListResource\Pages;
 
+
 use App\Filament\Ops\Clusters\MasterData\Resources\PriceListResource;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Contracts\Support\Htmlable;
 
 class CreatePriceList extends CreateRecord
 {
+
     protected static string $resource = PriceListResource::class;
 
     /**

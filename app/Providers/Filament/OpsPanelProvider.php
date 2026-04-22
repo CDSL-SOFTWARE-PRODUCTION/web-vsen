@@ -42,8 +42,6 @@ class OpsPanelProvider extends PanelProvider
                 'primary' => Color::Indigo,
             ])
             ->discoverClusters(in: app_path('Filament/Ops/Clusters'), for: 'App\\Filament\\Ops\\Clusters')
-            ->discoverResources(in: app_path('Filament/Ops/Clusters'), for: 'App\\Filament\\Ops\\Clusters')
-            ->discoverPages(in: app_path('Filament/Ops/Clusters'), for: 'App\\Filament\\Ops\\Clusters')
             ->pages([
                 OpsDashboard::class,
             ])
@@ -69,29 +67,6 @@ class OpsPanelProvider extends PanelProvider
             ->authMiddleware([
                 FilamentAuthenticateRedirectToLogin::class,
             ], isPersistent: true)
-            ->navigationGroups([
-                NavigationGroup::make(__('ops.clusters.demand'))
-                    ->icon('heroicon-o-document-text')
-                    ->collapsed(),
-                NavigationGroup::make(__('ops.clusters.master_data'))
-                    ->icon('heroicon-o-circle-stack')
-                    ->collapsed(),
-                NavigationGroup::make(__('ops.clusters.supply'))
-                    ->icon('heroicon-o-shopping-cart')
-                    ->collapsed(),
-                NavigationGroup::make(__('ops.clusters.inventory'))
-                    ->icon('heroicon-o-archive-box')
-                    ->collapsed(),
-                NavigationGroup::make(__('ops.clusters.delivery'))
-                    ->icon('heroicon-o-truck')
-                    ->collapsed(),
-                NavigationGroup::make(__('ops.clusters.finance'))
-                    ->icon('heroicon-o-banknotes')
-                    ->collapsed(),
-                NavigationGroup::make(__('ops.nav_groups.system'))
-                    ->icon('heroicon-o-cog-6-tooth')
-                    ->collapsed(),
-            ])
             ->renderHook(
                 'panels::user-menu.before',
                 fn (): string => PanelLocaleSwitcher::render(),

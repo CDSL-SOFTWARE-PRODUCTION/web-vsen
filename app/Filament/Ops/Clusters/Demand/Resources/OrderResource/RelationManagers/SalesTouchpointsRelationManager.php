@@ -2,6 +2,10 @@
 
 namespace App\Filament\Ops\Clusters\Demand\Resources\OrderResource\RelationManagers;
 
+use Filament\Pages\SubNavigationPosition;
+
+use App\Filament\Ops\Clusters\DemandCluster;
+
 use App\Models\Ops\Partner;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -12,6 +16,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class SalesTouchpointsRelationManager extends RelationManager
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = DemandCluster::class;
     protected static string $relationship = 'salesTouchpoints';
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string

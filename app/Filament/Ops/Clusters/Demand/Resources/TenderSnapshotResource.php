@@ -22,6 +22,8 @@ class TenderSnapshotResource extends OpsResource
 {
     protected static ?string $model = TenderSnapshot::class;
 
+    protected static ?string $cluster = DemandCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';

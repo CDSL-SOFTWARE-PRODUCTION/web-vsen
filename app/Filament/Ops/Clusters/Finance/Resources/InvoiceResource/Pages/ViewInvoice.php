@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Clusters\Finance\Resources\InvoiceResource\Pages;
 
+
 use App\Domain\Finance\CancelAndReissueInvoiceService;
 use App\Filament\Ops\Clusters\Finance\Resources\InvoiceResource;
 use Filament\Actions\Action;
@@ -11,6 +12,7 @@ use Filament\Resources\Pages\ViewRecord;
 
 class ViewInvoice extends ViewRecord
 {
+
     protected static string $resource = InvoiceResource::class;
 
     protected function getHeaderActions(): array

@@ -24,6 +24,8 @@ class ExecutionIssueResource extends OpsResource
 {
     protected static ?string $model = ExecutionIssue::class;
 
+    protected static ?string $cluster = DemandCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-exclamation-circle';

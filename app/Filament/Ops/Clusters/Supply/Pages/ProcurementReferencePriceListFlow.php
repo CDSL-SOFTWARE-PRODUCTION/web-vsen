@@ -2,6 +2,8 @@
 
 namespace App\Filament\Ops\Clusters\Supply\Pages;
 
+use Filament\Pages\SubNavigationPosition;
+
 use App\Filament\Ops\Clusters\SupplyCluster;
 
 use App\Filament\Ops\Clusters\MasterData\Resources\PriceListResource;
@@ -25,6 +27,10 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class ProcurementReferencePriceListFlow extends Page implements HasForms, HasTable
 {
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+
+    protected static ?string $cluster = SupplyCluster::class;
     use InteractsWithForms;
     use InteractsWithTable;
 

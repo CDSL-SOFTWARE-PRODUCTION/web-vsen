@@ -33,6 +33,8 @@ class CanonicalProductResource extends OpsResource
 {
     protected static ?string $model = CanonicalProduct::class;
 
+    protected static ?string $cluster = MasterDataCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-cube';

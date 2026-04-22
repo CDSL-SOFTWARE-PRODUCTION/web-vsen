@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Clusters\Demand\Resources\TenderSnapshotResource\Pages;
 
+
 use App\Domain\Audit\AuditLogService;
 use App\Domain\Execution\GenerateExecutionPlanService;
 use App\Filament\Ops\Clusters\Demand\Resources\TenderSnapshotResource;
@@ -12,6 +13,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditTenderSnapshot extends EditRecord
 {
+
     protected static string $resource = TenderSnapshotResource::class;
 
     protected function getHeaderActions(): array

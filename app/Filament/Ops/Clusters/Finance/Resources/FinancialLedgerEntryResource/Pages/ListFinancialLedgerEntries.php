@@ -2,6 +2,7 @@
 
 namespace App\Filament\Ops\Clusters\Finance\Resources\FinancialLedgerEntryResource\Pages;
 
+
 use App\Filament\Ops\Clusters\Finance\Resources\FinancialLedgerEntryResource;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListFinancialLedgerEntries extends ListRecords
 {
+
     protected static string $resource = FinancialLedgerEntryResource::class;
 
     public function getTabs(): array

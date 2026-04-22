@@ -22,6 +22,8 @@ class ReturnOrderResource extends OpsResource
 {
     protected static ?string $model = ReturnOrder::class;
 
+    protected static ?string $cluster = InventoryCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-uturn-left';

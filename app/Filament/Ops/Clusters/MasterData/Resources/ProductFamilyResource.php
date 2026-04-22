@@ -21,6 +21,8 @@ class ProductFamilyResource extends OpsResource
 {
     protected static ?string $model = ProductFamily::class;
 
+    protected static ?string $cluster = MasterDataCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
